@@ -2,7 +2,13 @@ import { createRouter, createRoute, createRootRoute, Outlet } from '@tanstack/re
 import Layout from '@/components/Layout';
 
 // Import pages
-import Landing from '@/pages/Landing';
+import Home from '@/pages/Home';
+import Features from '@/pages/Features';
+import Pricing from '@/pages/Pricing';
+import Gallery from '@/pages/Gallery';
+import FAQ from '@/pages/FAQ';
+import Contact from '@/pages/Contact';
+import Legal from '@/pages/Legal';
 import Describe from '@/pages/Describe';
 import Brief from '@/pages/Brief';
 import Design from '@/pages/Design';
@@ -27,7 +33,43 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: Landing,
+  component: Home,
+});
+
+const featuresRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/features',
+  component: Features,
+});
+
+const pricingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/pricing',
+  component: Pricing,
+});
+
+const galleryRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/gallery',
+  component: Gallery,
+});
+
+const faqRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/faq',
+  component: FAQ,
+});
+
+const contactRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/contact',
+  component: Contact,
+});
+
+const legalRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/legal',
+  component: Legal,
 });
 
 const describeRoute = createRoute({
@@ -93,6 +135,12 @@ const notFoundRoute = createRoute({
 // Create route tree
 const routeTree = rootRoute.addChildren([
   indexRoute,
+  featuresRoute,
+  pricingRoute,
+  galleryRoute,
+  faqRoute,
+  contactRoute,
+  legalRoute,
   describeRoute,
   briefRoute,
   designRoute,

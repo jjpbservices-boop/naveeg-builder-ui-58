@@ -1,0 +1,147 @@
+{
+  "hero": {
+    "title": "Rome ne s'est pas construite en un jour — mais votre site web le sera.",
+    "subtitle": "Avec Naveeg, générez un site web professionnel en quelques minutes. Pas de code, pas de stress.",
+    "inputPlaceholder": "Décrivez votre entreprise (ex: Cabinet d'avocats local au centre-ville)",
+    "ctaButton": "Générer Mon Site Web",
+    "helper": "Votre site sera prêt en quelques minutes après avoir cliqué sur générer."
+  },
+  "socialProof": {
+    "title": "Fait confiance par des milliers d'entreprises",
+    "logos": ["Entreprise A", "Entreprise B", "Entreprise C", "Entreprise D", "Entreprise E"]
+  },
+  "howItWorks": {
+    "title": "Comment ça marche",
+    "subtitle": "Lancez votre site web en trois étapes simples",
+    "steps": [
+      {
+        "title": "Décrivez Votre Entreprise",
+        "description": "Parlez-nous de votre entreprise en quelques mots"
+      },
+      {
+        "title": "Personnalisez Votre Design",
+        "description": "Choisissez les couleurs, polices et préférences de mise en page"
+      },
+      {
+        "title": "Lancez Votre Site Web",
+        "description": "Votre site web professionnel est prêt à être mis en ligne"
+      }
+    ]
+  },
+  "features": {
+    "title": "Tout ce dont vous avez besoin pour réussir en ligne",
+    "subtitle": "Conçu pour les entreprises modernes qui veulent se mettre en ligne rapidement",
+    "cards": [
+      {
+        "title": "Génération Ultra Rapide",
+        "description": "Obtenez votre site web prêt en moins de 30 secondes avec notre constructeur alimenté par l'IA",
+        "icon": "zap"
+      },
+      {
+        "title": "Design Mobile-First",
+        "description": "Chaque site web est optimisé pour les appareils mobiles et paraît parfait partout",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Optimisé SEO",
+        "description": "Fonctionnalités SEO intégrées pour aider votre entreprise à être trouvée sur les moteurs de recherche",
+        "icon": "search"
+      },
+      {
+        "title": "Sécurisé et Fiable",
+        "description": "Sécurité de niveau entreprise avec une garantie de disponibilité de 99,9%",
+        "icon": "shield"
+      },
+      {
+        "title": "Personnalisation Facile",
+        "description": "Changez les couleurs, polices et contenu sans aucune connaissance technique",
+        "icon": "palette"
+      },
+      {
+        "title": "Support 24/7",
+        "description": "Obtenez de l'aide quand vous en avez besoin avec notre équipe de support dédiée",
+        "icon": "headphones"
+      }
+    ]
+  },
+  "whyNaveeg": {
+    "title": "Pourquoi choisir Naveeg ?",
+    "blocks": [
+      {
+        "title": "Aucun Code Requis",
+        "description": "Construisez des sites web professionnels sans écrire une seule ligne de code. Notre IA gère toute la complexité technique."
+      },
+      {
+        "title": "Résultats Instantanés",
+        "description": "N'attendez pas des semaines pour votre site web. Mettez-vous en ligne en minutes avec notre processus de génération ultra-rapide."
+      },
+      {
+        "title": "Conçu pour la Croissance",
+        "description": "Commencez simple et évoluez. Ajoutez des fonctionnalités au fur et à mesure que votre entreprise grandit."
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Tarification simple et transparente",
+    "subtitle": "Choisissez le plan qui convient à votre entreprise",
+    "viewAll": "Voir tous les plans",
+    "plans": [
+      {
+        "name": "Starter",
+        "price": "9",
+        "currency": "€",
+        "period": "/mois",
+        "description": "Parfait pour les petites entreprises qui démarrent",
+        "features": ["1 Site Web", "Modèles de Base", "Certificat SSL", "Support Email"]
+      },
+      {
+        "name": "Pro",
+        "price": "29",
+        "currency": "€",
+        "period": "/mois",
+        "description": "Pour les entreprises en croissance qui ont besoin de plus",
+        "features": ["5 Sites Web", "Modèles Premium", "Domaine Personnalisé", "Support Prioritaire", "Analytiques"],
+        "popular": true
+      },
+      {
+        "name": "Business",
+        "price": "99",
+        "currency": "€",
+        "period": "/mois",
+        "description": "Pour les agences et grandes entreprises",
+        "features": ["Sites Web Illimités", "Marque Blanche", "Accès API", "Support Téléphonique 24/7", "Analytiques Avancées"]
+      }
+    ]
+  },
+  "gallery": {
+    "title": "Construit avec Naveeg",
+    "subtitle": "Voyez ce que nos clients ont créé",
+    "viewAll": "Voir la galerie",
+    "categories": ["Tous", "Restaurant", "Services", "Portfolio", "E-commerce", "Blog"]
+  },
+  "faq": {
+    "title": "Questions fréquemment posées",
+    "subtitle": "Tout ce que vous devez savoir sur Naveeg",
+    "viewAll": "Voir toutes les FAQ",
+    "questions": [
+      {
+        "question": "Combien de temps faut-il pour générer un site web ?",
+        "answer": "La plupart des sites web sont générés en moins de 30 secondes. Les sites complexes peuvent prendre jusqu'à 2 minutes."
+      },
+      {
+        "question": "Puis-je utiliser mon propre nom de domaine ?",
+        "answer": "Oui ! Vous pouvez connecter votre domaine existant ou en enregistrer un nouveau via notre plateforme."
+      },
+      {
+        "question": "Y a-t-il un essai gratuit ?",
+        "answer": "Nous offrons un essai gratuit de 14 jours sur tous les plans. Aucune carte de crédit requise pour commencer."
+      }
+    ]
+  },
+  "ctaBanner": {
+    "title": "Prêt à construire votre site web ?",
+    "subtitle": "Rejoignez des milliers d'entreprises qui font confiance à Naveeg pour leur présence en ligne",
+    "button": "Commencer Maintenant",
+    "helper": "Aucune carte de crédit requise • Essai gratuit de 14 jours"
+  }
+}

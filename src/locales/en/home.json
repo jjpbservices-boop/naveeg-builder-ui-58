@@ -1,0 +1,147 @@
+{
+  "hero": {
+    "title": "Rome wasn't built in a day — but your website will be.",
+    "subtitle": "With Naveeg, generate a professional website in just minutes. No code, no stress.",
+    "inputPlaceholder": "Describe your business (e.g., Local law firm in downtown)",
+    "ctaButton": "Generate My Website",
+    "helper": "Your site will be ready within minutes after you click generate."
+  },
+  "socialProof": {
+    "title": "Trusted by thousands of businesses",
+    "logos": ["Company A", "Company B", "Company C", "Company D", "Company E"]
+  },
+  "howItWorks": {
+    "title": "How it works",
+    "subtitle": "Get your website up and running in three simple steps",
+    "steps": [
+      {
+        "title": "Describe Your Business",
+        "description": "Tell us about your business in a few words"
+      },
+      {
+        "title": "Customize Your Design",
+        "description": "Choose colors, fonts, and layout preferences"
+      },
+      {
+        "title": "Launch Your Website",
+        "description": "Your professional website is ready to go live"
+      }
+    ]
+  },
+  "features": {
+    "title": "Everything you need to succeed online",
+    "subtitle": "Built for modern businesses that want to get online fast",
+    "cards": [
+      {
+        "title": "Lightning Fast Generation",
+        "description": "Get your website ready in under 30 seconds with our AI-powered builder",
+        "icon": "zap"
+      },
+      {
+        "title": "Mobile-First Design",
+        "description": "Every website is optimized for mobile devices and looks perfect everywhere",
+        "icon": "smartphone"
+      },
+      {
+        "title": "SEO Optimized",
+        "description": "Built-in SEO features to help your business get found on search engines",
+        "icon": "search"
+      },
+      {
+        "title": "Secure & Reliable",
+        "description": "Enterprise-grade security with 99.9% uptime guarantee",
+        "icon": "shield"
+      },
+      {
+        "title": "Easy Customization",
+        "description": "Change colors, fonts, and content without any technical knowledge",
+        "icon": "palette"
+      },
+      {
+        "title": "24/7 Support",
+        "description": "Get help whenever you need it with our dedicated support team",
+        "icon": "headphones"
+      }
+    ]
+  },
+  "whyNaveeg": {
+    "title": "Why choose Naveeg?",
+    "blocks": [
+      {
+        "title": "No Code Required",
+        "description": "Build professional websites without writing a single line of code. Our AI handles all the technical complexity."
+      },
+      {
+        "title": "Instant Results",
+        "description": "Don't wait weeks for your website. Get online in minutes with our lightning-fast generation process."
+      },
+      {
+        "title": "Built for Growth",
+        "description": "Start simple and scale up. Add features and functionality as your business grows."
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Simple, transparent pricing",
+    "subtitle": "Choose the plan that's right for your business",
+    "viewAll": "View all plans",
+    "plans": [
+      {
+        "name": "Starter",
+        "price": "9",
+        "currency": "€",
+        "period": "/month",
+        "description": "Perfect for small businesses getting started",
+        "features": ["1 Website", "Basic Templates", "SSL Certificate", "Email Support"]
+      },
+      {
+        "name": "Pro",
+        "price": "29",
+        "currency": "€", 
+        "period": "/month",
+        "description": "For growing businesses that need more",
+        "features": ["5 Websites", "Premium Templates", "Custom Domain", "Priority Support", "Analytics"],
+        "popular": true
+      },
+      {
+        "name": "Business",
+        "price": "99",
+        "currency": "€",
+        "period": "/month", 
+        "description": "For agencies and large businesses",
+        "features": ["Unlimited Websites", "White Label", "API Access", "24/7 Phone Support", "Advanced Analytics"]
+      }
+    ]
+  },
+  "gallery": {
+    "title": "Built with Naveeg",
+    "subtitle": "See what our customers have created",
+    "viewAll": "View gallery",
+    "categories": ["All", "Restaurant", "Services", "Portfolio", "E-commerce", "Blog"]
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "subtitle": "Everything you need to know about Naveeg",
+    "viewAll": "View all FAQs",
+    "questions": [
+      {
+        "question": "How long does it take to generate a website?",
+        "answer": "Most websites are generated in under 30 seconds. Complex sites might take up to 2 minutes."
+      },
+      {
+        "question": "Can I use my own domain name?",
+        "answer": "Yes! You can connect your existing domain or register a new one through our platform."
+      },
+      {
+        "question": "Is there a free trial?",
+        "answer": "We offer a 14-day free trial on all plans. No credit card required to get started."
+      }
+    ]
+  },
+  "ctaBanner": {
+    "title": "Ready to build your website?",
+    "subtitle": "Join thousands of businesses that trust Naveeg for their online presence",
+    "button": "Start Building Now",
+    "helper": "No credit card required • 14-day free trial"
+  }
+}

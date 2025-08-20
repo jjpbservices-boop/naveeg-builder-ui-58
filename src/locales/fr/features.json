@@ -1,0 +1,71 @@
+{
+  "title": "Fonctionnalités",
+  "subtitle": "Tout ce dont vous avez besoin pour construire et développer votre présence en ligne",
+  "features": {
+    "aiGeneration": {
+      "title": "Génération par IA",
+      "description": "Notre IA avancée crée des sites web professionnels adaptés à votre entreprise en quelques secondes"
+    },
+    "mobileFirst": {
+      "title": "Design Mobile-First",
+      "description": "Chaque site web est optimisé pour les appareils mobiles et offre une excellente expérience utilisateur"
+    },
+    "seoOptimized": {
+      "title": "Optimisé SEO",
+      "description": "Fonctionnalités SEO intégrées pour aider votre entreprise à être découverte sur les moteurs de recherche"
+    },
+    "fastLoading": {
+      "title": "Ultra Rapide",
+      "description": "Optimisé pour la vitesse avec des métriques de performance de pointe"
+    },
+    "customization": {
+      "title": "Personnalisation Facile",
+      "description": "Changez les couleurs, polices, mises en page et contenu sans connaissances en codage"
+    },
+    "analytics": {
+      "title": "Analytiques Intégrées",
+      "description": "Suivez le comportement des visiteurs et les performances du site web avec des insights détaillés"
+    },
+    "security": {
+      "title": "Sécurité Entreprise",
+      "description": "Certificats SSL, surveillance de sécurité et mises à jour automatiques incluses"
+    },
+    "support": {
+      "title": "Support 24/7",
+      "description": "Obtenez de l'aide quand vous en avez besoin de notre équipe de support experte"
+    },
+    "backup": {
+      "title": "Sauvegardes Automatiques",
+      "description": "Votre site web est automatiquement sauvegardé quotidiennement pour votre tranquillité d'esprit"
+    },
+    "domains": {
+      "title": "Domaines Personnalisés",
+      "description": "Utilisez votre propre nom de domaine ou enregistrez-en un nouveau via notre plateforme"
+    },
+    "templates": {
+      "title": "Modèles Professionnels",
+      "description": "Choisissez parmi des centaines de modèles conçus professionnellement pour chaque industrie"
+    },
+    "ecommerce": {
+      "title": "Prêt E-commerce",
+      "description": "Vendez des produits en ligne avec panier d'achat intégré et traitement des paiements"
+    }
+  },
+  "comparison": {
+    "title": "Comment nous nous comparons",
+    "subtitle": "Voyez pourquoi Naveeg est le meilleur choix pour votre entreprise",
+    "features": [
+      "Génération par IA",
+      "Design mobile-first",
+      "Optimisation SEO",
+      "Domaines personnalisés",
+      "Certificats SSL",
+      "Support 24/7",
+      "Prêt e-commerce",
+      "Analytiques avancées",
+      "Sauvegardes automatiques",
+      "Aucun codage requis"
+    ],
+    "competitors": ["Naveeg", "Concurrent A", "Concurrent B", "Concurrent C"]
+  }
+}

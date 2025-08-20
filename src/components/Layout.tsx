@@ -54,6 +54,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           </div>
 
+          {/* Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            <Button variant="ghost" onClick={() => navigate({ to: '/features' })}>
+              Features
+            </Button>
+            <Button variant="ghost" onClick={() => navigate({ to: '/pricing' })}>
+              Pricing
+            </Button>
+            <Button variant="ghost" onClick={() => navigate({ to: '/gallery' })}>
+              Gallery
+            </Button>
+            <Button variant="ghost" onClick={() => navigate({ to: '/faq' })}>
+              FAQ
+            </Button>
+            <Button variant="ghost" onClick={() => navigate({ to: '/contact' })}>
+              Contact
+            </Button>
+          </nav>
+
           {/* Right side */}
           <div className="flex items-center space-x-4">
             {/* Language Selector */}

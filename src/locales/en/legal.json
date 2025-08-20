@@ -1,0 +1,17 @@
+{
+  "terms": {
+    "title": "Terms of Service",
+    "lastUpdated": "Last updated: {date}",
+    "content": "Terms of service content will be available here..."
+  },
+  "privacy": {
+    "title": "Privacy Policy", 
+    "lastUpdated": "Last updated: {date}",
+    "content": "Privacy policy content will be available here..."
+  },
+  "cookies": {
+    "title": "Cookie Policy",
+    "lastUpdated": "Last updated: {date}", 
+    "content": "Cookie policy content will be available here..."
+  }
+}

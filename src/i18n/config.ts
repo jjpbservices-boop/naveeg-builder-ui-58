@@ -35,7 +35,32 @@ import errorsFr from '@/locales/fr/errors.json';
 
 // Supported locales
 export const supportedLocales = [
-  'en', 'fr', 'es', 'pt', 'it', 'de', 'nl', 'pl', 'sv', 'da', 'fi', 'cs', 'sk', 'hu', 'ro', 'bg', 'hr', 'sl', 'et', 'lv', 'lt', 'mt'
+  'en', 'en-GB', 'en-IE', 'en-MT',
+  'fr', 'fr-FR', 'fr-BE', 'fr-LU', 
+  'de', 'de-DE', 'de-AT', 'de-LU', 'de-LI',
+  'it', 'it-IT',
+  'es', 'es-ES',
+  'pt', 'pt-PT',
+  'nl', 'nl-NL', 'nl-BE',
+  'sv', 'sv-SE',
+  'da', 'da-DK',
+  'fi', 'fi-FI',
+  'no', 'no-NO',
+  'is', 'is-IS',
+  'et', 'et-EE',
+  'lv', 'lv-LV',
+  'lt', 'lt-LT',
+  'pl', 'pl-PL',
+  'cs', 'cs-CZ',
+  'sk', 'sk-SK',
+  'sl', 'sl-SI',
+  'hu', 'hu-HU',
+  'ro', 'ro-RO',
+  'bg', 'bg-BG',
+  'el', 'el-GR',
+  'hr', 'hr-HR',
+  'ga', 'ga-IE',
+  'mt', 'mt-MT'
 ] as const;
 
 export type SupportedLocale = typeof supportedLocales[number];
@@ -89,16 +114,18 @@ i18n
     },
 
     detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
+      order: ['querystring', 'path', 'localStorage', 'navigator', 'htmlTag', 'cookie'],
+      lookupQuerystring: 'lang',
       lookupLocalStorage: 'naveeg-language',
-      caches: ['localStorage'],
+      lookupCookie: 'naveeg-language',
+      caches: ['localStorage', 'cookie'],
     },
 
     react: {
       useSuspense: false,
     },
 
-    ns: ['common', 'onboarding', 'design', 'progress', 'preview', 'dashboard', 'analytics', 'domain', 'backup', 'cache', 'security', 'workspace', 'billing', 'errors'],
+    ns: ['common', 'home', 'features', 'pricing', 'gallery', 'faq', 'contact', 'legal', 'onboarding', 'design', 'progress', 'preview', 'dashboard', 'analytics', 'domain', 'backup', 'cache', 'security', 'workspace', 'billing', 'errors'],
     defaultNS: 'common',
   });
 
