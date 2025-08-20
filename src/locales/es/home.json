@@ -1,0 +1,108 @@
+{
+  "hero": {
+    "title": "Roma no se construyó en un día — pero tu sitio web sí.",
+    "subtitle": "Con Naveeg, genera un sitio web profesional en minutos. Sin código, sin estrés.",
+    "inputPlaceholder": "Escribe el nombre de tu negocio…",
+    "ctaButton": "Generar mi sitio web",
+    "helper": "Tu sitio estará listo en pocos minutos después de hacer clic en generar."
+  },
+  "trialBanner": {
+    "text": "Comienza con una prueba gratuita de 14 días en un subdominio de Naveeg. No se requiere tarjeta."
+  },
+  "socialProof": {
+    "title": "Confiado por miles de empresas",
+    "logos": ["Empresa A", "Empresa B", "Empresa C", "Empresa D", "Empresa E"]
+  },
+  "howItWorks": {
+    "title": "Cómo funciona",
+    "subtitle": "Pon tu sitio web en marcha en tres simples pasos",
+    "steps": [
+      {
+        "title": "Cuéntanos sobre tu negocio",
+        "description": "Describe tu empresa en pocas palabras"
+      },
+      {
+        "title": "Elige tu estilo y colores",
+        "description": "Selecciona colores, fuentes y preferencias de diseño"
+      },
+      {
+        "title": "Genera tu sitio web en minutos",
+        "description": "Tu sitio web profesional estará listo para salir en vivo"
+      }
+    ]
+  },
+  "features": {
+    "title": "Todo lo que necesitas para triunfar online",
+    "subtitle": "Construido para empresas modernas que quieren estar online rápido",
+    "cards": [
+      {
+        "title": "Diseño mobile-first",
+        "description": "Todos los sitios están optimizados para móviles y se ven perfectos en cualquier lugar",
+        "icon": "smartphone"
+      },
+      {
+        "title": "SEO optimización incluida",
+        "description": "Funciones SEO integradas para ayudar a tu negocio a ser encontrado en buscadores",
+        "icon": "search"
+      },
+      {
+        "title": "Colores y fuentes personalizados",
+        "description": "Cambia colores, fuentes y contenido sin conocimiento técnico",
+        "icon": "palette"
+      },
+      {
+        "title": "Hosting rápido y seguro",
+        "description": "Seguridad de nivel empresarial con garantía de disponibilidad del 99.9%",
+        "icon": "shield"
+      },
+      {
+        "title": "Panel simple",
+        "description": "Obtén ayuda cuando la necesites con nuestro equipo de soporte dedicado",
+        "icon": "settings"
+      },
+      {
+        "title": "Prueba gratuita de 14 días",
+        "description": "Generación ultra rápida con nuestro constructor impulsado por IA",
+        "icon": "zap"
+      }
+    ]
+  },
+  "whyNaveeg": {
+    "title": "¿Por qué elegir Naveeg?",
+    "blocks": [
+      {
+        "title": "Ahorra tiempo — lanza en minutos, no semanas",
+        "description": "No esperes semanas por tu sitio web. Ponte online en minutos con nuestro proceso de generación ultrarrápido."
+      },
+      {
+        "title": "No se necesitan habilidades — construido para usuarios no técnicos",
+        "description": "Construye sitios web profesionales sin escribir una sola línea de código. Nuestra IA maneja toda la complejidad técnica."
+      },
+      {
+        "title": "Crece online — optimizado para visibilidad y conversiones",
+        "description": "Comienza simple y evoluciona. Añade características y funcionalidad conforme tu negocio crece."
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Precios simples y transparentes",
+    "subtitle": "Elige el plan adecuado para tu negocio",
+    "viewAll": "Ver todos los planes"
+  },
+  "gallery": {
+    "title": "Construido con Naveeg",
+    "subtitle": "Ve lo que nuestros clientes han creado",
+    "viewAll": "Ver galería"
+  },
+  "faq": {
+    "title": "Preguntas frecuentes",
+    "subtitle": "Todo lo que necesitas saber sobre Naveeg",
+    "viewAll": "Ver todas las FAQ"
+  },
+  "ctaBanner": {
+    "title": "¿Listo para construir tu sitio web?",
+    "subtitle": "Únete a miles de empresas que confían en Naveeg para su presencia online",
+    "button": "Empezar ahora",
+    "helper": "No se requiere tarjeta • Prueba gratuita de 14 días"
+  }
+}

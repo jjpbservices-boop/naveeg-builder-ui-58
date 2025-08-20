@@ -1,0 +1,108 @@
+{
+  "hero": {
+    "title": "Roma não foi construída num dia — mas o seu website será.",
+    "subtitle": "Com a Naveeg, crie um website profissional em minutos. Sem código, sem stress.",
+    "inputPlaceholder": "Introduza o nome da sua empresa…",
+    "ctaButton": "Gerar o meu website",
+    "helper": "O seu site ficará pronto poucos minutos após clicar em gerar."
+  },
+  "trialBanner": {
+    "text": "Comece com um teste grátis de 14 dias num subdomínio Naveeg. Não é necessário cartão."
+  },
+  "socialProof": {
+    "title": "Confiança de milhares de empresas",
+    "logos": ["Empresa A", "Empresa B", "Empresa C", "Empresa D", "Empresa E"]
+  },
+  "howItWorks": {
+    "title": "Como funciona",
+    "subtitle": "Ponha o seu website a funcionar em três passos simples",
+    "steps": [
+      {
+        "title": "Fale-nos sobre o seu negócio",
+        "description": "Descreva a sua empresa em poucas palavras"
+      },
+      {
+        "title": "Escolha o seu estilo e cores",
+        "description": "Selecione cores, fontes e preferências de design"
+      },
+      {
+        "title": "Gere o seu website em minutos",
+        "description": "O seu website profissional estará pronto para ir ao ar"
+      }
+    ]
+  },
+  "features": {
+    "title": "Tudo o que precisa para ter sucesso online",
+    "subtitle": "Construído para empresas modernas que querem estar online rapidamente",
+    "cards": [
+      {
+        "title": "Design mobile-first",
+        "description": "Todos os websites são otimizados para dispositivos móveis e ficam perfeitos em qualquer lugar",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Otimização SEO incluída",
+        "description": "Funcionalidades SEO integradas para ajudar o seu negócio a ser encontrado nos motores de busca",
+        "icon": "search"
+      },
+      {
+        "title": "Cores e fontes personalizadas",
+        "description": "Altere cores, fontes e conteúdo sem qualquer conhecimento técnico",
+        "icon": "palette"
+      },
+      {
+        "title": "Hosting rápido e seguro",
+        "description": "Segurança de nível empresarial com garantia de disponibilidade de 99.9%",
+        "icon": "shield"
+      },
+      {
+        "title": "Painel simples",
+        "description": "Obtenha ajuda sempre que precisar com a nossa equipa de suporte dedicada",
+        "icon": "settings"
+      },
+      {
+        "title": "Teste grátis de 14 dias",
+        "description": "Geração ultra-rápida com o nosso construtor alimentado por IA",
+        "icon": "zap"
+      }
+    ]
+  },
+  "whyNaveeg": {
+    "title": "Porquê escolher a Naveeg?",
+    "blocks": [
+      {
+        "title": "Poupe tempo — lance em minutos, não semanas",
+        "description": "Não espere semanas pelo seu website. Fique online em minutos com o nosso processo de geração ultrarrápido."
+      },
+      {
+        "title": "Não são necessárias competências — construído para utilizadores não técnicos",
+        "description": "Construa websites profissionais sem escrever uma única linha de código. A nossa IA trata de toda a complexidade técnica."
+      },
+      {
+        "title": "Cresça online — otimizado para visibilidade e conversões",
+        "description": "Comece simples e evolua. Adicione funcionalidades conforme o seu negócio cresce."
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Preços simples e transparentes",
+    "subtitle": "Escolha o plano certo para o seu negócio",
+    "viewAll": "Ver todos os planos"
+  },
+  "gallery": {
+    "title": "Construído com Naveeg",
+    "subtitle": "Veja o que os nossos clientes criaram",
+    "viewAll": "Ver galeria"
+  },
+  "faq": {
+    "title": "Perguntas frequentes",
+    "subtitle": "Tudo o que precisa de saber sobre a Naveeg",
+    "viewAll": "Ver todas as FAQ"
+  },
+  "ctaBanner": {
+    "title": "Pronto para construir o seu website?",
+    "subtitle": "Junte-se a milhares de empresas que confiam na Naveeg para a sua presença online",
+    "button": "Começar agora",
+    "helper": "Não é necessário cartão • Teste grátis de 14 dias"
+  }
+}

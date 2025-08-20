@@ -1,0 +1,110 @@
+{
+  "title": "Tarification",
+  "subtitle": "Choisissez le plan parfait pour votre entreprise",
+  "monthly": "Mensuel",
+  "annually": "Annuel",
+  "save": "2 mois gratuits",
+  "mostPopular": "Le plus populaire",
+  "getStarted": "Commencer",
+  "contactSales": "Contacter les ventes",
+  "freeTrial": "Essai gratuit de 14 jours",
+  "noCredit": "Aucune carte bancaire requise",
+  "plans": {
+    "starter": {
+      "name": "Starter",
+      "description": "Parfait pour les petites entreprises qui démarrent",
+      "price": {
+        "monthly": 29,
+        "annually": 24
+      },
+      "features": [
+        "1 site web",
+        "Hébergement inclus",
+        "Support par email",
+        "SEO de base",
+        "Certificat SSL",
+        "Domaine personnalisé",
+        "Modèles professionnels",
+        "Optimisation mobile"
+      ]
+    },
+    "pro": {
+      "name": "Pro",
+      "description": "Idéal pour les entreprises en croissance qui ont besoin de plus",
+      "price": {
+        "monthly": 59,
+        "annually": 49
+      },
+      "popular": true,
+      "features": [
+        "3 sites web",
+        "Personnalisation avancée",
+        "Analytiques détaillées",
+        "Support prioritaire",
+        "Fonctionnalités e-commerce",
+        "Suppression du branding Naveeg",
+        "Injection de code personnalisé",
+        "Intégrations avancées",
+        "Modèles premium",
+        "Optimisation SEO avancée"
+      ]
+    },
+    "business": {
+      "name": "Business",
+      "description": "Pour les agences et entreprises avec des besoins avancés",
+      "price": {
+        "monthly": 99,
+        "annually": 83
+      },
+      "features": [
+        "Sites web illimités",
+        "Solution marque blanche",
+        "Accès API",
+        "Support téléphonique 24/7",
+        "Analytiques avancées",
+        "Stockage illimité",
+        "Collaboration multi-utilisateurs",
+        "Intégrations personnalisées",
+        "Gestionnaire de compte dédié",
+        "Garantie SLA"
+      ]
+    }
+  },
+  "faq": {
+    "title": "FAQ Tarification",
+    "questions": [
+      {
+        "question": "Puis-je changer de plan à tout moment ?",
+        "answer": "Oui, vous pouvez mettre à niveau ou rétrograder votre plan à tout moment. Les changements prennent effet immédiatement."
+      },
+      {
+        "question": "Quels modes de paiement acceptez-vous ?",
+        "answer": "Nous acceptons toutes les cartes de crédit principales, PayPal et les virements bancaires pour les plans annuels."
+      },
+      {
+        "question": "Y a-t-il des frais d'installation ?",
+        "answer": "Non, il n'y a pas de frais d'installation ou de coûts cachés. Vous ne payez que l'abonnement mensuel ou annuel."
+      },
+      {
+        "question": "Offrez-vous des remboursements ?",
+        "answer": "Nous offrons une garantie satisfait ou remboursé de 30 jours sur tous les plans. Sans poser de questions."
+      },
+      {
+        "question": "Que se passe-t-il si je dépasse mes limites ?",
+        "answer": "Nous vous préviendrons avant d'atteindre vos limites et vous aiderons à passer à un plan adapté."
+      }
+    ]
+  },
+  "enterprise": {
+    "title": "Besoin de quelque chose de personnalisé ?",
+    "subtitle": "Contactez notre équipe commerciale pour des solutions entreprise",
+    "features": [
+      "Tarification personnalisée",
+      "Infrastructure dédiée",
+      "Sécurité avancée",
+      "Support prioritaire",
+      "Intégrations personnalisées"
+    ],
+    "contact": "Contacter les ventes"
+  }
+}

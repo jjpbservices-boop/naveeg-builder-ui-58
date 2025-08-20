@@ -1,0 +1,39 @@
+{
+  "title": "Nous sommes là pour vous aider",
+  "subtitle": "Contactez notre équipe",
+  "form": {
+    "name": "Nom complet",
+    "namePlaceholder": "Entrez votre nom complet",
+    "email": "Adresse email",
+    "emailPlaceholder": "Entrez votre adresse email",
+    "subject": "Sujet",
+    "subjectPlaceholder": "De quoi s'agit-il ?",
+    "message": "Message",
+    "messagePlaceholder": "Dites-nous comment nous pouvons vous aider...",
+    "send": "Envoyer le message",
+    "sending": "Envoi en cours...",
+    "success": "Merci ! Nous vous répondrons bientôt.",
+    "error": "Désolé, une erreur s'est produite lors de l'envoi de votre message. Veuillez réessayer."
+  },
+  "validation": {
+    "nameRequired": "Le nom est requis",
+    "emailRequired": "L'email est requis",
+    "emailInvalid": "Veuillez entrer une adresse email valide",
+    "subjectRequired": "Le sujet est requis",
+    "messageRequired": "Le message est requis",
+    "messageMinLength": "Le message doit contenir au moins 10 caractères"
+  },
+  "info": {
+    "title": "Autres moyens de nous joindre",
+    "email": "hello@naveeg.com",
+    "phone": "+33 1 23 45 67 89",
+    "address": "123 Rue des Affaires, Ville, Région 12345",
+    "hours": "Lundi - Vendredi : 9h - 18h (CET)"
+  },
+  "support": {
+    "title": "Besoin d'aide avec votre site web ?",
+    "description": "Consultez notre centre d'aide pour des tutoriels et guides",
+    "helpCenter": "Visiter le centre d'aide",
+    "documentation": "Voir la documentation"
+  }
+}

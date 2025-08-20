@@ -2,9 +2,12 @@
   "hero": {
     "title": "Rome wasn't built in a day — but your website will be.",
     "subtitle": "With Naveeg, generate a professional website in just minutes. No code, no stress.",
-    "inputPlaceholder": "Describe your business (e.g., Local law firm in downtown)",
+    "inputPlaceholder": "Enter your business name…",
     "ctaButton": "Generate My Website",
     "helper": "Your site will be ready within minutes after you click generate."
+  },
+  "trialBanner": {
+    "text": "Start with a 14-day free trial on a Naveeg subdomain. No credit card required."
   },
   "socialProof": {
     "title": "Trusted by thousands of businesses",
@@ -15,15 +18,15 @@
     "subtitle": "Get your website up and running in three simple steps",
     "steps": [
       {
-        "title": "Describe Your Business",
-        "description": "Tell us about your business in a few words"
+        "title": "Tell us about your business",
+        "description": "Describe your company in a few words"
       },
       {
-        "title": "Customize Your Design",
-        "description": "Choose colors, fonts, and layout preferences"
+        "title": "Pick your style and colors",
+        "description": "Choose colors, fonts, and design preferences"
       },
       {
-        "title": "Launch Your Website",
+        "title": "Generate your website in minutes",
         "description": "Your professional website is ready to go live"
       }
     ]
@@ -33,34 +36,34 @@
     "subtitle": "Built for modern businesses that want to get online fast",
     "cards": [
       {
-        "title": "Lightning Fast Generation",
-        "description": "Get your website ready in under 30 seconds with our AI-powered builder",
-        "icon": "zap"
-      },
-      {
-        "title": "Mobile-First Design",
+        "title": "Mobile-first design",
         "description": "Every website is optimized for mobile devices and looks perfect everywhere",
         "icon": "smartphone"
       },
       {
-        "title": "SEO Optimized",
+        "title": "SEO optimization included",
         "description": "Built-in SEO features to help your business get found on search engines",
         "icon": "search"
       },
       {
-        "title": "Secure & Reliable",
-        "description": "Enterprise-grade security with 99.9% uptime guarantee",
-        "icon": "shield"
-      },
-      {
-        "title": "Easy Customization",
+        "title": "Custom colors & fonts",
         "description": "Change colors, fonts, and content without any technical knowledge",
         "icon": "palette"
       },
       {
-        "title": "24/7 Support",
+        "title": "Fast & secure hosting",
+        "description": "Enterprise-grade security with 99.9% uptime guarantee",
+        "icon": "shield"
+      },
+      {
+        "title": "Simple dashboard",
         "description": "Get help whenever you need it with our dedicated support team",
-        "icon": "headphones"
+        "icon": "settings"
+      },
+      {
+        "title": "Free 14-day trial",
+        "description": "Get your website ready in under 30 seconds with our AI-powered builder",
+        "icon": "zap"
       }
     ]
   },
@@ -68,15 +71,15 @@
     "title": "Why choose Naveeg?",
     "blocks": [
       {
-        "title": "No Code Required",
-        "description": "Build professional websites without writing a single line of code. Our AI handles all the technical complexity."
-      },
-      {
-        "title": "Instant Results",
+        "title": "Save time — launch in minutes, not weeks",
         "description": "Don't wait weeks for your website. Get online in minutes with our lightning-fast generation process."
       },
       {
-        "title": "Built for Growth",
+        "title": "No skills needed — built for non-technical users",
+        "description": "Build professional websites without writing a single line of code. Our AI handles all the technical complexity."
+      },
+      {
+        "title": "Grow online — optimized for visibility and conversions",
         "description": "Start simple and scale up. Add features and functionality as your business grows."
       }
     ]

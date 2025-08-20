@@ -1,0 +1,77 @@
+{
+  "title": "Galerie",
+  "subtitle": "Découvrez les sites incroyables créés avec Naveeg",
+  "filter": {
+    "all": "Tous",
+    "restaurant": "Restaurant",
+    "services": "Services",
+    "retail": "Commerce",
+    "portfolio": "Portfolio",
+    "blog": "Blog",
+    "ecommerce": "E-commerce"
+  },
+  "viewDemo": "Voir la démo",
+  "visitSite": "Visiter le site",
+  "sites": [
+    {
+      "name": "Restaurant Bella Vista",
+      "category": "restaurant",
+      "description": "Ils ont créé ceci avec Naveeg - Expérience culinaire italienne authentique au cœur de la ville"
+    },
+    {
+      "name": "Cabinet Smith & Associés",
+      "category": "services",
+      "description": "Ils ont créé ceci avec Naveeg - Services juridiques professionnels avec plus de 20 ans d'expérience"
+    },
+    {
+      "name": "Studio Minimaliste Moderne",
+      "category": "portfolio",
+      "description": "Ils ont créé ceci avec Naveeg - Portfolio créatif présentant des projets innovants"
+    },
+    {
+      "name": "Boutique TechStyle",
+      "category": "retail",
+      "description": "Ils ont créé ceci avec Naveeg - Mode sélectionnée pour le professionnel moderne"
+    },
+    {
+      "name": "Paysagisme Main Verte",
+      "category": "services",
+      "description": "Ils ont créé ceci avec Naveeg - Transformez votre espace extérieur avec un aménagement professionnel"
+    },
+    {
+      "name": "Blog Dose Quotidienne",
+      "category": "blog",
+      "description": "Ils ont créé ceci avec Naveeg - Conseils de style de vie et bien-être pour la vie quotidienne"
+    },
+    {
+      "name": "Café Artisan Co.",
+      "category": "restaurant",
+      "description": "Ils ont créé ceci avec Naveeg - Café de spécialité torréfié frais quotidiennement"
+    },
+    {
+      "name": "Salle de Sport Fitness First",
+      "category": "services",
+      "description": "Ils ont créé ceci avec Naveeg - Installation de fitness à la pointe avec entraînement personnel"
+    },
+    {
+      "name": "Galerie Creative Works",
+      "category": "portfolio",
+      "description": "Ils ont créé ceci avec Naveeg - Galerie d'art contemporain présentant des artistes locaux"
+    },
+    {
+      "name": "Magasin Home Essentials",
+      "category": "ecommerce",
+      "description": "Ils ont créé ceci avec Naveeg - Tout ce dont vous avez besoin pour une belle maison"
+    },
+    {
+      "name": "Blog Wellness Journey",
+      "category": "blog",
+      "description": "Ils ont créé ceci avec Naveeg - Histoires inspirantes et conseils pour le bien-être holistique"
+    },
+    {
+      "name": "Food Truck Urban Bites",
+      "category": "restaurant",
+      "description": "Ils ont créé ceci avec Naveeg - Cuisine de rue gastronomique avec une touche moderne"
+    }
+  ]
+}

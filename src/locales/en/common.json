@@ -52,7 +52,34 @@
   "header": {
     "logoAlt": "Naveeg Website Builder",
     "generateWebsite": "Generate Your Website",
-    "changeLanguage": "Change language"
+    "changeLanguage": "Change language",
+    "nav": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "gallery": "Gallery",
+      "faq": "FAQ",
+      "contact": "Contact"
+    }
+  },
+  "footer": {
+    "product": "Product",
+    "features": "Features",
+    "pricing": "Pricing",
+    "templates": "Templates",
+    "company": "Company",
+    "about": "About",
+    "blog": "Blog",
+    "careers": "Careers",
+    "resources": "Resources",
+    "help": "Help",
+    "documentation": "Documentation",
+    "support": "Support",
+    "legal": "Legal",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "cookies": "Cookies",
+    "copyright": "© 2024 Naveeg. All rights reserved.",
+    "languageSelector": "Select language"
   },
   "forms": {
     "required": "This field is required",

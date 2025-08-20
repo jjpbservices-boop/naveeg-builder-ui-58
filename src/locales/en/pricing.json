@@ -3,7 +3,7 @@
   "subtitle": "Choose the perfect plan for your business needs",
   "monthly": "Monthly",
   "annually": "Annually",
-  "save": "Save 20%",
+  "save": "2 months free",
   "mostPopular": "Most Popular",
   "getStarted": "Get Started",
   "contactSales": "Contact Sales",
@@ -14,8 +14,8 @@
       "name": "Starter",
       "description": "Perfect for small businesses and personal projects",
       "price": {
-        "monthly": 9,
-        "annually": 7
+        "monthly": 29,
+        "annually": 24
       },
       "features": [
         "1 Website",
@@ -32,8 +32,8 @@
       "name": "Pro", 
       "description": "Ideal for growing businesses that need more features",
       "price": {
-        "monthly": 29,
-        "annually": 23
+        "monthly": 59,
+        "annually": 49
       },
       "popular": true,
       "features": [
@@ -54,7 +54,7 @@
       "description": "For agencies and enterprises with advanced needs",
       "price": {
         "monthly": 99,
-        "annually": 79
+        "annually": 83
       },
       "features": [
         "Unlimited websites",

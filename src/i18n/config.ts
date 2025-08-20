@@ -4,6 +4,13 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 
 // Import locale files for full translations
 import commonEn from '@/locales/en/common.json';
+import homeEn from '@/locales/en/home.json';
+import featuresEn from '@/locales/en/features.json';
+import pricingEn from '@/locales/en/pricing.json';
+import galleryEn from '@/locales/en/gallery.json';
+import faqEn from '@/locales/en/faq.json';
+import contactEn from '@/locales/en/contact.json';
+import legalEn from '@/locales/en/legal.json';
 import onboardingEn from '@/locales/en/onboarding.json';
 import designEn from '@/locales/en/design.json';
 import progressEn from '@/locales/en/progress.json';
@@ -19,6 +26,13 @@ import billingEn from '@/locales/en/billing.json';
 import errorsEn from '@/locales/en/errors.json';
 
 import commonFr from '@/locales/fr/common.json';
+import homeFr from '@/locales/fr/home.json';
+import featuresFr from '@/locales/fr/features.json';
+import pricingFr from '@/locales/fr/pricing.json';
+import galleryFr from '@/locales/fr/gallery.json';
+import faqFr from '@/locales/fr/faq.json';
+import contactFr from '@/locales/fr/contact.json';
+import legalFr from '@/locales/fr/legal.json';
 import onboardingFr from '@/locales/fr/onboarding.json';
 import designFr from '@/locales/fr/design.json';
 import progressFr from '@/locales/fr/progress.json';
@@ -35,32 +49,7 @@ import errorsFr from '@/locales/fr/errors.json';
 
 // Supported locales
 export const supportedLocales = [
-  'en', 'en-GB', 'en-IE', 'en-MT',
-  'fr', 'fr-FR', 'fr-BE', 'fr-LU', 
-  'de', 'de-DE', 'de-AT', 'de-LU', 'de-LI',
-  'it', 'it-IT',
-  'es', 'es-ES',
-  'pt', 'pt-PT',
-  'nl', 'nl-NL', 'nl-BE',
-  'sv', 'sv-SE',
-  'da', 'da-DK',
-  'fi', 'fi-FI',
-  'no', 'no-NO',
-  'is', 'is-IS',
-  'et', 'et-EE',
-  'lv', 'lv-LV',
-  'lt', 'lt-LT',
-  'pl', 'pl-PL',
-  'cs', 'cs-CZ',
-  'sk', 'sk-SK',
-  'sl', 'sl-SI',
-  'hu', 'hu-HU',
-  'ro', 'ro-RO',
-  'bg', 'bg-BG',
-  'el', 'el-GR',
-  'hr', 'hr-HR',
-  'ga', 'ga-IE',
-  'mt', 'mt-MT'
+  'en', 'fr', 'es', 'pt', 'it'
 ] as const;
 
 export type SupportedLocale = typeof supportedLocales[number];
@@ -68,6 +57,13 @@ export type SupportedLocale = typeof supportedLocales[number];
 const resources = {
   en: {
     common: commonEn,
+    home: homeEn,
+    features: featuresEn,
+    pricing: pricingEn,
+    gallery: galleryEn,
+    faq: faqEn,
+    contact: contactEn,
+    legal: legalEn,
     onboarding: onboardingEn,
     design: designEn,
     progress: progressEn,
@@ -84,6 +80,13 @@ const resources = {
   },
   fr: {
     common: commonFr,
+    home: homeFr,
+    features: featuresFr,
+    pricing: pricingFr,
+    gallery: galleryFr,
+    faq: faqFr,
+    contact: contactFr,
+    legal: legalFr,
     onboarding: onboardingFr,
     design: designFr,
     progress: progressFr,
@@ -97,8 +100,79 @@ const resources = {
     workspace: workspaceFr,
     billing: billingFr,
     errors: errorsFr,
+  },
+  es: {
+    // ES translations with EN fallback
+    common: commonEn,
+    home: homeEn,
+    features: featuresEn,
+    pricing: pricingEn,
+    gallery: galleryEn,
+    faq: faqEn,
+    contact: contactEn,
+    legal: legalEn,
+    onboarding: onboardingEn,
+    design: designEn,
+    progress: progressEn,
+    preview: previewEn,
+    dashboard: dashboardEn,
+    analytics: analyticsEn,
+    domain: domainEn,
+    backup: backupEn,
+    cache: cacheEn,
+    security: securityEn,
+    workspace: workspaceEn,
+    billing: billingEn,
+    errors: errorsEn,
+  },
+  pt: {
+    // PT translations with EN fallback
+    common: commonEn,
+    home: homeEn,
+    features: featuresEn,
+    pricing: pricingEn,
+    gallery: galleryEn,
+    faq: faqEn,
+    contact: contactEn,
+    legal: legalEn,
+    onboarding: onboardingEn,
+    design: designEn,
+    progress: progressEn,
+    preview: previewEn,
+    dashboard: dashboardEn,
+    analytics: analyticsEn,
+    domain: domainEn,
+    backup: backupEn,
+    cache: cacheEn,
+    security: securityEn,
+    workspace: workspaceEn,
+    billing: billingEn,
+    errors: errorsEn,
+  },
+  it: {
+    // IT translations with EN fallback
+    common: commonEn,
+    home: homeEn,
+    features: featuresEn,
+    pricing: pricingEn,
+    gallery: galleryEn,
+    faq: faqEn,
+    contact: contactEn,
+    legal: legalEn,
+    onboarding: onboardingEn,
+    design: designEn,
+    progress: progressEn,
+    preview: previewEn,
+    dashboard: dashboardEn,
+    analytics: analyticsEn,
+    domain: domainEn,
+    backup: backupEn,
+    cache: cacheEn,
+    security: securityEn,
+    workspace: workspaceEn,
+    billing: billingEn,
+    errors: errorsEn,
   }
-  // Other locales will be lazy-loaded with fallback to English
 };
 
 i18n

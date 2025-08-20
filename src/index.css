@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 /* Naveeg Website Builder Design System
-   Primary: #FF7A00 (24 58% 50%)
+   Primary: #FF4A1C (12 100% 56%)
    Mobile-first, rounded-2xl cards, soft shadows, 44px touch targets
 */
 
@@ -20,10 +20,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 221 39% 11%;
 
-    --primary: 14 100% 55%;
+    --primary: 12 100% 56%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 14 100% 50%;
-    --primary-light: 14 100% 95%;
+    --primary-hover: 12 100% 51%;
+    --primary-light: 12 100% 95%;
 
     --secondary: 210 40% 96%;
     --secondary-foreground: 221 39% 11%;
@@ -31,8 +31,8 @@
     --muted: 220 14% 96%;
     --muted-foreground: 220 9% 46%;
 
-    --accent: 24 100% 95%;
-    --accent-foreground: 24 100% 20%;
+    --accent: 12 100% 95%;
+    --accent-foreground: 12 100% 20%;
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
@@ -45,7 +45,7 @@
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 14 100% 55%;
+    --ring: 12 100% 56%;
 
     --radius: 1rem;
 
@@ -76,10 +76,10 @@
     --popover: 221 39% 11%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 14 100% 60%;
+    --primary: 12 100% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 14 100% 65%;
-    --primary-light: 14 100% 15%;
+    --primary-hover: 12 100% 65%;
+    --primary-light: 12 100% 15%;
 
     --secondary: 221 30% 18%;
     --secondary-foreground: 0 0% 100%;
@@ -87,8 +87,8 @@
     --muted: 221 30% 18%;
     --muted-foreground: 217 10% 65%;
 
-    --accent: 24 100% 15%;
-    --accent-foreground: 24 100% 80%;
+    --accent: 12 100% 15%;
+    --accent-foreground: 12 100% 80%;
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
@@ -101,7 +101,7 @@
 
     --border: 221 30% 18%;
     --input: 221 30% 18%;
-    --ring: 14 100% 60%;
+    --ring: 12 100% 60%;
   }
 }
 

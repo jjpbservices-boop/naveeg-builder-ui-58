@@ -1,0 +1,108 @@
+{
+  "hero": {
+    "title": "Roma non è stata costruita in un giorno — ma il tuo sito web sì.",
+    "subtitle": "Con Naveeg, crea un sito web professionale in pochi minuti. Niente codice, zero stress.",
+    "inputPlaceholder": "Inserisci il nome della tua attività…",
+    "ctaButton": "Genera il mio sito web",
+    "helper": "Il tuo sito sarà pronto in pochi minuti dopo aver cliccato su genera."
+  },
+  "trialBanner": {
+    "text": "Inizia con una prova gratuita di 14 giorni su un sottodominio Naveeg. Nessuna carta richiesta."
+  },
+  "socialProof": {
+    "title": "Fiducia di migliaia di aziende",
+    "logos": ["Azienda A", "Azienda B", "Azienda C", "Azienda D", "Azienda E"]
+  },
+  "howItWorks": {
+    "title": "Come funziona",
+    "subtitle": "Metti online il tuo sito web in tre semplici passaggi",
+    "steps": [
+      {
+        "title": "Parlaci della tua attività",
+        "description": "Descrivi la tua azienda in poche parole"
+      },
+      {
+        "title": "Scegli il tuo stile e colori",
+        "description": "Seleziona colori, font e preferenze di design"
+      },
+      {
+        "title": "Genera il tuo sito web in minuti",
+        "description": "Il tuo sito web professionale sarà pronto per andare online"
+      }
+    ]
+  },
+  "features": {
+    "title": "Tutto ciò di cui hai bisogno per avere successo online",
+    "subtitle": "Costruito per aziende moderne che vogliono essere online velocemente",
+    "cards": [
+      {
+        "title": "Design mobile-first",
+        "description": "Tutti i siti web sono ottimizzati per dispositivi mobili e appaiono perfetti ovunque",
+        "icon": "smartphone"
+      },
+      {
+        "title": "Ottimizzazione SEO inclusa",
+        "description": "Funzionalità SEO integrate per aiutare la tua attività a essere trovata sui motori di ricerca",
+        "icon": "search"
+      },
+      {
+        "title": "Colori e font personalizzati",
+        "description": "Cambia colori, font e contenuti senza alcuna conoscenza tecnica",
+        "icon": "palette"
+      },
+      {
+        "title": "Hosting veloce e sicuro",
+        "description": "Sicurezza di livello aziendale con garanzia di uptime del 99.9%",
+        "icon": "shield"
+      },
+      {
+        "title": "Dashboard semplice",
+        "description": "Ottieni aiuto quando ne hai bisogno con il nostro team di supporto dedicato",
+        "icon": "settings"
+      },
+      {
+        "title": "Prova gratuita di 14 giorni",
+        "description": "Generazione ultra-veloce con il nostro costruttore alimentato da AI",
+        "icon": "zap"
+      }
+    ]
+  },
+  "whyNaveeg": {
+    "title": "Perché scegliere Naveeg?",
+    "blocks": [
+      {
+        "title": "Risparmia tempo — lancia in minuti, non settimane",
+        "description": "Non aspettare settimane per il tuo sito web. Vai online in minuti con il nostro processo di generazione ultra-veloce."
+      },
+      {
+        "title": "Nessuna competenza necessaria — costruito per utenti non tecnici",
+        "description": "Costruisci siti web professionali senza scrivere una singola riga di codice. La nostra AI gestisce tutta la complessità tecnica."
+      },
+      {
+        "title": "Cresci online — ottimizzato per visibilità e conversioni",
+        "description": "Inizia semplice e evolvi. Aggiungi funzionalità man mano che la tua attività cresce."
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Prezzi semplici e trasparenti",
+    "subtitle": "Scegli il piano giusto per la tua attività",
+    "viewAll": "Vedi tutti i piani"
+  },
+  "gallery": {
+    "title": "Costruito con Naveeg",
+    "subtitle": "Guarda cosa hanno creato i nostri clienti",
+    "viewAll": "Vedi galleria"
+  },
+  "faq": {
+    "title": "Domande frequenti",
+    "subtitle": "Tutto quello che devi sapere su Naveeg",
+    "viewAll": "Vedi tutte le FAQ"
+  },
+  "ctaBanner": {
+    "title": "Pronto a costruire il tuo sito web?",
+    "subtitle": "Unisciti a migliaia di aziende che si fidano di Naveeg per la loro presenza online",
+    "button": "Inizia ora",
+    "helper": "Nessuna carta richiesta • Prova gratuita di 14 giorni"
+  }
+}
