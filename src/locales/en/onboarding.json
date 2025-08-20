@@ -1,0 +1,39 @@
+{
+  "heroTitle": "Create Your Website in 30 Seconds",
+  "heroSubtitle": "No coding required. Just describe your business and watch your professional website come to life.",
+  "businessPlaceholder": "e.g., Smith & Associates Law Firm",
+  "generateButton": "Generate",
+  "describeTitle": "Describe Your Business",
+  "describeSubtitle": "Tell us about your business and we'll create the perfect website for you.",
+  "describeTextarea": "Type your business name and briefly describe your business, products, or services. Be as detailed as you'd like - the more information you provide, the better we can tailor your website.",
+  "generateWebsiteButton": "Generate Your Website",
+  "wizard": {
+    "step1": "Site Brief",
+    "step2": "Design",
+    "completed": "Completed"
+  },
+  "brief": {
+    "title": "Tell Us About Your Business",
+    "subtitle": "Help us create the perfect website by providing some basic information about your business.",
+    "businessName": "Business Name",
+    "businessNamePlaceholder": "Enter your business name",
+    "businessType": "Business Type",
+    "businessTypeOptions": {
+      "informational": "Informational",
+      "ecommerce": "E-commerce",
+      "restaurant": "Restaurant",
+      "services": "Services",
+      "portfolio": "Portfolio",
+      "blog": "Blog"
+    },
+    "businessDescription": "Business Description",
+    "businessDescriptionPlaceholder": "Describe your business, products, or services...",
+    "websiteTitle": "Website Title (SEO)",
+    "websiteTitlePlaceholder": "Title that appears in search results",
+    "websiteDescription": "Website Description (SEO)",
+    "websiteDescriptionPlaceholder": "Brief description for search engines (160 characters max)",
+    "websiteKeyphrase": "Website Keyphrase (SEO)",
+    "websiteKeyphrasePlaceholder": "Main keyword or phrase for SEO",
+    "nextStep": "Next Step"
+  }
+}

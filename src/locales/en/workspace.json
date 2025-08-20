@@ -1,0 +1,41 @@
+{
+  "title": "Workspace",
+  "subtitle": "Manage all your websites and collaborate with your team.",
+  "header": {
+    "workspaceName": "My Workspace",
+    "addCollaborator": "Add Collaborator"
+  },
+  "websites": {
+    "title": "Your Websites",
+    "empty": "No websites yet",
+    "emptyDescription": "Create your first website to get started.",
+    "addWebsite": "Add Website",
+    "manage": "Manage",
+    "created": "Created {date}",
+    "lastUpdated": "Updated {date}",
+    "status": {
+      "live": "Live",
+      "draft": "Draft",
+      "maintenance": "Maintenance"
+    }
+  },
+  "collaborators": {
+    "title": "Team Members",
+    "invite": "Invite Team Member",
+    "email": "Email address",
+    "role": "Role",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "editor": "Editor",
+      "viewer": "Viewer"
+    },
+    "pending": "Pending invitation",
+    "remove": "Remove access"
+  },
+  "stats": {
+    "totalWebsites": "{count, plural, =0 {No websites} =1 {1 website} other {{count} websites}}",
+    "totalVisitors": "{count, plural, =0 {No visitors} =1 {1 visitor} other {{count} visitors}}",
+    "thisMonth": "this month"
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "title": "Billing Information",
+  "subtitle": "Manage your billing details and view your invoices. All information is securely encrypted.",
+  "form": {
+    "accountType": "Account Type",
+    "individual": "Individual",
+    "company": "Company",
+    "legalName": "Legal Name",
+    "legalNamePlaceholder": "Enter full legal name or company name",
+    "billingEmail": "Billing Email",
+    "billingEmailPlaceholder": "billing@example.com",
+    "address": {
+      "line1": "Address Line 1",
+      "line1Placeholder": "Street address",
+      "line2": "Address Line 2",
+      "line2Placeholder": "Apartment, suite, etc. (optional)",
+      "city": "City",
+      "cityPlaceholder": "City",
+      "postalCode": "Postal Code",
+      "postalCodePlaceholder": "Postal code",
+      "country": "Country"
+    },
+    "vat": {
+      "hasVatNumber": "I have an EU VAT number",
+      "vatNumber": "VAT Number",
+      "vatNumberPlaceholder": "Enter your VAT number",
+      "formatHint": "Format: {format}"
+    },
+    "invoicing": {
+      "language": "Invoicing Language",
+      "currency": "Display Currency"
+    }
+  },
+  "taxSummary": {
+    "title": "Tax Summary",
+    "reverseCharge": "Reverse charge may apply for B2B transactions",
+    "localVat": "Local VAT may apply",
+    "vatRate": "VAT Rate: {rate}%"
+  },
+  "actions": {
+    "save": "Save Billing Info",
+    "previewInvoice": "Preview Invoice"
+  },
+  "invoice": {
+    "title": "Invoice Preview",
+    "invoiceNumber": "Invoice #{number}",
+    "date": "Date: {date}",
+    "dueDate": "Due Date: {date}",
+    "billTo": "Bill To:",
+    "description": "Description",
+    "amount": "Amount",
+    "subtotal": "Subtotal",
+    "vat": "VAT ({rate}%)",
+    "total": "Total",
+    "paymentTerms": "Payment Terms: Net 30 days",
+    "thankYou": "Thank you for your business!"
+  },
+  "validation": {
+    "legalNameRequired": "Legal name is required",
+    "emailRequired": "Billing email is required",
+    "invalidEmail": "Please enter a valid email address",
+    "addressRequired": "Address is required",
+    "cityRequired": "City is required",
+    "postalCodeRequired": "Postal code is required",
+    "countryRequired": "Please select a country",
+    "vatNumberRequired": "VAT number is required when selected",
+    "invalidVatNumber": "Please enter a valid VAT number"
+  }
+}

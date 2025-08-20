@@ -1,0 +1,82 @@
+{
+  "global": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "visit": "Visit",
+    "preview": "Preview",
+    "generate": "Generate",
+    "create": "Create",
+    "manage": "Manage",
+    "settings": "Settings",
+    "dashboard": "Dashboard",
+    "workspace": "Workspace",
+    "website": "Website",
+    "websites": "Websites",
+    "overview": "Overview",
+    "analytics": "Analytics",
+    "domain": "Domain",
+    "backup": "Backup",
+    "cache": "Cache",
+    "security": "Security",
+    "billing": "Billing",
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "auto": "Auto"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "services": "Services",
+    "menu": "Menu",
+    "gallery": "Gallery",
+    "events": "Events",
+    "contact": "Contact",
+    "blog": "Blog",
+    "portfolio": "Portfolio"
+  },
+  "header": {
+    "logoAlt": "Naveeg Website Builder",
+    "generateWebsite": "Generate Your Website",
+    "changeLanguage": "Change language"
+  },
+  "forms": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email address",
+    "invalidUrl": "Please enter a valid URL",
+    "tooShort": "This field is too short",
+    "tooLong": "This field is too long",
+    "mustMatch": "Fields must match",
+    "selectOption": "Please select an option"
+  },
+  "time": {
+    "justNow": "Just now",
+    "minutesAgo": "{minutes, plural, =1 {1 minute ago} other {{minutes} minutes ago}}",
+    "hoursAgo": "{hours, plural, =1 {1 hour ago} other {{hours} hours ago}}",
+    "daysAgo": "{days, plural, =1 {1 day ago} other {{days} days ago}}",
+    "weeksAgo": "{weeks, plural, =1 {1 week ago} other {{weeks} weeks ago}}"
+  },
+  "notifications": {
+    "settingsSaved": "Settings saved successfully",
+    "websiteCreated": "Website created successfully",
+    "backupCreated": "Backup created successfully",
+    "cacheCleared": "Cache cleared successfully",
+    "domainConnected": "Domain connected successfully",
+    "paymentProcessed": "Payment processed successfully",
+    "error": "An error occurred. Please try again."
+  }
+}

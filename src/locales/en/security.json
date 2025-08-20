@@ -1,0 +1,48 @@
+{
+  "title": "Security Settings",
+  "subtitle": "Keep your website secure with advanced security features.",
+  "ssl": {
+    "title": "SSL Certificate",
+    "active": "Active",
+    "inactive": "Inactive",
+    "description": "SSL certificates encrypt data between your website and visitors.",
+    "expires": "Expires: {date}",
+    "autoRenewal": "Auto-renewal enabled"
+  },
+  "credentials": {
+    "title": "WordPress Credentials",
+    "description": "Your WordPress admin login credentials for direct access.",
+    "username": "Username",
+    "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "copyUsername": "Copy username",
+    "copyPassword": "Copy password"
+  },
+  "features": {
+    "title": "Security Features",
+    "firewall": {
+      "title": "Web Application Firewall",
+      "description": "Protects against malicious attacks and suspicious traffic"
+    },
+    "malwareScan": {
+      "title": "Malware Scanning",
+      "description": "Regular scans to detect and remove malicious code"
+    },
+    "autoUpdates": {
+      "title": "Automatic Updates",
+      "description": "Keep WordPress and plugins updated automatically"
+    }
+  },
+  "status": {
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "scanning": "Scanning...",
+    "updating": "Updating..."
+  },
+  "lastScan": "Last scan: {date}",
+  "threats": {
+    "none": "No threats detected",
+    "found": "{count, plural, =1 {1 threat found} other {{count} threats found}}"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Construction de votre site web",
+  "subtitle": "Veuillez patienter pendant que nous créons votre site web professionnel...",
+  "steps": {
+    "creating": "Création de la structure du site web",
+    "sitemap": "Génération du plan du site et de la navigation",
+    "designing": "Conception des pages avec vos préférences",
+    "navigation": "Configuration de la navigation et des menus",
+    "optimizing": "Optimisation pour tous les appareils",
+    "speed": "Amélioration de la vitesse et des performances",
+    "finalizing": "Finalisation de la mise en page et du contenu"
+  }
+}

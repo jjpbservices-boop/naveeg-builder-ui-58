@@ -1,0 +1,33 @@
+{
+  "title": "Domain Settings",
+  "subtitle": "Manage your website's domain and SSL certificate.",
+  "current": {
+    "title": "Current Domain",
+    "copyUrl": "Copy URL",
+    "visitSite": "Visit Site"
+  },
+  "custom": {
+    "title": "Custom Domain",
+    "subtitle": "Connect your own domain to your website",
+    "placeholder": "yourdomain.com",
+    "addButton": "Add Custom Domain",
+    "instructions": "Enter your domain name without http:// or https://",
+    "verification": {
+      "title": "Domain Verification",
+      "description": "To verify your domain ownership, add this DNS record:",
+      "type": "Type",
+      "name": "Name",
+      "value": "Value",
+      "pending": "Verification pending...",
+      "verified": "Domain verified",
+      "failed": "Verification failed"
+    }
+  },
+  "ssl": {
+    "title": "SSL Certificate",
+    "active": "SSL Certificate Active",
+    "inactive": "SSL Certificate Inactive",
+    "description": "SSL certificates encrypt the connection between your website and your visitors, ensuring their data is secure. This is essential for building trust and improving your search engine rankings.",
+    "autoRenewal": "Automatic renewal enabled"
+  }
+}
