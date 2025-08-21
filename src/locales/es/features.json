@@ -9,7 +9,7 @@
     },
     {
       "icon": "smartphone",
-      "title": "Responsive Design",
+      "title": "Diseño Responsive",
       "description": "Todos los sitios web están optimizados para móviles desde el primer momento. Se ven perfectos en cualquier dispositivo."
     },
     {
@@ -32,5 +32,9 @@
       "title": "Panel Simple",
       "description": "Gestiona todo tu sitio web desde un panel intuitivo y fácil de usar."
     }
-  ]
+  ],
+  "comparison": {
+    "title": "¿Por qué elegir Naveeg?",
+    "subtitle": "Compara nuestras características con la competencia"
+  }
 }

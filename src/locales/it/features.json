@@ -32,5 +32,9 @@
       "title": "Dashboard Semplice",
       "description": "Gestisci tutto il tuo sito web da un pannello intuitivo e facile da usare."
     }
-  ]
+  ],
+  "comparison": {
+    "title": "Perché scegliere Naveeg?",
+    "subtitle": "Confronta le nostre funzionalità con la concorrenza"
+  }
 }

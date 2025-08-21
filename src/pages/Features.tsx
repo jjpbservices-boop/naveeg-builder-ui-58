@@ -12,11 +12,19 @@ const Features: React.FC = () => {
     'backup', 'domains', 'templates', 'ecommerce'
   ];
 
-  const comparisonFeatures = [
-    'AI-powered generation', 'Mobile-first design', 'SEO optimization', 
-    'Custom domains', 'SSL certificates', '24/7 support', 
-    'E-commerce ready', 'Advanced analytics', 'Automatic backups', 'No coding required'
-  ];
+    // Replace hard-coded strings in Features component
+    const comparisonFeatures = [
+      t('comparison.features.0', { defaultValue: 'AI-powered generation' }),
+      t('comparison.features.1', { defaultValue: 'Mobile-first design' }),
+      t('comparison.features.2', { defaultValue: 'SEO optimization' }),
+      t('comparison.features.3', { defaultValue: 'Custom domains' }),
+      t('comparison.features.4', { defaultValue: 'SSL certificates' }),
+      t('comparison.features.5', { defaultValue: '24/7 support' }),
+      t('comparison.features.6', { defaultValue: 'E-commerce ready' }),
+      t('comparison.features.7', { defaultValue: 'Advanced analytics' }),
+      t('comparison.features.8', { defaultValue: 'Automatic backups' }),
+      t('comparison.features.9', { defaultValue: 'No coding required' })
+    ];
 
   const competitors = ['Naveeg', 'Competitor A', 'Competitor B', 'Competitor C'];
   
@@ -123,16 +131,16 @@ const Features: React.FC = () => {
         <div className="text-center">
           <div className="bg-gradient-primary rounded-3xl p-8 md:p-12 text-white">
             <h2 className="font-syne text-3xl md:text-4xl font-bold mb-4">
-              Ready to experience the difference?
+              {t('cta.title', { defaultValue: 'Ready to experience the difference?' })}
             </h2>
             <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-              Join thousands of businesses that chose Naveeg for their online presence
+              {t('cta.subtitle', { defaultValue: 'Join thousands of businesses that chose Naveeg for their online presence' })}
             </p>
             <Button 
               size="lg" 
               className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 touch-target"
             >
-              Start Building Now
+              {t('cta.button', { defaultValue: 'Start Building Now' })}
             </Button>
           </div>
         </div>

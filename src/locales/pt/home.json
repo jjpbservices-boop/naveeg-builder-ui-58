@@ -1,164 +1,150 @@
 {
   "hero": {
-    "title": "Crie seu site em 30 segundos",
-    "subtitle": "Sem programação necessária. Apenas descreva seu negócio e veja seu site profissional ganhar vida.",
-    "placeholder": "ex. Escritório de Advocacia Smith & Associados",
-    "cta": "Gerar site",
-    "helper": "Grátis, sem cartão de crédito necessário"
+    "title": "Roma não foi construída num dia — mas o seu website será.",
+    "subtitle": "Com Naveeg, gere um website profissional em apenas minutos. Sem código, sem stress.",
+    "inputPlaceholder": "Introduza o nome da sua empresa…",
+    "ctaButton": "Gerar o Meu Website",
+    "helper": "O seu site estará pronto em minutos depois de clicar em gerar."
   },
-  "trial": {
-    "text": "Teste gratuito de 14 dias - Sem cartão de crédito necessário"
+  "trialBanner": {
+    "text": "Comece com um teste gratuito de 14 dias num subdomínio Naveeg. Não é necessário cartão de crédito."
   },
   "socialProof": {
-    "title": "Confiado por empresas ao redor do mundo",
-    "companies": ["TechCorp", "Design Studio", "Local Cafe", "Consulting Group", "Creative Agency"]
+    "title": "Confiado por milhares de empresas",
+    "logos": ["Empresa A", "Empresa B", "Empresa C", "Empresa D", "Empresa E"]
   },
   "howItWorks": {
     "title": "Como funciona",
-    "subtitle": "Da ideia ao site em minutos",
+    "subtitle": "Coloque o seu website online em três passos simples",
     "steps": [
       {
-        "title": "Descreva seu negócio",
-        "description": "Conte-nos sobre sua empresa, produtos ou serviços. Quanto mais detalhado, melhor."
+        "title": "Conte-nos sobre o seu negócio",
+        "description": "Descreva a sua empresa em poucas palavras"
       },
       {
-        "title": "Escolha seu design",
-        "description": "Selecione cores, fontes e estilo que representem sua marca."
+        "title": "Escolha o seu estilo e cores",
+        "description": "Selecione cores, fontes e preferências de design"
       },
       {
-        "title": "Seu site está pronto!",
-        "description": "Obtenha um site totalmente funcional, otimizado para mobile e pronto para usar."
+        "title": "Gere o seu website em minutos",
+        "description": "O seu website profissional está pronto para ficar online"
       }
     ]
   },
   "features": {
-    "title": "Tudo que você precisa incluído",
-    "subtitle": "Recursos poderosos sem a complexidade",
+    "title": "Tudo o que precisa para ter sucesso online",
+    "subtitle": "Construído para empresas modernas que querem estar online rapidamente",
     "cards": [
       {
-        "icon": "zap",
-        "title": "Geração instantânea",
-        "description": "Crie sites profissionais em minutos, não semanas."
+        "title": "Design mobile-first",
+        "description": "Cada website é otimizado para dispositivos móveis e fica perfeito em todo o lado",
+        "icon": "smartphone"
       },
       {
-        "icon": "smartphone",
-        "title": "Otimizado para mobile",
-        "description": "Todos os sites são perfeitamente otimizados para qualquer dispositivo."
+        "title": "Otimização SEO incluída",
+        "description": "Funcionalidades de SEO integradas para ajudar o seu negócio a ser encontrado nos motores de busca",
+        "icon": "search"
       },
       {
-        "icon": "search",
-        "title": "SEO integrado",
-        "description": "Otimização para motores de busca incorporada desde o primeiro dia."
+        "title": "Cores e fontes personalizadas",
+        "description": "Altere cores, fontes e conteúdo sem qualquer conhecimento técnico",
+        "icon": "palette"
       },
       {
-        "icon": "shield",
-        "title": "Seguro e rápido",
-        "description": "SSL gratuito, CDN global e hospedagem segura incluídos."
+        "title": "Hosting rápido e seguro",
+        "description": "Segurança de nível empresarial com garantia de disponibilidade de 99.9%",
+        "icon": "shield"
       },
       {
-        "icon": "palette",
-        "title": "Totalmente customizável",
-        "description": "Modifique cores, fontes e layouts para combinar com sua marca."
-      },
-      {
-        "icon": "layout",
         "title": "Painel simples",
-        "description": "Gerencie seu site através de um painel intuitivo e fácil de usar."
+        "description": "Gira todo o seu website a partir de um painel intuitivo e fácil de usar",
+        "icon": "layout"
+      },
+      {
+        "title": "Teste gratuito de 14 dias",
+        "description": "Tenha o seu website pronto em menos de 30 segundos com o nosso construtor alimentado por IA",
+        "icon": "zap"
       }
     ]
   },
   "whyNaveeg": {
-    "title": "Por que escolher Naveeg?",
+    "title": "Porquê escolher Naveeg?",
     "blocks": [
       {
-        "title": "Sem código necessário",
-        "description": "Crie sites profissionais sem conhecimento técnico. Nossa IA cuida de todo o trabalho pesado."
+        "title": "Poupe tempo — lance em minutos, não semanas",
+        "description": "Não espere semanas pelo seu website. Fique online em minutos com o nosso processo de geração ultra-rápido."
       },
       {
-        "title": "Resultados instantâneos",
-        "description": "Veja seu site ganhar vida em tempo real. Não espere semanas por um site, obtenha um em minutos."
+        "title": "Não são necessárias competências — construído para utilizadores não técnicos",
+        "description": "Construa websites profissionais sem escrever uma única linha de código. A nossa IA trata de toda a complexidade técnica."
       },
       {
-        "title": "Qualidade profissional",
-        "description": "Cada site é construído com as melhores práticas para performance, SEO e experiência do usuário."
+        "title": "Cresça online — otimizado para visibilidade e conversões",
+        "description": "Comece simples e escale. Adicione funcionalidades conforme o seu negócio cresce."
       }
     ]
   },
   "pricing": {
     "title": "Preços simples e transparentes",
-    "subtitle": "Escolha o plano perfeito para seu negócio",
+    "subtitle": "Escolha o plano certo para o seu negócio",
     "viewAll": "Ver todos os planos",
     "plans": [
       {
-        "name": "Iniciante",
-        "price": "9",
+        "name": "Starter",
+        "price": "29",
         "currency": "€",
-        "period": "mês",
-        "description": "Perfeito para sites pessoais e pequenos negócios",
-        "features": [
-          "1 site",
-          "Domínio personalizado",
-          "SSL gratuito",
-          "Suporte básico"
-        ]
+        "period": "/mês",
+        "description": "Perfeito para pequenas empresas que estão a começar",
+        "features": ["1 Website", "Modelos profissionais", "Otimização móvel", "Certificado SSL", "Ferramentas SEO básicas", "Suporte por email", "5GB de armazenamento", "Domínio personalizado"]
       },
       {
         "name": "Pro",
-        "price": "29",
+        "price": "59",
         "currency": "€",
-        "period": "mês",
-        "description": "Ideal para negócios em crescimento que precisam de mais recursos",
-        "features": [
-          "5 sites",
-          "Analytics avançado",
-          "Suporte prioritário",
-          "Integrações personalizadas"
-        ]
+        "period": "/mês",
+        "description": "Ideal para empresas em crescimento que precisam de mais funcionalidades",
+        "features": ["5 Websites", "Modelos premium", "Personalização avançada", "Suporte prioritário", "Ferramentas SEO avançadas", "Analíticas do website", "50GB de armazenamento", "Funcionalidades de e-commerce", "Remover marca Naveeg", "Injeção de código personalizado"],
+        "popular": true
       },
       {
-        "name": "Empresa",
+        "name": "Business",
         "price": "99",
         "currency": "€",
-        "period": "mês",
-        "description": "Para grandes equipes com necessidades empresariais",
-        "features": [
-          "Sites ilimitados",
-          "Suporte dedicado",
-          "SLA garantido",
-          "Recursos empresariais"
-        ]
+        "period": "/mês",
+        "description": "Para agências e empresas com necessidades avançadas",
+        "features": ["Websites ilimitados", "Solução de marca branca", "Acesso à API", "Suporte telefónico 24/7", "Analíticas avançadas", "Armazenamento ilimitado", "Colaboração multi-utilizador", "Integrações personalizadas", "Gestor de conta dedicado", "Garantia SLA"]
       }
     ]
   },
   "gallery": {
     "title": "Construído com Naveeg",
-    "subtitle": "Descubra sites incríveis criados pelos nossos usuários",
-    "viewGallery": "Ver galeria",
-    "categories": ["Restaurante", "Serviços", "Varejo", "Portfólio", "Blog"]
+    "subtitle": "Veja o que os nossos clientes criaram",
+    "viewAll": "Ver galeria",
+    "categories": ["Todos", "Restaurante", "Serviços", "Portfolio", "E-commerce", "Blog"]
   },
   "faq": {
     "title": "Perguntas frequentes",
-    "subtitle": "Tudo que você precisa saber sobre Naveeg",
-    "viewAll": "Ver todas as perguntas",
-    "items": [
+    "subtitle": "Tudo o que precisa de saber sobre Naveeg",
+    "viewAll": "Ver todas as FAQ",
+    "questions": [
       {
-        "question": "Quão rápido posso criar um site?",
-        "answer": "Você pode ter um site totalmente funcional em menos de 30 segundos. Apenas descreva seu negócio e nossa IA criará um site profissional para você."
+        "question": "Quanto tempo demora a gerar um website?",
+        "answer": "A maioria dos websites são gerados em menos de 30 segundos. Sites complexos podem demorar até 2 minutos."
       },
       {
-        "question": "Preciso de conhecimento técnico?",
-        "answer": "Absolutamente não. Naveeg é projetado para todos, independentemente da experiência técnica. Nossa IA cuida de toda a programação e design."
+        "question": "Posso usar o meu próprio nome de domínio?",
+        "answer": "Sim! Pode ligar o seu domínio existente ou registar um novo através da nossa plataforma."
       },
       {
-        "question": "Posso usar meu próprio domínio?",
-        "answer": "Sim, você pode conectar seu domínio personalizado a qualquer site criado com Naveeg. Também fornecemos subdomínios gratuitos."
+        "question": "Há um teste gratuito?",
+        "answer": "Oferecemos um teste gratuito de 14 dias em todos os planos. Não é necessário cartão de crédito para começar."
       }
     ]
   },
-  "cta": {
-    "title": "Pronto para criar seu site?",
-    "subtitle": "Junte-se a milhares de empresas que confiam na Naveeg",
-    "button": "Começar grátis",
-    "helper": "Sem cartão de crédito necessário"
+  "ctaBanner": {
+    "title": "Pronto para construir o seu website?",
+    "subtitle": "Junte-se a milhares de empresas que confiam no Naveeg para a sua presença online",
+    "button": "Começar Agora",
+    "helper": "Não é necessário cartão de crédito • Teste gratuito de 14 dias"
   }
 }

@@ -34,6 +34,15 @@ const Pricing: React.FC = () => {
             {t('subtitle')}
           </p>
           
+          {/* Trial Banner */}
+          <div className="max-w-2xl mx-auto mb-8">
+            <div className="bg-primary-light border border-primary/20 rounded-2xl p-4 text-center">
+              <p className="text-primary font-medium text-sm">
+                {t('trial', { defaultValue: '14-day free trial on a Naveeg subdomain. No credit card required.' })}
+              </p>
+            </div>
+          </div>
+          
           {/* Billing Toggle */}
           <div className="flex items-center justify-center gap-4 mb-8">
             <span className={!isAnnual ? 'text-foreground font-medium' : 'text-muted-foreground'}>

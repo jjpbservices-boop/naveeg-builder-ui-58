@@ -47,7 +47,7 @@
     "events": "Eventos",
     "contact": "Contacto",
     "blog": "Blog",
-    "portfolio": "Portafolio"
+    "portfolio": "Portfolio"
   },
   "header": {
     "logoAlt": "Constructor de sitios web Naveeg",
@@ -73,7 +73,7 @@
     "company": "Empresa",
     "about": "Acerca de",
     "blog": "Blog",
-    "careers": "Empleos",
+    "careers": "Carreras",
     "resources": "Recursos",
     "help": "Ayuda",
     "documentation": "Documentación",
@@ -84,5 +84,30 @@
     "cookies": "Cookies",
     "copyright": "© 2024 Naveeg. Todos los derechos reservados.",
     "languageSelector": "Seleccionar idioma"
+  },
+  "forms": {
+    "required": "Este campo es obligatorio",
+    "invalidEmail": "Por favor ingresa una dirección de email válida",
+    "invalidUrl": "Por favor ingresa una URL válida",
+    "tooShort": "Este campo es demasiado corto",
+    "tooLong": "Este campo es demasiado largo",
+    "mustMatch": "Los campos deben coincidir",
+    "selectOption": "Por favor selecciona una opción"
+  },
+  "time": {
+    "justNow": "Ahora mismo",
+    "minutesAgo": "{minutes, plural, =1 {Hace 1 minuto} other {Hace {minutes} minutos}}",
+    "hoursAgo": "{hours, plural, =1 {Hace 1 hora} other {Hace {hours} horas}}",
+    "daysAgo": "{days, plural, =1 {Hace 1 día} other {Hace {days} días}}",
+    "weeksAgo": "{weeks, plural, =1 {Hace 1 semana} other {Hace {weeks} semanas}}"
+  },
+  "notifications": {
+    "settingsSaved": "Configuración guardada exitosamente",
+    "websiteCreated": "Sitio web creado exitosamente",
+    "backupCreated": "Copia de seguridad creada exitosamente",
+    "cacheCleared": "Caché limpiado exitosamente",
+    "domainConnected": "Dominio conectado exitosamente",
+    "paymentProcessed": "Pago procesado exitosamente",
+    "error": "Ocurrió un error. Por favor intenta de nuevo."
   }
 }

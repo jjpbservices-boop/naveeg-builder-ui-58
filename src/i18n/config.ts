@@ -49,12 +49,15 @@ import errorsFr from '@/locales/fr/errors.json';
 
 // Import ES/PT/IT locale files
 import commonEs from '@/locales/es/common.json';
+import homeEs from '@/locales/es/home.json';
 import featuresEs from '@/locales/es/features.json';
 
 import commonPt from '@/locales/pt/common.json';
+import homePt from '@/locales/pt/home.json';
 import featuresPt from '@/locales/pt/features.json';
 
 import commonIt from '@/locales/it/common.json';
+import homeIt from '@/locales/it/home.json';
 import featuresIt from '@/locales/it/features.json';
 
 // Supported locales
@@ -113,74 +116,72 @@ const resources = {
   },
   es: {
     common: commonEs,
+    home: homeEs,
     features: featuresEs,
-    home: homeFr, // Use French as template until Spanish is complete
-    pricing: pricingFr,
-    gallery: galleryEn,
-    faq: faqEn,
-    contact: contactEn,
-    legal: legalEn,
-    onboarding: onboardingEn,
-    design: designEn,
-    progress: progressEn,
-    preview: previewEn,
-    dashboard: dashboardEn,
-    analytics: analyticsEn,
-    domain: domainEn,
-    backup: backupEn,
-    cache: cacheEn,
-    security: securityEn,
-    workspace: workspaceEn,
-    billing: billingEn,
-    errors: errorsEn,
+    pricing: pricingFr, // Use French as fallback until Spanish pricing is complete
+    gallery: galleryFr,
+    faq: faqFr,
+    contact: contactFr,
+    legal: legalFr,
+    onboarding: onboardingFr,
+    design: designFr,
+    progress: progressFr,
+    preview: previewFr,
+    dashboard: dashboardFr,
+    analytics: analyticsFr,
+    domain: domainFr,
+    backup: backupFr,
+    cache: cacheFr,
+    security: securityFr,
+    workspace: workspaceFr,
+    billing: billingFr,
+    errors: errorsFr,
   },
   pt: {
     common: commonPt,
+    home: homePt,
     features: featuresPt,
-    // Real Portuguese translations with EN fallback for missing
-    home: homeEn,
-    pricing: pricingEn,
-    gallery: galleryEn,
-    faq: faqEn,
-    contact: contactEn,
-    legal: legalEn,
-    onboarding: onboardingEn,
-    design: designEn,
-    progress: progressEn,
-    preview: previewEn,
-    dashboard: dashboardEn,
-    analytics: analyticsEn,
-    domain: domainEn,
-    backup: backupEn,
-    cache: cacheEn,
-    security: securityEn,
-    workspace: workspaceEn,
-    billing: billingEn,
-    errors: errorsEn,
+    pricing: pricingFr, // Use French as fallback until Portuguese pricing is complete
+    gallery: galleryFr,
+    faq: faqFr,
+    contact: contactFr,
+    legal: legalFr,
+    onboarding: onboardingFr,
+    design: designFr,
+    progress: progressFr,
+    preview: previewFr,
+    dashboard: dashboardFr,
+    analytics: analyticsFr,
+    domain: domainFr,
+    backup: backupFr,
+    cache: cacheFr,
+    security: securityFr,
+    workspace: workspaceFr,
+    billing: billingFr,
+    errors: errorsFr,
   },
   it: {
     common: commonIt,
+    home: homeIt,
     features: featuresIt,
-    // Real Italian translations with EN fallback for missing
-    home: homeEn,
-    pricing: pricingEn,
-    gallery: galleryEn,
-    faq: faqEn,
-    contact: contactEn,
-    legal: legalEn,
-    onboarding: onboardingEn,
-    design: designEn,
-    progress: progressEn,
-    preview: previewEn,
-    dashboard: dashboardEn,
-    analytics: analyticsEn,
-    domain: domainEn,
-    backup: backupEn,
-    cache: cacheEn,
-    security: securityEn,
-    workspace: workspaceEn,
-    billing: billingEn,
-    errors: errorsEn,
+    pricing: pricingFr, // Use French as fallback until Italian pricing is complete
+    gallery: galleryFr,
+    faq: faqFr,
+    contact: contactFr,
+    legal: legalFr,
+    onboarding: onboardingFr,
+    design: designFr,
+    progress: progressFr,
+    preview: previewFr,
+    dashboard: dashboardFr,
+    analytics: analyticsFr,
+    domain: domainFr,
+    backup: backupFr,
+    cache: cacheFr,
+    security: securityFr,
+    workspace: workspaceFr,
+    billing: billingFr,
+    errors: errorsFr,
   }
 };
 
