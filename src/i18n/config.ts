@@ -51,14 +51,29 @@ import errorsFr from '@/locales/fr/errors.json';
 import commonEs from '@/locales/es/common.json';
 import homeEs from '@/locales/es/home.json';
 import featuresEs from '@/locales/es/features.json';
+import faqEs from '@/locales/es/faq.json';
+import legalEs from '@/locales/es/legal.json';
+import galleryEs from '@/locales/es/gallery.json';
+import contactEs from '@/locales/es/contact.json';
+import pricingEs from '@/locales/es/pricing.json';
 
 import commonPt from '@/locales/pt/common.json';
 import homePt from '@/locales/pt/home.json';
 import featuresPt from '@/locales/pt/features.json';
+import faqPt from '@/locales/pt/faq.json';
+import legalPt from '@/locales/pt/legal.json';
+import galleryPt from '@/locales/pt/gallery.json';
+import contactPt from '@/locales/pt/contact.json';
+import pricingPt from '@/locales/pt/pricing.json';
 
 import commonIt from '@/locales/it/common.json';
 import homeIt from '@/locales/it/home.json';
 import featuresIt from '@/locales/it/features.json';
+import faqIt from '@/locales/it/faq.json';
+import legalIt from '@/locales/it/legal.json';
+import galleryIt from '@/locales/it/gallery.json';
+import contactIt from '@/locales/it/contact.json';
+import pricingIt from '@/locales/it/pricing.json';
 
 // Supported locales
 export const supportedLocales = [
@@ -118,70 +133,73 @@ const resources = {
     common: commonEs,
     home: homeEs,
     features: featuresEs,
-    pricing: pricingFr, // Use French as fallback until Spanish pricing is complete
-    gallery: galleryFr,
-    faq: faqFr,
-    contact: contactFr,
-    legal: legalFr,
-    onboarding: onboardingFr,
-    design: designFr,
-    progress: progressFr,
-    preview: previewFr,
-    dashboard: dashboardFr,
-    analytics: analyticsFr,
-    domain: domainFr,
-    backup: backupFr,
-    cache: cacheFr,
-    security: securityFr,
-    workspace: workspaceFr,
-    billing: billingFr,
-    errors: errorsFr,
+    faq: faqEs,
+    legal: legalEs,
+    gallery: galleryEs,
+    contact: contactEs,
+    pricing: pricingEs,
+    // Fallback to English for missing namespaces
+    analytics: analyticsEn,
+    backup: backupEn,
+    billing: billingEn,
+    cache: cacheEn,
+    dashboard: dashboardEn,
+    design: designEn,
+    domain: domainEn,
+    errors: errorsEn,
+    onboarding: onboardingEn,
+    preview: previewEn,
+    progress: progressEn,
+    security: securityEn,
+    workspace: workspaceEn,
   },
   pt: {
     common: commonPt,
     home: homePt,
     features: featuresPt,
-    pricing: pricingFr, // Use French as fallback until Portuguese pricing is complete
-    gallery: galleryFr,
-    faq: faqFr,
-    contact: contactFr,
-    legal: legalFr,
-    onboarding: onboardingFr,
-    design: designFr,
-    progress: progressFr,
-    preview: previewFr,
-    dashboard: dashboardFr,
-    analytics: analyticsFr,
-    domain: domainFr,
-    backup: backupFr,
-    cache: cacheFr,
-    security: securityFr,
-    workspace: workspaceFr,
-    billing: billingFr,
-    errors: errorsFr,
+    faq: faqPt,
+    legal: legalPt,
+    gallery: galleryPt,
+    contact: contactPt,
+    pricing: pricingPt,
+    // Fallback to English for missing namespaces
+    analytics: analyticsEn,
+    backup: backupEn,
+    billing: billingEn,
+    cache: cacheEn,
+    dashboard: dashboardEn,
+    design: designEn,
+    domain: domainEn,
+    errors: errorsEn,
+    onboarding: onboardingEn,
+    preview: previewEn,
+    progress: progressEn,
+    security: securityEn,
+    workspace: workspaceEn,
   },
   it: {
     common: commonIt,
     home: homeIt,
     features: featuresIt,
-    pricing: pricingFr, // Use French as fallback until Italian pricing is complete
-    gallery: galleryFr,
-    faq: faqFr,
-    contact: contactFr,
-    legal: legalFr,
-    onboarding: onboardingFr,
-    design: designFr,
-    progress: progressFr,
-    preview: previewFr,
-    dashboard: dashboardFr,
-    analytics: analyticsFr,
-    domain: domainFr,
-    backup: backupFr,
-    cache: cacheFr,
-    security: securityFr,
-    workspace: workspaceFr,
-    billing: billingFr,
-    errors: errorsFr,
+    faq: faqIt,
+    legal: legalIt,
+    gallery: galleryIt,
+    contact: contactIt,
+    pricing: pricingIt,
+    // Fallback to English for missing namespaces
+    analytics: analyticsEn,
+    backup: backupEn,
+    billing: billingEn,
+    cache: cacheEn,
+    dashboard: dashboardEn,
+    design: designEn,
+    domain: domainEn,
+    errors: errorsEn,
+    onboarding: onboardingEn,
+    preview: previewEn,
+    progress: progressEn,
+    security: securityEn,
+    workspace: workspaceEn,
   }
 };
 
