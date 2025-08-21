@@ -83,6 +83,31 @@
     "terms": "Conditions",
     "cookies": "Cookies",
     "copyright": "© 2024 Naveeg. Tous droits réservés.",
-    "changeLanguage": "Changer de langue"
+    "languageSelector": "Sélectionner la langue"
+  },
+  "forms": {
+    "required": "Ce champ est requis",
+    "invalidEmail": "Veuillez entrer une adresse email valide",
+    "invalidUrl": "Veuillez entrer une URL valide",
+    "tooShort": "Ce champ est trop court",
+    "tooLong": "Ce champ est trop long",
+    "mustMatch": "Les champs doivent correspondre",
+    "selectOption": "Veuillez sélectionner une option"
+  },
+  "time": {
+    "justNow": "À l'instant",
+    "minutesAgo": "{minutes, plural, =1 {Il y a 1 minute} other {Il y a {minutes} minutes}}",
+    "hoursAgo": "{hours, plural, =1 {Il y a 1 heure} other {Il y a {hours} heures}}",
+    "daysAgo": "{days, plural, =1 {Il y a 1 jour} other {Il y a {days} jours}}",
+    "weeksAgo": "{weeks, plural, =1 {Il y a 1 semaine} other {Il y a {weeks} semaines}}"
+  },
+  "notifications": {
+    "settingsSaved": "Paramètres enregistrés avec succès",
+    "websiteCreated": "Site web créé avec succès",
+    "backupCreated": "Sauvegarde créée avec succès",
+    "cacheCleared": "Cache vidé avec succès",
+    "domainConnected": "Domaine connecté avec succès",
+    "paymentProcessed": "Paiement traité avec succès",
+    "error": "Une erreur s'est produite. Veuillez réessayer."
   }
 }

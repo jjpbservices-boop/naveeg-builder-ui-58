@@ -114,9 +114,8 @@ const resources = {
   es: {
     common: commonEs,
     features: featuresEs,
-    // Real Spanish translations with EN fallback for missing
-    home: homeEn,
-    pricing: pricingEn,
+    home: homeFr, // Use French as template until Spanish is complete
+    pricing: pricingFr,
     gallery: galleryEn,
     faq: faqEn,
     contact: contactEn,

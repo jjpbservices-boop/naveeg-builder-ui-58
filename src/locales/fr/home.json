@@ -2,9 +2,12 @@
   "hero": {
     "title": "Rome ne s'est pas construite en un jour — mais votre site web le sera.",
     "subtitle": "Avec Naveeg, générez un site web professionnel en quelques minutes. Pas de code, pas de stress.",
-    "inputPlaceholder": "Décrivez votre entreprise (ex: Cabinet d'avocats local au centre-ville)",
+    "inputPlaceholder": "Entrez le nom de votre entreprise…",
     "ctaButton": "Générer Mon Site Web",
     "helper": "Votre site sera prêt en quelques minutes après avoir cliqué sur générer."
+  },
+  "trialBanner": {
+    "text": "Commencez avec un essai gratuit de 14 jours sur un sous-domaine Naveeg. Aucune carte de crédit requise."
   },
   "socialProof": {
     "title": "Fait confiance par des milliers d'entreprises",
@@ -15,15 +18,15 @@
     "subtitle": "Lancez votre site web en trois étapes simples",
     "steps": [
       {
-        "title": "Décrivez Votre Entreprise",
+        "title": "Décrivez votre entreprise",
         "description": "Parlez-nous de votre entreprise en quelques mots"
       },
       {
-        "title": "Personnalisez Votre Design",
+        "title": "Choisissez votre style et vos couleurs",
         "description": "Choisissez les couleurs, polices et préférences de mise en page"
       },
       {
-        "title": "Lancez Votre Site Web",
+        "title": "Générez votre site web en quelques minutes",
         "description": "Votre site web professionnel est prêt à être mis en ligne"
       }
     ]
@@ -33,34 +36,34 @@
     "subtitle": "Conçu pour les entreprises modernes qui veulent se mettre en ligne rapidement",
     "cards": [
       {
-        "title": "Génération Ultra Rapide",
-        "description": "Obtenez votre site web prêt en moins de 30 secondes avec notre constructeur alimenté par l'IA",
-        "icon": "zap"
-      },
-      {
-        "title": "Design Mobile-First",
+        "title": "Design mobile-first",
         "description": "Chaque site web est optimisé pour les appareils mobiles et paraît parfait partout",
         "icon": "smartphone"
       },
       {
-        "title": "Optimisé SEO",
+        "title": "Optimisation SEO incluse",
         "description": "Fonctionnalités SEO intégrées pour aider votre entreprise à être trouvée sur les moteurs de recherche",
         "icon": "search"
       },
       {
-        "title": "Sécurisé et Fiable",
-        "description": "Sécurité de niveau entreprise avec une garantie de disponibilité de 99,9%",
-        "icon": "shield"
-      },
-      {
-        "title": "Personnalisation Facile",
+        "title": "Couleurs et polices personnalisées",
         "description": "Changez les couleurs, polices et contenu sans aucune connaissance technique",
         "icon": "palette"
       },
       {
-        "title": "Support 24/7",
-        "description": "Obtenez de l'aide quand vous en avez besoin avec notre équipe de support dédiée",
-        "icon": "headphones"
+        "title": "Hébergement rapide et sécurisé",
+        "description": "Sécurité de niveau entreprise avec une garantie de disponibilité de 99,9%",
+        "icon": "shield"
+      },
+      {
+        "title": "Tableau de bord simple",
+        "description": "Gérez votre site web entier depuis un tableau de bord intuitif et facile à utiliser",
+        "icon": "layout"
+      },
+      {
+        "title": "Essai gratuit de 14 jours",
+        "description": "Obtenez votre site web prêt en moins de 30 secondes avec notre constructeur alimenté par l'IA",
+        "icon": "zap"
       }
     ]
   },
@@ -68,15 +71,15 @@
     "title": "Pourquoi choisir Naveeg ?",
     "blocks": [
       {
-        "title": "Aucun Code Requis",
-        "description": "Construisez des sites web professionnels sans écrire une seule ligne de code. Notre IA gère toute la complexité technique."
-      },
-      {
-        "title": "Résultats Instantanés",
+        "title": "Gagnez du temps — lancez-vous en minutes, pas en semaines",
         "description": "N'attendez pas des semaines pour votre site web. Mettez-vous en ligne en minutes avec notre processus de génération ultra-rapide."
       },
       {
-        "title": "Conçu pour la Croissance",
+        "title": "Aucune compétence requise — conçu pour les non-techniciens",
+        "description": "Construisez des sites web professionnels sans écrire une seule ligne de code. Notre IA gère toute la complexité technique."
+      },
+      {
+        "title": "Développez votre activité — optimisé pour la visibilité et les conversions",
         "description": "Commencez simple et évoluez. Ajoutez des fonctionnalités au fur et à mesure que votre entreprise grandit."
       }
     ]
@@ -88,19 +91,19 @@
     "plans": [
       {
         "name": "Starter",
-        "price": "9",
-        "currency": "€",
-        "period": "/mois",
-        "description": "Parfait pour les petites entreprises qui démarrent",
-        "features": ["1 Site Web", "Modèles de Base", "Certificat SSL", "Support Email"]
-      },
-      {
-        "name": "Pro",
         "price": "29",
         "currency": "€",
         "period": "/mois",
-        "description": "Pour les entreprises en croissance qui ont besoin de plus",
-        "features": ["5 Sites Web", "Modèles Premium", "Domaine Personnalisé", "Support Prioritaire", "Analytiques"],
+        "description": "Parfait pour les petites entreprises qui démarrent",
+        "features": ["1 Site Web", "Modèles professionnels", "Optimisation mobile", "Certificat SSL", "Outils SEO de base", "Support email", "5GB de stockage", "Domaine personnalisé"]
+      },
+      {
+        "name": "Pro",
+        "price": "59",
+        "currency": "€",
+        "period": "/mois",
+        "description": "Idéal pour les entreprises en croissance qui ont besoin de plus de fonctionnalités",
+        "features": ["5 Sites Web", "Modèles premium", "Personnalisation avancée", "Support prioritaire", "Outils SEO avancés", "Analytiques de site web", "50GB de stockage", "Fonctionnalités e-commerce", "Retirer la marque Naveeg", "Injection de code personnalisé"],
         "popular": true
       },
       {
@@ -108,8 +111,8 @@
         "price": "99",
         "currency": "€",
         "period": "/mois",
-        "description": "Pour les agences et grandes entreprises",
-        "features": ["Sites Web Illimités", "Marque Blanche", "Accès API", "Support Téléphonique 24/7", "Analytiques Avancées"]
+        "description": "Pour les agences et entreprises avec des besoins avancés",
+        "features": ["Sites web illimités", "Solution marque blanche", "Accès API", "Support téléphonique 24/7", "Analytiques avancées", "Stockage illimité", "Collaboration multi-utilisateurs", "Intégrations personnalisées", "Gestionnaire de compte dédié", "Garantie SLA"]
       }
     ]
   },
