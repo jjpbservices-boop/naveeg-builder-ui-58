@@ -1,5 +1,30 @@
 {
   "title": "Analytics",
-  "kpis": { "visitors": "Visitors", "pageViews": "Page views", "bounceRate": "Bounce rate", "timeOnSite": "Time on site" },
-  "empty": "Analytics will appear here once you get traffic."
+  "subtitle": "Track your website's performance and visitor behavior.",
+  "kpis": {
+    "visitors": "Visitors",
+    "pageViews": "Page Views",
+    "bounceRate": "Bounce Rate",
+    "timeOnSite": "Avg. Time on Site",
+    "totalVisitors": "{count, plural, =0 {No visitors} =1 {1 visitor} other {{count} visitors}}",
+    "totalPageViews": "{count, plural, =0 {No page views} =1 {1 page view} other {{count} page views}}"
+  },
+  "charts": {
+    "visitorsOverTime": "Visitors Over Time",
+    "pageViewsOverTime": "Page Views Over Time",
+    "topPages": "Top Pages",
+    "trafficSources": "Traffic Sources",
+    "deviceTypes": "Device Types"
+  },
+  "periods": {
+    "7days": "Last 7 days",
+    "30days": "Last 30 days",
+    "90days": "Last 90 days",
+    "1year": "Last year"
+  },
+  "empty": {
+    "title": "No data available",
+    "description": "Analytics data will appear here once your website starts receiving visitors.",
+    "tip": "Share your website to start collecting data!"
+  }
 }

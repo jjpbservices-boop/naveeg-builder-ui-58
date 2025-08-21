@@ -30,11 +30,8 @@ const Pricing: React.FC = () => {
           <h1 className="font-syne text-4xl md:text-5xl font-bold text-foreground mb-6">
             {t('title')}
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-4">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             {t('subtitle')}
-          </p>
-          <p className="text-primary font-medium mb-8">
-            {t('trial')}
           </p>
           
           {/* Billing Toggle */}

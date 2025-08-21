@@ -1,6 +1,26 @@
 {
-  "title": "Dashboard",
-  "actions": { "regenerate": "Regenerate website", "visit": "Visit site", "edit": "Edit site", "wp": "WP Dashboard" },
-  "tabs": { "overview": "Overview", "analytics": "Analytics", "domain": "Domain", "backup": "Backup", "cache": "Refresh", "security": "Security", "billing": "Billing" },
-  "overview": { "url": "Website URL", "created": "Created", "modified": "Last modified", "storage": "Storage usage", "info": "Website information", "status": "Status" }
+  "title": "Website Management",
+  "subtitle": "Manage your website settings, performance, and security from one place.",
+  "actions": {
+    "regenerateWebsite": "Regenerate Website",
+    "visitSite": "Visit Site",
+    "editSite": "Edit Site (Builder)",
+    "wpDashboard": "WP Dashboard"
+  },
+  "overview": {
+    "title": "Overview",
+    "url": "Website URL",
+    "created": "Created",
+    "lastModified": "Last Modified",
+    "storage": "Storage Usage",
+    "visitors": "Visitors",
+    "websiteInfo": "Website Information",
+    "siteTitle": "Site Title",
+    "siteDescription": "Site Description",
+    "subdomain": "Subdomain",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "maintenance": "Maintenance"
+  }
 }

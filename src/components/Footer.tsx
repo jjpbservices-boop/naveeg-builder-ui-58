@@ -67,17 +67,8 @@ const Footer: React.FC = () => {
         
         <div className="border-t border-border mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-muted-foreground">{t('footer.copyright', { year: new Date().getFullYear() })}</p>
+            <p className="text-muted-foreground">{t('footer.copyright')}</p>
             
-            {/* Centered Logo */}
-            <div className="flex justify-center">
-              <img 
-                src="/lovable-uploads/b874b017-8b73-4029-9431-6caffeaef48c.png" 
-                alt={t('header.logoAlt')}
-                className="h-8 w-auto"
-              />
-            </div>
-
             <div className="flex items-center space-x-6">
               {/* Social Icons */}
               <div className="flex items-center space-x-4">
@@ -99,7 +90,7 @@ const Footer: React.FC = () => {
                     variant="outline" 
                     size="sm" 
                     className="touch-target"
-                    aria-label={t('header.language')}
+                    aria-label={t('footer.languageSelector')}
                   >
                     <Globe className="h-4 w-4 mr-2" />
                     {languages.find(lang => lang.code === i18n.language)?.name || 'Language'}

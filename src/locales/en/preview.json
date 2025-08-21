@@ -1,7 +1,36 @@
 {
-  "title": "Website preview",
-  "desktop": "Desktop",
-  "mobile": "Mobile",
-  "openSite": "Open site",
-  "openAdmin": "Open admin"
+  "toolbar": {
+    "title": "Website Preview",
+    "desktop": "Desktop",
+    "mobile": "Mobile",
+    "openSite": "Open Site",
+    "openAdmin": "Open Admin"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "services": "Services",
+    "menu": "Menu",
+    "events": "Events",
+    "gallery": "Gallery",
+    "contact": "Contact"
+  },
+  "cta": {
+    "restaurant": {
+      "orderNow": "Order Now",
+      "viewMenu": "View Menu"
+    },
+    "general": {
+      "contactUs": "Contact Us",
+      "getQuote": "Get Quote"
+    }
+  },
+  "placeholder": {
+    "hero": "Welcome to {businessName}",
+    "subtitle": "Your trusted partner for all your {businessType} needs",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "features": "Our Services",
+    "about": "About Us",
+    "contact": "Get in Touch"
+  }
 }
