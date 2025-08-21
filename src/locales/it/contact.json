@@ -1,0 +1,39 @@
+{
+  "title": "Contatto",
+  "subtitle": "Mettiti in contatto con il nostro team",
+  "form": {
+    "name": "Nome completo",
+    "namePlaceholder": "Inserisci il tuo nome completo",
+    "email": "Indirizzo email", 
+    "emailPlaceholder": "Inserisci il tuo indirizzo email",
+    "subject": "Oggetto",
+    "subjectPlaceholder": "Di cosa si tratta?",
+    "message": "Messaggio",
+    "messagePlaceholder": "Raccontaci come possiamo aiutarti...",
+    "send": "Invia messaggio",
+    "sending": "Invio in corso...",
+    "success": "Grazie! Ti risponderemo presto.",
+    "error": "Spiacenti, c'è stato un errore nell'invio del tuo messaggio. Riprova."
+  },
+  "validation": {
+    "nameRequired": "Il nome è obbligatorio",
+    "emailRequired": "L'email è obbligatoria", 
+    "emailInvalid": "Inserisci un indirizzo email valido",
+    "subjectRequired": "L'oggetto è obbligatorio",
+    "messageRequired": "Il messaggio è obbligatorio",
+    "messageMinLength": "Il messaggio deve essere di almeno 10 caratteri"
+  },
+  "info": {
+    "title": "Altri modi per contattarci",
+    "email": "ciao@naveeg.com",
+    "phone": "+1 (555) 123-4567",
+    "address": "123 Via Aziendale, Città, Stato 12345",
+    "hours": "Lunedì - Venerdì: 9:00 - 18:00 (EST)"
+  },
+  "support": {
+    "title": "Hai bisogno di aiuto con il tuo sito web?",
+    "description": "Consulta il nostro centro assistenza per tutorial e guide",
+    "helpCenter": "Visita centro assistenza",
+    "documentation": "Visualizza documentazione"
+  }
+}

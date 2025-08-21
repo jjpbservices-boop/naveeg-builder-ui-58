@@ -1,0 +1,39 @@
+{
+  "title": "Contato",
+  "subtitle": "Entre em contato com nossa equipe",
+  "form": {
+    "name": "Nome completo",
+    "namePlaceholder": "Digite seu nome completo",
+    "email": "Endereço de email", 
+    "emailPlaceholder": "Digite seu endereço de email",
+    "subject": "Assunto",
+    "subjectPlaceholder": "Sobre o que se trata?",
+    "message": "Mensagem",
+    "messagePlaceholder": "Conte-nos como podemos ajudá-lo...",
+    "send": "Enviar mensagem",
+    "sending": "Enviando...",
+    "success": "Obrigado! Entraremos em contato em breve.",
+    "error": "Desculpe, houve um erro ao enviar sua mensagem. Tente novamente."
+  },
+  "validation": {
+    "nameRequired": "Nome é obrigatório",
+    "emailRequired": "Email é obrigatório", 
+    "emailInvalid": "Por favor, digite um email válido",
+    "subjectRequired": "Assunto é obrigatório",
+    "messageRequired": "Mensagem é obrigatória",
+    "messageMinLength": "A mensagem deve ter pelo menos 10 caracteres"
+  },
+  "info": {
+    "title": "Outras formas de nos contatar",
+    "email": "ola@naveeg.com",
+    "phone": "+1 (555) 123-4567",
+    "address": "123 Rua Empresarial, Cidade, Estado 12345",
+    "hours": "Segunda - Sexta: 9h - 18h (EST)"
+  },
+  "support": {
+    "title": "Precisa de ajuda com seu site?",
+    "description": "Confira nosso centro de ajuda para tutoriais e guias",
+    "helpCenter": "Visitar centro de ajuda",
+    "documentation": "Ver documentação"
+  }
+}
