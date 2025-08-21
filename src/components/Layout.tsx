@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, Sun, Moon } from 'lucide-react';
+import { Globe, Sun, Moon, Menu, Sparkles } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,6 +9,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Sheet,
+  SheetContent,
+  SheetClose,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { useNavigate } from '@tanstack/react-router';
 import Footer from '@/components/Footer';
 
@@ -20,6 +28,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { t, i18n } = useTranslation('common');
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const languages = [
     { code: 'en', name: 'English' },
@@ -60,8 +69,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           </div>
 
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-8">
             <Button variant="ghost" onClick={() => navigate({ to: '/features' })}>
               {t('header.nav.features')}
             </Button>
@@ -81,25 +90,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           {/* Right side */}
           <div className="flex items-center space-x-4">
-            {/* Theme Toggle */}
+            {/* Desktop Theme Toggle */}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="touch-target"
+              className="touch-target hidden lg:inline-flex"
               aria-label="Toggle theme"
             >
               <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
               <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             </Button>
 
-            {/* Language Selector */}
+            {/* Desktop Language Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="touch-target"
+                  className="touch-target hidden lg:inline-flex"
                   aria-label={t('header.changeLanguage')}
                 >
                   <Globe className="h-4 w-4" />
@@ -118,13 +127,110 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* CTA Button */}
+            {/* Desktop CTA Button */}
             <Button 
               onClick={handleGenerateClick}
-              className="touch-target bg-gradient-primary hover:bg-primary-hover"
+              className="touch-target bg-gradient-primary hover:bg-primary-hover hidden lg:inline-flex"
             >
               {t('header.generateWebsite')}
             </Button>
+
+            {/* Mobile CTA Button - Icon Only */}
+            <Button 
+              onClick={handleGenerateClick}
+              size="icon"
+              className="touch-target bg-gradient-primary hover:bg-primary-hover lg:hidden"
+              aria-label={t('header.generateWebsite')}
+            >
+              <Sparkles className="h-4 w-4" />
+            </Button>
+
+            {/* Mobile Menu */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="touch-target lg:hidden"
+                  aria-label="Open menu"
+                >
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-80">
+                <SheetHeader>
+                  <SheetTitle>{t('header.menu')}</SheetTitle>
+                </SheetHeader>
+                
+                <div className="flex flex-col space-y-6 mt-6">
+                  {/* Navigation Links */}
+                  <nav className="flex flex-col space-y-4">
+                    <SheetClose asChild>
+                      <Button variant="ghost" onClick={() => navigate({ to: '/features' })} className="justify-start">
+                        {t('header.nav.features')}
+                      </Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Button variant="ghost" onClick={() => navigate({ to: '/pricing' })} className="justify-start">
+                        {t('header.nav.pricing')}
+                      </Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Button variant="ghost" onClick={() => navigate({ to: '/gallery' })} className="justify-start">
+                        {t('header.nav.gallery')}
+                      </Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Button variant="ghost" onClick={() => navigate({ to: '/faq' })} className="justify-start">
+                        {t('header.nav.faq')}
+                      </Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Button variant="ghost" onClick={() => navigate({ to: '/contact' })} className="justify-start">
+                        {t('header.nav.contact')}
+                      </Button>
+                    </SheetClose>
+                  </nav>
+
+                  {/* Separator */}
+                  <div className="border-t border-border" />
+
+                  {/* Preferences */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium text-muted-foreground">{t('header.preferences')}</h4>
+                    
+                    {/* Theme Toggle */}
+                    <Button
+                      variant="ghost"
+                      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                      className="justify-start w-full"
+                    >
+                      <Sun className="h-4 w-4 mr-2 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                      <Moon className="absolute h-4 w-4 ml-2 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                      <span className="ml-6">{theme === 'dark' ? t('header.lightMode') : t('header.darkMode')}</span>
+                    </Button>
+
+                    {/* Language Selection */}
+                    <div className="space-y-2">
+                      <h5 className="text-sm font-medium text-muted-foreground">{t('header.changeLanguage')}</h5>
+                      <div className="grid grid-cols-1 gap-2">
+                        {languages.map((lang) => (
+                          <SheetClose asChild key={lang.code}>
+                            <Button
+                              variant={i18n.language === lang.code ? 'secondary' : 'ghost'}
+                              onClick={() => changeLanguage(lang.code)}
+                              className="justify-start"
+                            >
+                              {lang.name}
+                            </Button>
+                          </SheetClose>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>

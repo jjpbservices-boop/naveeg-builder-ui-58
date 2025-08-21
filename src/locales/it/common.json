@@ -53,6 +53,10 @@
     "logoAlt": "Costruttore di siti web Naveeg",
     "generateWebsite": "Genera il tuo sito",
     "changeLanguage": "Cambia lingua",
+    "menu": "Menu",
+    "preferences": "Preferenze",
+    "lightMode": "Modalità Chiara",
+    "darkMode": "Modalità Scura",
     "nav": {
       "features": "Funzionalità",
       "pricing": "Prezzi",

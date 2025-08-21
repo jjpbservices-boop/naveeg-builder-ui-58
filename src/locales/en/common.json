@@ -53,6 +53,10 @@
     "logoAlt": "Naveeg Website Builder",
     "generateWebsite": "Generate Your Website",
     "changeLanguage": "Change language",
+    "menu": "Menu",
+    "preferences": "Preferences",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode",
     "nav": {
       "features": "Features",
       "pricing": "Pricing",
