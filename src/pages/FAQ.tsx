@@ -52,10 +52,10 @@ const FAQ: React.FC = () => {
             </div>
             
             <h2 className="font-syne text-2xl md:text-3xl font-bold text-foreground mb-4">
-              Still have questions?
+              {t('stillHaveQuestions.title')}
             </h2>
             <p className="text-muted-foreground mb-8 text-lg">
-              Can't find the answer you're looking for? Our friendly team is here to help.
+              {t('stillHaveQuestions.subtitle')}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -64,14 +64,14 @@ const FAQ: React.FC = () => {
                 className="bg-gradient-primary hover:bg-primary-hover text-white touch-target"
                 onClick={() => navigate({ to: '/contact' })}
               >
-                Contact Support
+                {t('stillHaveQuestions.contactSupport')}
               </Button>
               <Button 
                 size="lg" 
                 variant="outline"
                 className="touch-target"
               >
-                Browse Help Center
+                {t('stillHaveQuestions.browseHelp')}
               </Button>
             </div>
           </div>

@@ -1,71 +1,36 @@
 {
-  "title": "Features",
-  "subtitle": "Everything you need to build and grow your online presence",
-  "features": {
-    "aiGeneration": {
-      "title": "AI-Powered Generation",
-      "description": "Our advanced AI creates professional websites tailored to your business in seconds"
+  "title": "Powerful Features",
+  "subtitle": "Everything you need to create amazing websites",
+  "cards": [
+    {
+      "icon": "zap",
+      "title": "Fast Generation",
+      "description": "Generate professional websites in minutes, not weeks. Our AI engine accelerates the entire development process."
     },
-    "mobileFirst": {
-      "title": "Mobile-First Design",
-      "description": "Every website is optimized for mobile devices and provides excellent user experience"
+    {
+      "icon": "smartphone",
+      "title": "Responsive Design",
+      "description": "All websites are optimized for mobile from the start. They look perfect on any device."
     },
-    "seoOptimized": {
+    {
+      "icon": "search",
       "title": "SEO Optimized",
-      "description": "Built-in SEO features help your business get discovered on search engines"
+      "description": "Built-in SEO features to help your website rank better in search engines."
     },
-    "fastLoading": {
-      "title": "Lightning Fast",
-      "description": "Optimized for speed with industry-leading performance metrics"
+    {
+      "icon": "shield",
+      "title": "Website Security",
+      "description": "Free SSL certificates and advanced security measures included. Your website will be protected from day one."
     },
-    "customization": {
-      "title": "Easy Customization",
-      "description": "Change colors, fonts, layouts, and content without any coding knowledge"
+    {
+      "icon": "palette",
+      "title": "Full Customization",
+      "description": "Modify colors, fonts, and layouts to match your brand perfectly."
     },
-    "analytics": {
-      "title": "Built-in Analytics",
-      "description": "Track visitor behavior and website performance with detailed insights"
-    },
-    "security": {
-      "title": "Enterprise Security",
-      "description": "SSL certificates, security monitoring, and automatic updates included"
-    },
-    "support": {
-      "title": "24/7 Support",
-      "description": "Get help whenever you need it from our expert support team"
-    },
-    "backup": {
-      "title": "Automatic Backups",
-      "description": "Your website is automatically backed up daily for peace of mind"
-    },
-    "domains": {
-      "title": "Custom Domains",
-      "description": "Use your own domain name or register a new one through our platform"
-    },
-    "templates": {
-      "title": "Professional Templates",
-      "description": "Choose from hundreds of professionally designed templates for every industry"
-    },
-    "ecommerce": {
-      "title": "E-commerce Ready",
-      "description": "Sell products online with built-in shopping cart and payment processing"
+    {
+      "icon": "layout",
+      "title": "Simple Dashboard",
+      "description": "Manage your entire website from an intuitive and easy-to-use dashboard."
     }
-  },
-  "comparison": {
-    "title": "How we compare",
-    "subtitle": "See why Naveeg is the best choice for your business",
-    "features": [
-      "AI-powered generation",
-      "Mobile-first design",
-      "SEO optimization", 
-      "Custom domains",
-      "SSL certificates",
-      "24/7 support",
-      "E-commerce ready",
-      "Advanced analytics",
-      "Automatic backups",
-      "No coding required"
-    ],
-    "competitors": ["Naveeg", "Competitor A", "Competitor B", "Competitor C"]
-  }
+  ]
 }

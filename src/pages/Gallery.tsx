@@ -124,17 +124,17 @@ const Gallery: React.FC = () => {
         <div className="text-center">
           <div className="bg-gradient-primary rounded-3xl p-8 md:p-12 text-white">
             <h2 className="font-syne text-3xl md:text-4xl font-bold mb-4">
-              Ready to create your own?
+              {t('cta.title')}
             </h2>
             <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-              Join these successful businesses and get your website online in minutes
+              {t('cta.subtitle')}
             </p>
             <Button 
               size="lg" 
               className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 touch-target"
               onClick={() => navigate({ to: '/describe' })}
             >
-              Start Building Now
+              {t('cta.button')}
             </Button>
           </div>
         </div>

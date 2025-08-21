@@ -42,5 +42,11 @@
       "question": "Can I export my website?",
       "answer": "Business plan customers can export their website code and host it anywhere they like. This gives you complete freedom and control over your online presence."
     }
-  ]
+  ],
+  "stillHaveQuestions": {
+    "title": "Still have questions?",
+    "subtitle": "Can't find the answer you're looking for? Our friendly team is here to help.",
+    "contactSupport": "Contact Support",
+    "browseHelp": "Browse Help Center"
+  }
 }

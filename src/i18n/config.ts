@@ -47,6 +47,16 @@ import workspaceFr from '@/locales/fr/workspace.json';
 import billingFr from '@/locales/fr/billing.json';
 import errorsFr from '@/locales/fr/errors.json';
 
+// Import ES/PT/IT locale files
+import commonEs from '@/locales/es/common.json';
+import featuresEs from '@/locales/es/features.json';
+
+import commonPt from '@/locales/pt/common.json';
+import featuresPt from '@/locales/pt/features.json';
+
+import commonIt from '@/locales/it/common.json';
+import featuresIt from '@/locales/it/features.json';
+
 // Supported locales
 export const supportedLocales = [
   'en', 'fr', 'es', 'pt', 'it'
@@ -102,10 +112,10 @@ const resources = {
     errors: errorsFr,
   },
   es: {
-    // ES translations with EN fallback
-    common: commonEn,
+    common: commonEs,
+    features: featuresEs,
+    // Real Spanish translations with EN fallback for missing
     home: homeEn,
-    features: featuresEn,
     pricing: pricingEn,
     gallery: galleryEn,
     faq: faqEn,
@@ -126,10 +136,10 @@ const resources = {
     errors: errorsEn,
   },
   pt: {
-    // PT translations with EN fallback
-    common: commonEn,
+    common: commonPt,
+    features: featuresPt,
+    // Real Portuguese translations with EN fallback for missing
     home: homeEn,
-    features: featuresEn,
     pricing: pricingEn,
     gallery: galleryEn,
     faq: faqEn,
@@ -150,10 +160,10 @@ const resources = {
     errors: errorsEn,
   },
   it: {
-    // IT translations with EN fallback
-    common: commonEn,
+    common: commonIt,
+    features: featuresIt,
+    // Real Italian translations with EN fallback for missing
     home: homeEn,
-    features: featuresEn,
     pricing: pricingEn,
     gallery: galleryEn,
     faq: faqEn,

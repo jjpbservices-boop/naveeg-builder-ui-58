@@ -21,10 +21,10 @@ const Legal: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="font-syne text-4xl md:text-5xl font-bold text-foreground mb-6">
-            Legal Information
+            {t('title')}
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Important legal information and policies
+            {t('subtitle')}
           </p>
         </div>
 
@@ -32,9 +32,9 @@ const Legal: React.FC = () => {
         <div className="max-w-4xl mx-auto">
           <Tabs defaultValue="terms" className="w-full">
             <TabsList className="grid w-full grid-cols-3 mb-8">
-              <TabsTrigger value="terms" className="touch-target">Terms of Service</TabsTrigger>
-              <TabsTrigger value="privacy" className="touch-target">Privacy Policy</TabsTrigger>
-              <TabsTrigger value="cookies" className="touch-target">Cookie Policy</TabsTrigger>
+              <TabsTrigger value="terms" className="touch-target">{t('terms.title')}</TabsTrigger>
+              <TabsTrigger value="privacy" className="touch-target">{t('privacy.title')}</TabsTrigger>
+              <TabsTrigger value="cookies" className="touch-target">{t('cookies.title')}</TabsTrigger>
             </TabsList>
             
             <TabsContent value="terms">

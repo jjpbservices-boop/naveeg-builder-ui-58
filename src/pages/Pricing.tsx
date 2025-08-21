@@ -15,7 +15,7 @@ const Pricing: React.FC = () => {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat(i18n.language, {
       style: 'currency',
-      currency: i18n.language.startsWith('en') ? 'USD' : 'EUR',
+      currency: 'EUR',
       minimumFractionDigits: 0,
     }).format(price);
   };

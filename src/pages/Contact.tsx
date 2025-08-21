@@ -44,7 +44,7 @@ const Contact: React.FC = () => {
       
       toast({
         title: t('form.success'),
-        description: "We'll get back to you within 24 hours.",
+        description: t('form.successMessage'),
       });
       
       form.reset();
@@ -101,7 +101,7 @@ const Contact: React.FC = () => {
           <div>
             <div className="bg-card rounded-3xl border shadow-soft p-8">
               <h2 className="font-syne text-2xl font-bold text-foreground mb-6">
-                Send us a message
+                {t('form.title')}
               </h2>
               
               <Form {...form}>
