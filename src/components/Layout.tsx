@@ -49,7 +49,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               onClick={() => navigate({ to: '/' })}
             >
               <img 
-                src="/brand-logo.png" 
+                src="/lovable-uploads/b874b017-8b73-4029-9431-6caffeaef48c.png" 
                 alt={t('header.logoAlt')}
                 className="h-8 w-auto object-contain shrink-0"
                 onError={(e) => e.currentTarget.style.display = 'none'}
