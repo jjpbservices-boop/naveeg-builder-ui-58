@@ -1,12 +1,12 @@
 {
   "title": "Galeria",
-  "subtitle": "Descubra sites incríveis construídos com Naveeg",
+  "subtitle": "Descobre websites incríveis criados com Naveeg",
   "filter": {
     "all": "Todos",
     "restaurant": "Restaurante",
     "services": "Serviços", 
-    "retail": "Varejo",
-    "portfolio": "Portfólio",
+    "retail": "Comércio",
+    "portfolio": "Portfolio",
     "blog": "Blog",
     "ecommerce": "E-commerce"
   },
@@ -16,30 +16,30 @@
     {
       "name": "Restaurante Bella Vista",
       "category": "restaurant",
-      "description": "Experiência gastronômica italiana autêntica no coração da cidade"
+      "description": "Experiência gastronómica italiana autêntica no coração da cidade"
     },
     {
-      "name": "Smith & Associados Advocacia",
+      "name": "Smith & Associados Advogados",
       "category": "services",
       "description": "Serviços jurídicos profissionais com mais de 20 anos de experiência"
     },
     {
       "name": "Estúdio Minimalista Moderno",
       "category": "portfolio", 
-      "description": "Portfólio de design criativo apresentando projetos inovadores"
+      "description": "Portfolio de design criativo apresentando projetos inovadores"
     },
     {
       "name": "Boutique TechStyle",
       "category": "retail",
-      "description": "Moda curada para o profissional moderno"
+      "description": "Moda selecionada para o profissional moderno"
     },
     {
-      "name": "Paisagismo Polegar Verde",
+      "name": "Paisagismo Green Thumb",
       "category": "services",
-      "description": "Transforme seu espaço externo com paisagismo profissional"
+      "description": "Transforma o teu espaço exterior com paisagismo profissional"
     },
     {
-      "name": "Blog Dose Diária",
+      "name": "Blog Daily Dose",
       "category": "blog",
       "description": "Dicas de estilo de vida e bem-estar para o dia a dia"
     },
@@ -49,22 +49,22 @@
       "description": "Café especial torrado fresco diariamente"
     },
     {
-      "name": "Academia Fitness First",
+      "name": "Ginásio Fitness First",
       "category": "services", 
-      "description": "Instalação de fitness de última geração com treinamento pessoal"
+      "description": "Instalação de fitness de última geração com treino pessoal"
     },
     {
-      "name": "Galeria Trabalhos Criativos",
+      "name": "Galeria Creative Works",
       "category": "portfolio",
-      "description": "Galeria de arte contemporânea apresentando artistas locais"
+      "description": "Galeria de arte contemporânea com artistas locais"
     },
     {
       "name": "Loja Home Essentials",
       "category": "ecommerce",
-      "description": "Tudo que você precisa para um lar bonito"
+      "description": "Tudo o que precisas para uma casa bonita"
     },
     {
-      "name": "Blog Jornada do Bem-Estar",
+      "name": "Blog Wellness Journey",
       "category": "blog", 
       "description": "Histórias inspiradoras e dicas para bem-estar holístico"
     },
@@ -73,5 +73,10 @@
       "category": "restaurant",
       "description": "Comida de rua gourmet com um toque moderno"
     }
-  ]
+  ],
+  "cta": {
+    "title": "Pronto para criar o teu website?",
+    "subtitle": "Junta-te a milhares de empresas que confiam na Naveeg",
+    "button": "Começar agora"
+  }
 }

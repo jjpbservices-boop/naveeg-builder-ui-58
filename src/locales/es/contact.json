@@ -2,6 +2,7 @@
   "title": "Contacto",
   "subtitle": "Ponte en contacto con nuestro equipo",
   "form": {
+    "title": "Envíanos un mensaje",
     "name": "Nombre completo",
     "namePlaceholder": "Ingresa tu nombre completo",
     "email": "Dirección de email", 
@@ -13,6 +14,7 @@
     "send": "Enviar mensaje",
     "sending": "Enviando...",
     "success": "¡Gracias! Te responderemos pronto.",
+    "successMessage": "Hemos recibido tu mensaje y te contactaremos pronto.",
     "error": "Lo siento, hubo un error al enviar tu mensaje. Por favor intenta de nuevo."
   },
   "validation": {

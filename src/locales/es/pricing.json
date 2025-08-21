@@ -1,95 +1,33 @@
 {
   "title": "Precios",
-  "subtitle": "Planes simples y transparentes para todos los tamaños de negocio",
+  "subtitle": "Elige el plan perfecto para tu negocio", 
   "monthly": "Mensual",
   "annually": "Anual",
-  "save": "Ahorra 20%",
+  "save": "2 meses gratis",
+  "mostPopular": "Más popular",
+  "getStarted": "Empezar",
+  "contactSales": "Contactar ventas",
+  "freeTrial": "Prueba gratuita de 14 días",
+  "noCredit": "No se requiere tarjeta de crédito",
   "plans": {
     "starter": {
       "name": "Principiante",
-      "description": "Perfecto para sitios web personales y pequeños negocios",
-      "price": {
-        "monthly": "9",
-        "annually": "89"
-      },
-      "features": [
-        "1 sitio web",
-        "Dominio personalizado",
-        "SSL gratuito",
-        "Plantillas profesionales",
-        "Optimización para móviles",
-        "SEO básico",
-        "Soporte por email"
-      ]
+      "description": "Perfecto para pequeñas empresas que están empezando",
+      "price": { "monthly": 29, "annually": 24 },
+      "features": ["1 sitio web", "Hosting incluido", "Soporte por email", "SEO básico", "Certificado SSL", "Dominio personalizado", "Plantillas profesionales", "Optimización móvil"]
     },
     "pro": {
-      "name": "Pro",
-      "description": "Ideal para negocios en crecimiento que necesitan más funciones",
-      "price": {
-        "monthly": "29",
-        "annually": "289"
-      },
-      "features": [
-        "5 sitios web",
-        "Todo de Principiante",
-        "Análisis avanzado",
-        "Integraciones personalizadas",
-        "Editor de código personalizado",
-        "Soporte prioritario",
-        "Eliminar marca Naveeg",
-        "Formularios avanzados"
-      ]
+      "name": "Pro", 
+      "description": "Ideal para empresas en crecimiento que necesitan más",
+      "price": { "monthly": 59, "annually": 49 },
+      "popular": true,
+      "features": ["3 sitios web", "Personalización avanzada", "Analíticas detalladas", "Soporte prioritario", "Funciones de e-commerce", "Eliminación de marca Naveeg", "Código personalizado", "Integraciones avanzadas", "Plantillas premium", "SEO avanzado"]
     },
     "business": {
       "name": "Empresa",
-      "description": "Para equipos grandes con necesidades empresariales",
-      "price": {
-        "monthly": "99",
-        "annually": "989"
-      },
-      "features": [
-        "Sitios web ilimitados",
-        "Todo de Pro",
-        "Colaboradores ilimitados",
-        "Soporte dedicado",
-        "SLA del 99.9%",
-        "Copias de seguridad diarias",
-        "Funciones empresariales",
-        "API personalizada"
-      ]
+      "description": "Para agencias y empresas con necesidades avanzadas", 
+      "price": { "monthly": 99, "annually": 83 },
+      "features": ["Sitios web ilimitados", "Solución marca blanca", "Acceso API", "Soporte telefónico 24/7", "Analíticas avanzadas", "Almacenamiento ilimitado", "Colaboración multi-usuario", "Integraciones personalizadas", "Gestor de cuenta dedicado", "Garantía SLA"]
     }
-  },
-  "faq": {
-    "title": "Preguntas frecuentes",
-    "items": [
-      {
-        "question": "¿Puedo cambiar de plan en cualquier momento?",
-        "answer": "Sí, puedes actualizar o cambiar tu plan en cualquier momento. Los cambios se aplican inmediatamente y se prorratean según corresponda."
-      },
-      {
-        "question": "¿Hay tarifas de configuración?",
-        "answer": "No, no hay tarifas de configuración ni costos ocultos. Solo pagas el precio del plan que eliges."
-      },
-      {
-        "question": "¿Qué sucede si cancelo mi suscripción?",
-        "answer": "Puedes cancelar en cualquier momento. Tu sitio permanecerá activo hasta el final de tu período de facturación actual."
-      },
-      {
-        "question": "¿Ofrecen reembolsos?",
-        "answer": "Ofrecemos un reembolso completo dentro de los primeros 30 días si no estás completamente satisfecho."
-      }
-    ]
-  },
-  "enterprise": {
-    "title": "¿Necesitas algo personalizado?",
-    "description": "Para organizaciones grandes con requisitos específicos, ofrecemos soluciones empresariales personalizadas.",
-    "contact": "Contactar ventas",
-    "features": [
-      "Implementación personalizada",
-      "Soporte dedicado",
-      "Integraciones personalizadas",
-      "Cumplimiento de seguridad",
-      "Capacitación del equipo"
-    ]
   }
 }

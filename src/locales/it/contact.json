@@ -1,7 +1,8 @@
 {
   "title": "Contatto",
-  "subtitle": "Mettiti in contatto con il nostro team",
+  "subtitle": "Entra in contatto con il nostro team",
   "form": {
+    "title": "Inviaci un messaggio",
     "name": "Nome completo",
     "namePlaceholder": "Inserisci il tuo nome completo",
     "email": "Indirizzo email", 
@@ -13,27 +14,28 @@
     "send": "Invia messaggio",
     "sending": "Invio in corso...",
     "success": "Grazie! Ti risponderemo presto.",
-    "error": "Spiacenti, c'è stato un errore nell'invio del tuo messaggio. Riprova."
+    "successMessage": "Abbiamo ricevuto il tuo messaggio e ti contatteremo presto.",
+    "error": "Spiacenti, si è verificato un errore nell'invio del messaggio. Riprova."
   },
   "validation": {
-    "nameRequired": "Il nome è obbligatorio",
-    "emailRequired": "L'email è obbligatoria", 
+    "nameRequired": "Il nome è richiesto",
+    "emailRequired": "L'email è richiesta", 
     "emailInvalid": "Inserisci un indirizzo email valido",
-    "subjectRequired": "L'oggetto è obbligatorio",
-    "messageRequired": "Il messaggio è obbligatorio",
-    "messageMinLength": "Il messaggio deve essere di almeno 10 caratteri"
+    "subjectRequired": "L'oggetto è richiesto",
+    "messageRequired": "Il messaggio è richiesto",
+    "messageMinLength": "Il messaggio deve contenere almeno 10 caratteri"
   },
   "info": {
     "title": "Altri modi per contattarci",
     "email": "ciao@naveeg.com",
-    "phone": "+1 (555) 123-4567",
-    "address": "123 Via Aziendale, Città, Stato 12345",
-    "hours": "Lunedì - Venerdì: 9:00 - 18:00 (EST)"
+    "phone": "+39 02 1234 5678",
+    "address": "123 Via Business, Città, Regione 12345",
+    "hours": "Lunedì - Venerdì: 9:00 - 18:00 (CET)"
   },
   "support": {
     "title": "Hai bisogno di aiuto con il tuo sito web?",
     "description": "Consulta il nostro centro assistenza per tutorial e guide",
     "helpCenter": "Visita centro assistenza",
-    "documentation": "Visualizza documentazione"
+    "documentation": "Vedi documentazione"
   }
 }

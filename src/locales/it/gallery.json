@@ -5,7 +5,7 @@
     "all": "Tutti",
     "restaurant": "Ristorante",
     "services": "Servizi", 
-    "retail": "Retail",
+    "retail": "Commercio",
     "portfolio": "Portfolio",
     "blog": "Blog",
     "ecommerce": "E-commerce"
@@ -34,14 +34,14 @@
       "description": "Moda curata per il professionista moderno"
     },
     {
-      "name": "Paesaggistica Pollice Verde",
+      "name": "Paesaggistica Green Thumb",
       "category": "services",
       "description": "Trasforma il tuo spazio esterno con paesaggistica professionale"
     },
     {
-      "name": "Blog Dose Quotidiana",
+      "name": "Blog Daily Dose",
       "category": "blog",
-      "description": "Consigli di lifestyle e benessere per la vita quotidiana"
+      "description": "Consigli su stile di vita e benessere per la vita quotidiana"
     },
     {
       "name": "Artisan Coffee Co.",
@@ -51,20 +51,20 @@
     {
       "name": "Palestra Fitness First",
       "category": "services", 
-      "description": "Struttura fitness all'avanguardia con personal training"
+      "description": "Struttura fitness all'avanguardia con allenamento personale"
     },
     {
-      "name": "Galleria Lavori Creativi",
+      "name": "Galleria Creative Works",
       "category": "portfolio",
       "description": "Galleria d'arte contemporanea con artisti locali"
     },
     {
       "name": "Negozio Home Essentials",
       "category": "ecommerce",
-      "description": "Tutto ciò di cui hai bisogno per una casa bella"
+      "description": "Tutto ciò che serve per una bella casa"
     },
     {
-      "name": "Blog Viaggio del Benessere",
+      "name": "Blog Wellness Journey",
       "category": "blog", 
       "description": "Storie ispiratrici e consigli per il benessere olistico"
     },
@@ -73,5 +73,10 @@
       "category": "restaurant",
       "description": "Cibo di strada gourmet con un tocco moderno"
     }
-  ]
+  ],
+  "cta": {
+    "title": "Pronto a creare il tuo sito web?",
+    "subtitle": "Unisciti a migliaia di aziende che si fidano di Naveeg",
+    "button": "Inizia ora"
+  }
 }

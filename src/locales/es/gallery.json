@@ -5,10 +5,10 @@
     "all": "Todos",
     "restaurant": "Restaurante",
     "services": "Servicios", 
-    "retail": "Retail",
-    "portfolio": "Portafolio",
+    "retail": "Comercio",
+    "portfolio": "Portfolio",
     "blog": "Blog",
-    "ecommerce": "Comercio electrónico"
+    "ecommerce": "E-commerce"
   },
   "viewDemo": "Ver demo",
   "visitSite": "Visitar sitio",
@@ -26,7 +26,7 @@
     {
       "name": "Estudio Minimalista Moderno",
       "category": "portfolio", 
-      "description": "Portafolio de diseño creativo que muestra proyectos innovadores"
+      "description": "Portfolio de diseño creativo mostrando proyectos innovadores"
     },
     {
       "name": "Boutique TechStyle",
@@ -34,19 +34,19 @@
       "description": "Moda curada para el profesional moderno"
     },
     {
-      "name": "Paisajismo Pulgar Verde",
+      "name": "Paisajismo Green Thumb",
       "category": "services",
       "description": "Transforma tu espacio exterior con paisajismo profesional"
     },
     {
-      "name": "Blog Dosis Diaria",
+      "name": "Blog Daily Dose",
       "category": "blog",
-      "description": "Consejos de estilo de vida y bienestar para la vida cotidiana"
+      "description": "Consejos de estilo de vida y bienestar para la vida diaria"
     },
     {
       "name": "Artisan Coffee Co.",
       "category": "restaurant",
-      "description": "Café especial tostado fresco diariamente"
+      "description": "Café de especialidad tostado fresco diariamente"
     },
     {
       "name": "Gimnasio Fitness First",
@@ -54,7 +54,7 @@
       "description": "Instalación de fitness de última generación con entrenamiento personal"
     },
     {
-      "name": "Galería Trabajos Creativos",
+      "name": "Galería Creative Works",
       "category": "portfolio",
       "description": "Galería de arte contemporáneo con artistas locales"
     },
@@ -64,7 +64,7 @@
       "description": "Todo lo que necesitas para un hogar hermoso"
     },
     {
-      "name": "Blog Viaje de Bienestar",
+      "name": "Blog Wellness Journey",
       "category": "blog", 
       "description": "Historias inspiradoras y consejos para el bienestar holístico"
     },
@@ -73,5 +73,10 @@
       "category": "restaurant",
       "description": "Comida callejera gourmet con un toque moderno"
     }
-  ]
+  ],
+  "cta": {
+    "title": "¿Listo para crear tu sitio web?",
+    "subtitle": "Únete a miles de empresas que confían en Naveeg",
+    "button": "Empezar ahora"
+  }
 }

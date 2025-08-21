@@ -2,6 +2,7 @@
   "title": "Nous sommes là pour vous aider",
   "subtitle": "Contactez notre équipe",
   "form": {
+    "title": "Envoyez-nous un message",
     "name": "Nom complet",
     "namePlaceholder": "Entrez votre nom complet",
     "email": "Adresse email",
@@ -13,6 +14,7 @@
     "send": "Envoyer le message",
     "sending": "Envoi en cours...",
     "success": "Merci ! Nous vous répondrons bientôt.",
+    "successMessage": "Nous avons reçu votre message et vous contacterons bientôt.",
     "error": "Désolé, une erreur s'est produite lors de l'envoi de votre message. Veuillez réessayer."
   },
   "validation": {
