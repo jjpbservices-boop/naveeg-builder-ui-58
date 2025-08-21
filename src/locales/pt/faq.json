@@ -1,0 +1,51 @@
+{
+  "title": "Perguntas Frequentes",
+  "subtitle": "Encontre respostas para as perguntas mais comuns sobre Naveeg",
+  "items": [
+    {
+      "question": "Quão rápido posso criar um site?",
+      "answer": "Você pode ter um site totalmente funcional em menos de 30 segundos. Apenas descreva seu negócio e nossa IA criará um site profissional para você."
+    },
+    {
+      "question": "Preciso de conhecimento técnico?",
+      "answer": "Absolutamente não. Naveeg é projetado para todos, independentemente da experiência técnica. Nossa IA cuida de toda a programação e design."
+    },
+    {
+      "question": "Posso usar meu próprio domínio?",
+      "answer": "Sim, você pode conectar seu domínio personalizado a qualquer site criado com Naveeg. Também fornecemos subdomínios gratuitos."
+    },
+    {
+      "question": "Meus sites serão otimizados para mobile?",
+      "answer": "Absolutamente. Todos os sites criados com Naveeg são completamente otimizados para mobile e ficam perfeitos em qualquer dispositivo."
+    },
+    {
+      "question": "Posso editar meu site depois de criá-lo?",
+      "answer": "Sim, você pode fazer alterações em seu site a qualquer momento através do nosso painel fácil de usar. Modifique conteúdo, cores, fontes e muito mais."
+    },
+    {
+      "question": "Há algum custo oculto?",
+      "answer": "Não, nossos preços são transparentes. O que você vê é o que você paga, sem taxas ocultas ou cobranças surpresa."
+    },
+    {
+      "question": "Que tipo de suporte vocês oferecem?",
+      "answer": "Oferecemos múltiplos níveis de suporte dependendo do seu plano, desde suporte por email até suporte prioritário e dedicado para planos empresariais."
+    },
+    {
+      "question": "Posso cancelar minha assinatura a qualquer momento?",
+      "answer": "Sim, você pode cancelar sua assinatura a qualquer momento. Seu site permanecerá ativo até o final do seu período de faturamento atual."
+    },
+    {
+      "question": "Meus dados estão seguros?",
+      "answer": "Absolutamente. Usamos medidas de segurança de nível empresarial e SSL gratuito para manter seus dados e os de seus visitantes seguros."
+    },
+    {
+      "question": "Posso migrar meu site existente para Naveeg?",
+      "answer": "Sim, nossa equipe pode ajudá-lo a migrar seu site existente para Naveeg. Entre em contato conosco para assistência personalizada com migração."
+    }
+  ],
+  "stillHaveQuestions": {
+    "title": "Ainda tem dúvidas?",
+    "description": "Não conseguimos responder sua pergunta? Nossa equipe de suporte está aqui para ajudar.",
+    "contactButton": "Contatar suporte"
+  }
+}

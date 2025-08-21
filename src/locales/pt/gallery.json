@@ -1,0 +1,77 @@
+{
+  "title": "Galeria",
+  "subtitle": "Descubra sites incríveis construídos com Naveeg",
+  "filter": {
+    "all": "Todos",
+    "restaurant": "Restaurante",
+    "services": "Serviços", 
+    "retail": "Varejo",
+    "portfolio": "Portfólio",
+    "blog": "Blog",
+    "ecommerce": "E-commerce"
+  },
+  "viewDemo": "Ver demo",
+  "visitSite": "Visitar site",
+  "sites": [
+    {
+      "name": "Restaurante Bella Vista",
+      "category": "restaurant",
+      "description": "Experiência gastronômica italiana autêntica no coração da cidade"
+    },
+    {
+      "name": "Smith & Associados Advocacia",
+      "category": "services",
+      "description": "Serviços jurídicos profissionais com mais de 20 anos de experiência"
+    },
+    {
+      "name": "Estúdio Minimalista Moderno",
+      "category": "portfolio", 
+      "description": "Portfólio de design criativo apresentando projetos inovadores"
+    },
+    {
+      "name": "Boutique TechStyle",
+      "category": "retail",
+      "description": "Moda curada para o profissional moderno"
+    },
+    {
+      "name": "Paisagismo Polegar Verde",
+      "category": "services",
+      "description": "Transforme seu espaço externo com paisagismo profissional"
+    },
+    {
+      "name": "Blog Dose Diária",
+      "category": "blog",
+      "description": "Dicas de estilo de vida e bem-estar para o dia a dia"
+    },
+    {
+      "name": "Artisan Coffee Co.",
+      "category": "restaurant",
+      "description": "Café especial torrado fresco diariamente"
+    },
+    {
+      "name": "Academia Fitness First",
+      "category": "services", 
+      "description": "Instalação de fitness de última geração com treinamento pessoal"
+    },
+    {
+      "name": "Galeria Trabalhos Criativos",
+      "category": "portfolio",
+      "description": "Galeria de arte contemporânea apresentando artistas locais"
+    },
+    {
+      "name": "Loja Home Essentials",
+      "category": "ecommerce",
+      "description": "Tudo que você precisa para um lar bonito"
+    },
+    {
+      "name": "Blog Jornada do Bem-Estar",
+      "category": "blog", 
+      "description": "Histórias inspiradoras e dicas para bem-estar holístico"
+    },
+    {
+      "name": "Food Truck Urban Bites",
+      "category": "restaurant",
+      "description": "Comida de rua gourmet com um toque moderno"
+    }
+  ]
+}

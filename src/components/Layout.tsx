@@ -49,9 +49,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               onClick={() => navigate({ to: '/' })}
             >
               <img 
-                src="/brand-logo.svg" 
+                src="/brand-logo.png" 
                 alt={t('header.logoAlt')}
-                className="h-8 w-8 object-contain"
+                className="h-8 w-auto object-contain shrink-0"
+                onError={(e) => e.currentTarget.style.display = 'none'}
               />
               <span className="font-syne font-semibold text-xl text-foreground">
                 Naveeg

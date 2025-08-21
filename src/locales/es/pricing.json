@@ -1,0 +1,95 @@
+{
+  "title": "Precios",
+  "subtitle": "Planes simples y transparentes para todos los tamaños de negocio",
+  "monthly": "Mensual",
+  "annually": "Anual",
+  "save": "Ahorra 20%",
+  "plans": {
+    "starter": {
+      "name": "Principiante",
+      "description": "Perfecto para sitios web personales y pequeños negocios",
+      "price": {
+        "monthly": "9",
+        "annually": "89"
+      },
+      "features": [
+        "1 sitio web",
+        "Dominio personalizado",
+        "SSL gratuito",
+        "Plantillas profesionales",
+        "Optimización para móviles",
+        "SEO básico",
+        "Soporte por email"
+      ]
+    },
+    "pro": {
+      "name": "Pro",
+      "description": "Ideal para negocios en crecimiento que necesitan más funciones",
+      "price": {
+        "monthly": "29",
+        "annually": "289"
+      },
+      "features": [
+        "5 sitios web",
+        "Todo de Principiante",
+        "Análisis avanzado",
+        "Integraciones personalizadas",
+        "Editor de código personalizado",
+        "Soporte prioritario",
+        "Eliminar marca Naveeg",
+        "Formularios avanzados"
+      ]
+    },
+    "business": {
+      "name": "Empresa",
+      "description": "Para equipos grandes con necesidades empresariales",
+      "price": {
+        "monthly": "99",
+        "annually": "989"
+      },
+      "features": [
+        "Sitios web ilimitados",
+        "Todo de Pro",
+        "Colaboradores ilimitados",
+        "Soporte dedicado",
+        "SLA del 99.9%",
+        "Copias de seguridad diarias",
+        "Funciones empresariales",
+        "API personalizada"
+      ]
+    }
+  },
+  "faq": {
+    "title": "Preguntas frecuentes",
+    "items": [
+      {
+        "question": "¿Puedo cambiar de plan en cualquier momento?",
+        "answer": "Sí, puedes actualizar o cambiar tu plan en cualquier momento. Los cambios se aplican inmediatamente y se prorratean según corresponda."
+      },
+      {
+        "question": "¿Hay tarifas de configuración?",
+        "answer": "No, no hay tarifas de configuración ni costos ocultos. Solo pagas el precio del plan que eliges."
+      },
+      {
+        "question": "¿Qué sucede si cancelo mi suscripción?",
+        "answer": "Puedes cancelar en cualquier momento. Tu sitio permanecerá activo hasta el final de tu período de facturación actual."
+      },
+      {
+        "question": "¿Ofrecen reembolsos?",
+        "answer": "Ofrecemos un reembolso completo dentro de los primeros 30 días si no estás completamente satisfecho."
+      }
+    ]
+  },
+  "enterprise": {
+    "title": "¿Necesitas algo personalizado?",
+    "description": "Para organizaciones grandes con requisitos específicos, ofrecemos soluciones empresariales personalizadas.",
+    "contact": "Contactar ventas",
+    "features": [
+      "Implementación personalizada",
+      "Soporte dedicado",
+      "Integraciones personalizadas",
+      "Cumplimiento de seguridad",
+      "Capacitación del equipo"
+    ]
+  }
+}

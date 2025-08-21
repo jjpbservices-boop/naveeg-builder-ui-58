@@ -1,0 +1,95 @@
+{
+  "title": "Preços",
+  "subtitle": "Planos simples e transparentes para todos os tamanhos de negócio",
+  "monthly": "Mensal",
+  "annually": "Anual",
+  "save": "Economize 20%",
+  "plans": {
+    "starter": {
+      "name": "Iniciante",
+      "description": "Perfeito para sites pessoais e pequenos negócios",
+      "price": {
+        "monthly": "9",
+        "annually": "89"
+      },
+      "features": [
+        "1 site",
+        "Domínio personalizado",
+        "SSL gratuito",
+        "Templates profissionais",
+        "Otimização mobile",
+        "SEO básico",
+        "Suporte por email"
+      ]
+    },
+    "pro": {
+      "name": "Pro",
+      "description": "Ideal para negócios em crescimento que precisam de mais recursos",
+      "price": {
+        "monthly": "29",
+        "annually": "289"
+      },
+      "features": [
+        "5 sites",
+        "Tudo do Iniciante",
+        "Analytics avançado",
+        "Integrações personalizadas",
+        "Editor de código personalizado",
+        "Suporte prioritário",
+        "Remover marca Naveeg",
+        "Formulários avançados"
+      ]
+    },
+    "business": {
+      "name": "Empresa",
+      "description": "Para grandes equipes com necessidades empresariais",
+      "price": {
+        "monthly": "99",
+        "annually": "989"
+      },
+      "features": [
+        "Sites ilimitados",
+        "Tudo do Pro",
+        "Colaboradores ilimitados",
+        "Suporte dedicado",
+        "SLA 99.9%",
+        "Backups diários",
+        "Recursos empresariais",
+        "API personalizada"
+      ]
+    }
+  },
+  "faq": {
+    "title": "Perguntas frequentes",
+    "items": [
+      {
+        "question": "Posso mudar de plano a qualquer momento?",
+        "answer": "Sim, você pode fazer upgrade ou alterar seu plano a qualquer momento. As mudanças se aplicam imediatamente e são rateadas conforme apropriado."
+      },
+      {
+        "question": "Há taxas de configuração?",
+        "answer": "Não, não há taxas de configuração ou custos ocultos. Você paga apenas o preço do plano que escolher."
+      },
+      {
+        "question": "O que acontece se eu cancelar minha assinatura?",
+        "answer": "Você pode cancelar a qualquer momento. Seu site permanecerá ativo até o final do seu período de faturamento atual."
+      },
+      {
+        "question": "Vocês oferecem reembolsos?",
+        "answer": "Oferecemos reembolso total nos primeiros 30 dias se você não estiver completamente satisfeito."
+      }
+    ]
+  },
+  "enterprise": {
+    "title": "Precisa de algo personalizado?",
+    "description": "Para organizações grandes com requisitos específicos, oferecemos soluções empresariais personalizadas.",
+    "contact": "Contatar vendas",
+    "features": [
+      "Implementação personalizada",
+      "Suporte dedicado",
+      "Integrações personalizadas",
+      "Conformidade de segurança",
+      "Treinamento da equipe"
+    ]
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "title": "Prezzi",
+  "subtitle": "Piani semplici e trasparenti per aziende di ogni dimensione",
+  "monthly": "Mensile",
+  "annually": "Annuale",
+  "save": "Risparmia 20%",
+  "plans": {
+    "starter": {
+      "name": "Starter",
+      "description": "Perfetto per siti web personali e piccole attività",
+      "price": {
+        "monthly": "9",
+        "annually": "89"
+      },
+      "features": [
+        "1 sito web",
+        "Dominio personalizzato",
+        "SSL gratuito",
+        "Template professionali",
+        "Ottimizzazione mobile",
+        "SEO base",
+        "Supporto email"
+      ]
+    },
+    "pro": {
+      "name": "Pro",
+      "description": "Ideale per attività in crescita che necessitano di più funzionalità",
+      "price": {
+        "monthly": "29",
+        "annually": "289"
+      },
+      "features": [
+        "5 siti web",
+        "Tutto di Starter",
+        "Analytics avanzate",
+        "Integrazioni personalizzate",
+        "Editor codice personalizzato",
+        "Supporto prioritario",
+        "Rimuovi brand Naveeg",
+        "Form avanzati"
+      ]
+    },
+    "business": {
+      "name": "Business",
+      "description": "Per grandi team con esigenze aziendali",
+      "price": {
+        "monthly": "99",
+        "annually": "989"
+      },
+      "features": [
+        "Siti web illimitati",
+        "Tutto di Pro",
+        "Collaboratori illimitati",
+        "Supporto dedicato",
+        "SLA 99.9%",
+        "Backup giornalieri",
+        "Funzionalità aziendali",
+        "API personalizzata"
+      ]
+    }
+  },
+  "faq": {
+    "title": "Domande frequenti",
+    "items": [
+      {
+        "question": "Posso cambiare piano in qualsiasi momento?",
+        "answer": "Sì, puoi fare upgrade o cambiare il tuo piano in qualsiasi momento. I cambiamenti si applicano immediatamente e vengono ripartiti appropriatamente."
+      },
+      {
+        "question": "Ci sono commissioni di configurazione?",
+        "answer": "No, non ci sono commissioni di configurazione o costi nascosti. Paghi solo il prezzo del piano che scegli."
+      },
+      {
+        "question": "Cosa succede se cancello il mio abbonamento?",
+        "answer": "Puoi cancellare in qualsiasi momento. Il tuo sito rimarrà attivo fino alla fine del tuo periodo di fatturazione corrente."
+      },
+      {
+        "question": "Offrite rimborsi?",
+        "answer": "Offriamo un rimborso completo entro i primi 30 giorni se non sei completamente soddisfatto."
+      }
+    ]
+  },
+  "enterprise": {
+    "title": "Hai bisogno di qualcosa di personalizzato?",
+    "description": "Per organizzazioni grandi con requisiti specifici, offriamo soluzioni aziendali personalizzate.",
+    "contact": "Contatta vendite",
+    "features": [
+      "Implementazione personalizzata",
+      "Supporto dedicato",
+      "Integrazioni personalizzate",
+      "Compliance di sicurezza",
+      "Formazione del team"
+    ]
+  }
+}

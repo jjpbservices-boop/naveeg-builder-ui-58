@@ -1,0 +1,77 @@
+{
+  "title": "Galleria",
+  "subtitle": "Scopri siti web incredibili costruiti con Naveeg",
+  "filter": {
+    "all": "Tutti",
+    "restaurant": "Ristorante",
+    "services": "Servizi", 
+    "retail": "Retail",
+    "portfolio": "Portfolio",
+    "blog": "Blog",
+    "ecommerce": "E-commerce"
+  },
+  "viewDemo": "Vedi demo",
+  "visitSite": "Visita sito",
+  "sites": [
+    {
+      "name": "Ristorante Bella Vista",
+      "category": "restaurant",
+      "description": "Autentica esperienza culinaria italiana nel cuore della città"
+    },
+    {
+      "name": "Studio Legale Smith & Associati",
+      "category": "services",
+      "description": "Servizi legali professionali con oltre 20 anni di esperienza"
+    },
+    {
+      "name": "Studio Minimalista Moderno",
+      "category": "portfolio", 
+      "description": "Portfolio di design creativo che mostra progetti innovativi"
+    },
+    {
+      "name": "Boutique TechStyle",
+      "category": "retail",
+      "description": "Moda curata per il professionista moderno"
+    },
+    {
+      "name": "Paesaggistica Pollice Verde",
+      "category": "services",
+      "description": "Trasforma il tuo spazio esterno con paesaggistica professionale"
+    },
+    {
+      "name": "Blog Dose Quotidiana",
+      "category": "blog",
+      "description": "Consigli di lifestyle e benessere per la vita quotidiana"
+    },
+    {
+      "name": "Artisan Coffee Co.",
+      "category": "restaurant",
+      "description": "Caffè speciale tostato fresco ogni giorno"
+    },
+    {
+      "name": "Palestra Fitness First",
+      "category": "services", 
+      "description": "Struttura fitness all'avanguardia con personal training"
+    },
+    {
+      "name": "Galleria Lavori Creativi",
+      "category": "portfolio",
+      "description": "Galleria d'arte contemporanea con artisti locali"
+    },
+    {
+      "name": "Negozio Home Essentials",
+      "category": "ecommerce",
+      "description": "Tutto ciò di cui hai bisogno per una casa bella"
+    },
+    {
+      "name": "Blog Viaggio del Benessere",
+      "category": "blog", 
+      "description": "Storie ispiratrici e consigli per il benessere olistico"
+    },
+    {
+      "name": "Food Truck Urban Bites",
+      "category": "restaurant",
+      "description": "Cibo di strada gourmet con un tocco moderno"
+    }
+  ]
+}
