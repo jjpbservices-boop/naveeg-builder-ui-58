@@ -52,6 +52,33 @@
   "header": {
     "logoAlt": "Constructeur de site web Naveeg",
     "generateWebsite": "Générez votre site web",
+    "changeLanguage": "Changer de langue",
+    "nav": {
+      "features": "Fonctionnalités",
+      "pricing": "Tarifs",
+      "gallery": "Galerie",
+      "faq": "FAQ",
+      "contact": "Contact"
+    }
+  },
+  "footer": {
+    "product": "Produit",
+    "features": "Fonctionnalités",
+    "pricing": "Tarifs",
+    "templates": "Modèles",
+    "company": "Entreprise",
+    "about": "À propos",
+    "blog": "Blog",
+    "careers": "Carrières",
+    "resources": "Ressources",
+    "help": "Aide",
+    "documentation": "Documentation",
+    "support": "Support",
+    "legal": "Légal",
+    "privacy": "Confidentialité",
+    "terms": "Conditions",
+    "cookies": "Cookies",
+    "copyright": "© 2024 Naveeg. Tous droits réservés.",
     "changeLanguage": "Changer de langue"
   }
 }

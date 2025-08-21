@@ -1,8 +1,28 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Globe, Twitter, Linkedin, Github } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const Footer: React.FC = () => {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
+
+  const languages = [
+    { code: 'en', name: 'English' },
+    { code: 'fr', name: 'Français' },
+    { code: 'es', name: 'Español' },
+    { code: 'pt', name: 'Português' },
+    { code: 'it', name: 'Italiano' },
+  ];
+
+  const changeLanguage = (langCode: string) => {
+    i18n.changeLanguage(langCode);
+  };
 
   return (
     <footer className="bg-card border-t border-border mt-16">
@@ -45,8 +65,51 @@ const Footer: React.FC = () => {
           </div>
         </div>
         
-        <div className="border-t border-border mt-12 pt-8 text-center">
-          <p className="text-muted-foreground">{t('footer.copyright')}</p>
+        <div className="border-t border-border mt-12 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <p className="text-muted-foreground">{t('footer.copyright')}</p>
+            
+            <div className="flex items-center space-x-6">
+              {/* Social Icons */}
+              <div className="flex items-center space-x-4">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Twitter className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Linkedin className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Github className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Language Selector */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="touch-target"
+                    aria-label={t('footer.languageSelector')}
+                  >
+                    <Globe className="h-4 w-4 mr-2" />
+                    {languages.find(lang => lang.code === i18n.language)?.name || 'Language'}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {languages.map((lang) => (
+                    <DropdownMenuItem
+                      key={lang.code}
+                      onClick={() => changeLanguage(lang.code)}
+                      className={i18n.language === lang.code ? 'bg-accent' : ''}
+                    >
+                      {lang.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowRight, Zap, Smartphone, Search, Shield, Palette, Headphones, Star, Users, Clock, CheckCircle } from 'lucide-react';
+import { ArrowRight, Zap, Smartphone, Search, Shield, Palette, LayoutDashboard, Star, Users, Clock, CheckCircle } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
 const Home: React.FC = () => {
@@ -29,7 +29,7 @@ const Home: React.FC = () => {
     search: Search,
     shield: Shield,
     palette: Palette,
-    headphones: Headphones
+    layout: LayoutDashboard
   };
 
   return (
@@ -70,6 +70,17 @@ const Home: React.FC = () => {
           <p className="text-sm text-muted-foreground">
             {t('hero.helper')}
           </p>
+        </div>
+      </section>
+
+      {/* Trial Banner */}
+      <section className="container mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-primary-light border border-primary/20 rounded-2xl p-6 text-center">
+            <p className="text-primary font-medium">
+              {t('trialBanner.text')}
+            </p>
+          </div>
         </div>
       </section>
 

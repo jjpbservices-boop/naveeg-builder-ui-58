@@ -25,7 +25,7 @@
     "workspace": "Espacio de trabajo",
     "website": "Sitio web",
     "websites": "Sitios web",
-    "overview": "Vista general",
+    "overview": "Resumen",
     "analytics": "Analíticas",
     "domain": "Dominio",
     "backup": "Copia de seguridad",
@@ -47,7 +47,7 @@
     "events": "Eventos",
     "contact": "Contacto",
     "blog": "Blog",
-    "portfolio": "Portfolio"
+    "portfolio": "Portafolio"
   },
   "header": {
     "logoAlt": "Constructor de sitios web Naveeg",
@@ -69,7 +69,7 @@
     "company": "Empresa",
     "about": "Acerca de",
     "blog": "Blog",
-    "careers": "Carreras",
+    "careers": "Empleos",
     "resources": "Recursos",
     "help": "Ayuda",
     "documentation": "Documentación",

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, Menu } from 'lucide-react';
+import { Globe, Sun, Moon } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -9,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useNavigate } from '@tanstack/react-router';
+import Footer from '@/components/Footer';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -17,6 +19,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { t, i18n } = useTranslation('common');
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
 
   const languages = [
     { code: 'en', name: 'English' },
@@ -42,12 +45,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           {/* Logo */}
           <div className="flex items-center space-x-4">
             <div 
-              className="flex items-center space-x-2 cursor-pointer"
+              className="flex items-center space-x-3 cursor-pointer"
               onClick={() => navigate({ to: '/' })}
             >
-              <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <span className="text-sm font-bold text-white">N</span>
-              </div>
+              <img 
+                src="/brand-logo.svg" 
+                alt={t('header.logoAlt')}
+                className="h-8 w-8 object-contain"
+              />
               <span className="font-syne font-semibold text-xl text-foreground">
                 Naveeg
               </span>
@@ -57,24 +62,36 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Button variant="ghost" onClick={() => navigate({ to: '/features' })}>
-              Features
+              {t('header.nav.features')}
             </Button>
             <Button variant="ghost" onClick={() => navigate({ to: '/pricing' })}>
-              Pricing
+              {t('header.nav.pricing')}
             </Button>
             <Button variant="ghost" onClick={() => navigate({ to: '/gallery' })}>
-              Gallery
+              {t('header.nav.gallery')}
             </Button>
             <Button variant="ghost" onClick={() => navigate({ to: '/faq' })}>
-              FAQ
+              {t('header.nav.faq')}
             </Button>
             <Button variant="ghost" onClick={() => navigate({ to: '/contact' })}>
-              Contact
+              {t('header.nav.contact')}
             </Button>
           </nav>
 
           {/* Right side */}
           <div className="flex items-center space-x-4">
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="touch-target"
+              aria-label="Toggle theme"
+            >
+              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            </Button>
+
             {/* Language Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -115,6 +132,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <main className="flex-1">
         {children}
       </main>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

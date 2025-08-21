@@ -57,8 +57,8 @@
       },
       {
         "title": "Simple dashboard",
-        "description": "Get help whenever you need it with our dedicated support team",
-        "icon": "settings"
+        "description": "Manage your website from an intuitive and easy-to-use dashboard",
+        "icon": "layout"
       },
       {
         "title": "Free 14-day trial",
@@ -91,7 +91,7 @@
     "plans": [
       {
         "name": "Starter",
-        "price": "9",
+        "price": "29",
         "currency": "€",
         "period": "/month",
         "description": "Perfect for small businesses getting started",
@@ -99,7 +99,7 @@
       },
       {
         "name": "Pro",
-        "price": "29",
+        "price": "59",
         "currency": "€", 
         "period": "/month",
         "description": "For growing businesses that need more",

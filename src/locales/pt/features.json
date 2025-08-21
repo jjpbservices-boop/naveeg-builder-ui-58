@@ -1,0 +1,36 @@
+{
+  "title": "Recursos Poderosos",
+  "subtitle": "Tudo que você precisa para criar sites incríveis",
+  "cards": [
+    {
+      "icon": "zap",
+      "title": "Geração Rápida",
+      "description": "Gere sites profissionais em minutos, não semanas. Nosso motor de IA acelera todo o processo de desenvolvimento."
+    },
+    {
+      "icon": "smartphone",
+      "title": "Design Responsivo",
+      "description": "Todos os sites são otimizados para mobile desde o início. Ficam perfeitos em qualquer dispositivo."
+    },
+    {
+      "icon": "search",
+      "title": "SEO Otimizado",
+      "description": "Recursos de SEO integrados para ajudar seu site a rankear melhor nos motores de busca."
+    },
+    {
+      "icon": "shield",
+      "title": "Segurança Web",
+      "description": "Certificados SSL gratuitos e medidas de segurança avançadas incluídas. Seu site estará protegido desde o dia um."
+    },
+    {
+      "icon": "palette",
+      "title": "Personalização Total",
+      "description": "Modifique cores, fontes e layouts para combinar perfeitamente com sua marca."
+    },
+    {
+      "icon": "layout",
+      "title": "Painel Simples",
+      "description": "Gerencie todo seu site a partir de um painel intuitivo e fácil de usar."
+    }
+  ]
+}

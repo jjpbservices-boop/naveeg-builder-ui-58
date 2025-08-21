@@ -1,0 +1,36 @@
+{
+  "title": "Características Poderosas",
+  "subtitle": "Todo lo que necesitas para crear sitios web increíbles",
+  "cards": [
+    {
+      "icon": "zap",
+      "title": "Generación Rápida",
+      "description": "Genera sitios web profesionales en minutos, no en semanas. Nuestro motor de IA acelera todo el proceso de desarrollo."
+    },
+    {
+      "icon": "smartphone",
+      "title": "Responsive Design",
+      "description": "Todos los sitios web están optimizados para móviles desde el primer momento. Se ven perfectos en cualquier dispositivo."
+    },
+    {
+      "icon": "search",
+      "title": "SEO Optimizado",
+      "description": "Funciones SEO integradas para ayudar a que tu sitio web se posicione mejor en los motores de búsqueda."
+    },
+    {
+      "icon": "shield",
+      "title": "Seguridad Web",
+      "description": "Certificados SSL gratuitos y medidas de seguridad avanzadas incluidas. Tu sitio web estará protegido desde el día uno."
+    },
+    {
+      "icon": "palette",
+      "title": "Personalización Total",
+      "description": "Modifica colores, fuentes y diseños para que coincidan perfectamente con tu marca."
+    },
+    {
+      "icon": "layout",
+      "title": "Panel Simple",
+      "description": "Gestiona todo tu sitio web desde un panel intuitivo y fácil de usar."
+    }
+  ]
+}
