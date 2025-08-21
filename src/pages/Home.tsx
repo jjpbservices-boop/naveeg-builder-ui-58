@@ -24,12 +24,12 @@ const Home: React.FC = () => {
   };
 
   const iconMap = {
-    zap: Zap,
-    smartphone: Smartphone,
-    search: Search,
+    sparkles: Zap,
+    device: Smartphone,
+    type: Search,
     shield: Shield,
-    palette: Palette,
-    layout: LayoutDashboard
+    layout: LayoutDashboard,
+    clock: Clock
   };
 
   return (
@@ -118,9 +118,6 @@ const Home: React.FC = () => {
               <h3 className="font-syne font-semibold text-xl text-foreground mb-2">
                 {t(`howItWorks.steps.${index}.title`)}
               </h3>
-              <p className="text-muted-foreground">
-                {t(`howItWorks.steps.${index}.description`)}
-              </p>
             </div>
           ))}
         </div>
@@ -154,7 +151,7 @@ const Home: React.FC = () => {
                   {t(`features.cards.${index}.title`)}
                 </h3>
                 <p className="text-muted-foreground">
-                  {t(`features.cards.${index}.description`)}
+                  {t(`features.cards.${index}.desc`)}
                 </p>
               </div>
             );
@@ -166,7 +163,7 @@ const Home: React.FC = () => {
       <section className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
-            {t('whyNaveeg.title')}
+            {t('why.title')}
           </h2>
         </div>
         
@@ -174,13 +171,53 @@ const Home: React.FC = () => {
           {[0, 1, 2].map((index) => (
             <div key={index} className="text-center p-6">
               <h3 className="font-syne font-semibold text-xl text-foreground mb-4">
-                {t(`whyNaveeg.blocks.${index}.title`)}
+                {t(`why.blocks.${index}.title`)}
               </h3>
               <p className="text-muted-foreground">
-                {t(`whyNaveeg.blocks.${index}.description`)}
+                {t(`why.blocks.${index}.desc`)}
               </p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Gallery Teaser */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center">
+          <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-8">
+            {t('galleryTeaser.title')}
+          </h2>
+          <Button variant="outline" size="lg" onClick={() => navigate({ to: '/gallery' })}>
+            {t('galleryTeaser.cta')}
+          </Button>
+        </div>
+      </section>
+
+      {/* FAQ Teaser */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center">
+          <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-8">
+            {t('faqTeaser.title')}
+          </h2>
+          <Button variant="outline" size="lg" onClick={() => navigate({ to: '/faq' })}>
+            {t('faqTeaser.cta')}
+          </Button>
+        </div>
+      </section>
+
+      {/* CTA Final */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="bg-gradient-primary rounded-3xl p-8 md:p-12 text-center text-white">
+          <h2 className="font-syne text-3xl md:text-4xl font-bold mb-8">
+            {t('ctaFinal.title')}
+          </h2>
+          <Button 
+            size="lg" 
+            className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 touch-target"
+            onClick={() => navigate({ to: '/describe' })}
+          >
+            {t('ctaFinal.button')}
+          </Button>
         </div>
       </section>
 

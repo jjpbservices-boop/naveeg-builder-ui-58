@@ -1,110 +1,33 @@
 {
   "title": "Pricing",
-  "subtitle": "Choose the perfect plan for your business needs",
-  "monthly": "Monthly",
-  "annually": "Annually",
-  "save": "2 months free",
-  "mostPopular": "Most Popular",
-  "getStarted": "Get Started",
-  "contactSales": "Contact Sales",
-  "freeTrial": "14-day free trial",
-  "noCredit": "No credit card required",
-  "plans": {
-    "starter": {
+  "subtitle": "Simple plans. Cancel anytime.",
+  "trial": "14-day free trial on a Naveeg subdomain. No credit card required.",
+  "toggle": { "monthly": "Monthly", "annual": "Annual (2 months free)" },
+  "perMonth": "/month",
+  "billedAnnually": "Billed annually",
+  "mostPopular": "Most popular",
+  "plans": [
+    {
+      "id": "starter",
       "name": "Starter",
-      "description": "Perfect for small businesses and personal projects",
-      "price": {
-        "monthly": 29,
-        "annually": 24
-      },
-      "features": [
-        "1 Website",
-        "Professional templates",
-        "Mobile optimization",
-        "SSL certificate",
-        "Basic SEO tools",
-        "Email support",
-        "5GB storage",
-        "Custom domain"
-      ]
+      "priceMonthly": 29,
+      "desc": "For freelancers and solo entrepreneurs.",
+      "features": ["1 website", "Managed hosting", "Email support", "SEO basics"]
     },
-    "pro": {
-      "name": "Pro", 
-      "description": "Ideal for growing businesses that need more features",
-      "price": {
-        "monthly": 59,
-        "annually": 49
-      },
-      "popular": true,
-      "features": [
-        "5 Websites",
-        "Premium templates",
-        "Advanced customization",
-        "Priority support",
-        "Advanced SEO tools",
-        "Website analytics",
-        "50GB storage",
-        "E-commerce features",
-        "Remove Naveeg branding",
-        "Custom code injection"
-      ]
+    {
+      "id": "pro",
+      "name": "Pro",
+      "priceMonthly": 59,
+      "desc": "For growing small businesses.",
+      "features": ["3 websites", "Advanced customization", "Analytics", "Priority support"]
     },
-    "business": {
+    {
+      "id": "business",
       "name": "Business",
-      "description": "For agencies and enterprises with advanced needs",
-      "price": {
-        "monthly": 99,
-        "annually": 83
-      },
-      "features": [
-        "Unlimited websites",
-        "White-label solution",
-        "API access",
-        "24/7 phone support",
-        "Advanced analytics",
-        "Unlimited storage",
-        "Multi-user collaboration",
-        "Custom integrations",
-        "Dedicated account manager",
-        "SLA guarantee"
-      ]
+      "priceMonthly": 99,
+      "desc": "For established teams.",
+      "features": ["Unlimited websites", "Full analytics", "Advanced SEO", "Premium support"]
     }
-  },
-  "faq": {
-    "title": "Pricing FAQ",
-    "questions": [
-      {
-        "question": "Can I change plans anytime?",
-        "answer": "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately."
-      },
-      {
-        "question": "What payment methods do you accept?",
-        "answer": "We accept all major credit cards, PayPal, and bank transfers for annual plans."
-      },
-      {
-        "question": "Is there a setup fee?",
-        "answer": "No, there are no setup fees or hidden costs. You only pay the monthly or annual subscription."
-      },
-      {
-        "question": "Do you offer refunds?",
-        "answer": "We offer a 30-day money-back guarantee on all plans. No questions asked."
-      },
-      {
-        "question": "What happens if I exceed my limits?",
-        "answer": "We'll notify you before you reach your limits and help you upgrade to a suitable plan."
-      }
-    ]
-  },
-  "enterprise": {
-    "title": "Need something custom?",
-    "subtitle": "Contact our sales team for enterprise solutions",
-    "features": [
-      "Custom pricing",
-      "Dedicated infrastructure", 
-      "Advanced security",
-      "Priority support",
-      "Custom integrations"
-    ],
-    "contact": "Contact Sales"
-  }
+  ],
+  "cta": "Start free trial"
 }

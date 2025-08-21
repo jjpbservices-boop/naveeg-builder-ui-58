@@ -1,17 +1,6 @@
 {
-  "terms": {
-    "title": "Terms of Service",
-    "lastUpdated": "Last updated: {date}",
-    "content": "Terms of service content will be available here..."
-  },
-  "privacy": {
-    "title": "Privacy Policy", 
-    "lastUpdated": "Last updated: {date}",
-    "content": "Privacy policy content will be available here..."
-  },
-  "cookies": {
-    "title": "Cookie Policy",
-    "lastUpdated": "Last updated: {date}", 
-    "content": "Cookie policy content will be available here..."
-  }
+  "title": "Legal information",
+  "terms": { "title": "Terms of service", "lastUpdated": "Last updated {{date}}", "sections": ["Use of service", "Accounts", "Payments", "Prohibited use", "Termination"] },
+  "privacy": { "title": "Privacy policy", "lastUpdated": "Last updated {{date}}", "sections": ["Data we collect", "How we use data", "Your rights", "Security", "Contact"] },
+  "cookies": { "title": "Cookie policy", "lastUpdated": "Last updated {{date}}", "sections": ["What cookies are", "Cookies we use", "Managing cookies"] }
 }

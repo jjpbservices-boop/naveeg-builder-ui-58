@@ -6,145 +6,37 @@
     "ctaButton": "Generate My Website",
     "helper": "Your site will be ready within minutes after you click generate."
   },
-  "trialBanner": {
-    "text": "Start with a 14-day free trial on a Naveeg subdomain. No credit card required."
-  },
-  "socialProof": {
-    "title": "Trusted by thousands of businesses",
-    "logos": ["Company A", "Company B", "Company C", "Company D", "Company E"]
-  },
+  "trialBanner": { "text": "Start with a 14-day free trial on a Naveeg subdomain. No credit card required." },
+  "socialProof": { "title": "Trusted by entrepreneurs across Europe" },
   "howItWorks": {
     "title": "How it works",
-    "subtitle": "Get your website up and running in three simple steps",
+    "subtitle": "Three simple steps",
     "steps": [
-      {
-        "title": "Tell us about your business",
-        "description": "Describe your company in a few words"
-      },
-      {
-        "title": "Pick your style and colors",
-        "description": "Choose colors, fonts, and design preferences"
-      },
-      {
-        "title": "Generate your website in minutes",
-        "description": "Your professional website is ready to go live"
-      }
+      { "title": "Tell us about your business" },
+      { "title": "Pick your style and colors" },
+      { "title": "Generate your website in minutes" }
     ]
   },
   "features": {
-    "title": "Everything you need to succeed online",
-    "subtitle": "Built for modern businesses that want to get online fast",
+    "title": "Features",
     "cards": [
-      {
-        "title": "Mobile-first design",
-        "description": "Every website is optimized for mobile devices and looks perfect everywhere",
-        "icon": "smartphone"
-      },
-      {
-        "title": "SEO optimization included",
-        "description": "Built-in SEO features to help your business get found on search engines",
-        "icon": "search"
-      },
-      {
-        "title": "Custom colors & fonts",
-        "description": "Change colors, fonts, and content without any technical knowledge",
-        "icon": "palette"
-      },
-      {
-        "title": "Fast & secure hosting",
-        "description": "Enterprise-grade security with 99.9% uptime guarantee",
-        "icon": "shield"
-      },
-      {
-        "title": "Simple dashboard",
-        "description": "Manage your website from an intuitive and easy-to-use dashboard",
-        "icon": "layout"
-      },
-      {
-        "title": "Free 14-day trial",
-        "description": "Get your website ready in under 30 seconds with our AI-powered builder",
-        "icon": "zap"
-      }
+      { "icon": "sparkles", "title": "AI-powered setup", "desc": "Answer a few questions. We handle the rest." },
+      { "icon": "device", "title": "Mobile‑first design", "desc": "Looks perfect on any device." },
+      { "icon": "type", "title": "Fonts & colors", "desc": "Choose a clean, modern look." },
+      { "icon": "shield", "title": "Fast & secure", "desc": "Speed and HTTPS included." },
+      { "icon": "layout", "title": "Simple dashboard", "desc": "Manage pages, analytics, and more." },
+      { "icon": "clock", "title": "Free 14‑day trial", "desc": "Try it on a Naveeg subdomain." }
     ]
   },
-  "whyNaveeg": {
+  "why": {
     "title": "Why choose Naveeg?",
     "blocks": [
-      {
-        "title": "Save time — launch in minutes, not weeks",
-        "description": "Don't wait weeks for your website. Get online in minutes with our lightning-fast generation process."
-      },
-      {
-        "title": "No skills needed — built for non-technical users",
-        "description": "Build professional websites without writing a single line of code. Our AI handles all the technical complexity."
-      },
-      {
-        "title": "Grow online — optimized for visibility and conversions",
-        "description": "Start simple and scale up. Add features and functionality as your business grows."
-      }
+      { "title": "Save time", "desc": "Launch in minutes, not weeks." },
+      { "title": "No skills needed", "desc": "Built for non‑technical users." },
+      { "title": "Grow online", "desc": "Optimized for visibility and conversions." }
     ]
   },
-  "pricing": {
-    "title": "Simple, transparent pricing",
-    "subtitle": "Choose the plan that's right for your business",
-    "viewAll": "View all plans",
-    "plans": [
-      {
-        "name": "Starter",
-        "price": "29",
-        "currency": "€",
-        "period": "/month",
-        "description": "Perfect for small businesses getting started",
-        "features": ["1 Website", "Basic Templates", "SSL Certificate", "Email Support"]
-      },
-      {
-        "name": "Pro",
-        "price": "59",
-        "currency": "€", 
-        "period": "/month",
-        "description": "For growing businesses that need more",
-        "features": ["5 Websites", "Premium Templates", "Custom Domain", "Priority Support", "Analytics"],
-        "popular": true
-      },
-      {
-        "name": "Business",
-        "price": "99",
-        "currency": "€",
-        "period": "/month", 
-        "description": "For agencies and large businesses",
-        "features": ["Unlimited Websites", "White Label", "API Access", "24/7 Phone Support", "Advanced Analytics"]
-      }
-    ]
-  },
-  "gallery": {
-    "title": "Built with Naveeg",
-    "subtitle": "See what our customers have created",
-    "viewAll": "View gallery",
-    "categories": ["All", "Restaurant", "Services", "Portfolio", "E-commerce", "Blog"]
-  },
-  "faq": {
-    "title": "Frequently asked questions",
-    "subtitle": "Everything you need to know about Naveeg",
-    "viewAll": "View all FAQs",
-    "questions": [
-      {
-        "question": "How long does it take to generate a website?",
-        "answer": "Most websites are generated in under 30 seconds. Complex sites might take up to 2 minutes."
-      },
-      {
-        "question": "Can I use my own domain name?",
-        "answer": "Yes! You can connect your existing domain or register a new one through our platform."
-      },
-      {
-        "question": "Is there a free trial?",
-        "answer": "We offer a 14-day free trial on all plans. No credit card required to get started."
-      }
-    ]
-  },
-  "ctaBanner": {
-    "title": "Ready to build your website?",
-    "subtitle": "Join thousands of businesses that trust Naveeg for their online presence",
-    "button": "Start Building Now",
-    "helper": "No credit card required • 14-day free trial"
-  }
+  "galleryTeaser": { "title": "They built this with Naveeg…" , "cta": "Browse gallery" },
+  "faqTeaser": { "title": "Questions? We've got answers", "cta": "Read the FAQ" },
+  "ctaFinal": { "title": "Ready to launch?", "button": "Generate My Website" }
 }
