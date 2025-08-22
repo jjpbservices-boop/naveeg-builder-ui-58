@@ -26,15 +26,21 @@ const Generate: React.FC = () => {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [user, setUser] = useState<any>(null);
 
-  const { 
-    siteId,
+  const {
+    business_name,
+    business_type,
+    business_description,
+    seo_title,
+    seo_description,
+    seo_keyphrase,
     colors,
     fonts,
     pages_meta,
     website_type,
-    seo_title,
-    seo_description,
-    seo_keyphrase,
+    website_id,
+    unique_id,
+    preview_url,
+    admin_url,
     updateApiData,
     setError,
     error
@@ -51,13 +57,13 @@ const Generate: React.FC = () => {
   ];
 
   useEffect(() => {
-    if (!siteId) {
+    if (!website_id || !unique_id) {
       navigate({ to: '/onboarding/brief' });
       return;
     }
 
     startGeneration();
-  }, [siteId, navigate]);
+  }, [website_id, unique_id, navigate]);
 
   // Set up auth listener
   useEffect(() => {
@@ -73,95 +79,116 @@ const Generate: React.FC = () => {
   }, []);
 
   const startGeneration = async () => {
+    if (!website_id || !unique_id) {
+      setError('Missing website information. Please go back and complete the previous steps.');
+      return;
+    }
+
     setIsGenerating(true);
-    setHasError(false);
+    setProgress(0);
+    setCurrentStep(0);
     setError(undefined);
 
     try {
-      // Step 1: Update design preferences
-      await updateSiteWithDesignPreferences();
-      setCurrentStep(1);
-      setProgress(25);
-      
-      // Step 2: Generate site
-      const { data: generateData, error: generateError } = await apiClient.generateSite(siteId!);
-      
-      if (generateError) {
-        throw new Error(generateError.message || 'Failed to generate website');
-      }
-      
-      updateApiData({ 
-        preview_url: generateData!.url,
-        site_url: generateData!.url,
-        website_id: generateData!.website_id 
+      setCurrentStep(0);
+      setProgress(15);
+
+      // Call generate-from-sitemap
+      const generateResponse = await fetch('https://eilpazegjrcrwgpujqni.supabase.co/functions/v1/ai-router?action=generate-from-sitemap', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'generate-from-sitemap',
+          website_id,
+          unique_id,
+          params: {
+            business_type,
+            business_name,
+            business_description,
+            colors,
+            fonts: {
+              primary_font: fonts.body
+            },
+            pages_meta,
+            website_title: seo_title,
+            website_description: seo_description,
+            website_keyphrase: seo_keyphrase,
+            website_type
+          }
+        })
       });
-      setCurrentStep(2);
-      setProgress(40);
 
-      // Step 3: Publish pages
-      const { error: publishError } = await apiClient.publishPages(generateData!.website_id.toString());
-      if (publishError) {
-        console.error('Failed to publish pages:', publishError);
-        // Continue anyway as this is not critical
+      if (!generateResponse.ok) {
+        const errorData = await generateResponse.json();
+        throw new Error(`Failed to generate site: ${errorData.detail?.message || 'Unknown error'}`);
       }
+
       setCurrentStep(3);
-      setProgress(60);
-
-      // Step 4: Set front page (use first page or "Home")
-      const homePage = pages_meta.find(p => p.title.toLowerCase() === 'home') || pages_meta[0];
-      if (homePage) {
-        const { error: frontPageError } = await apiClient.setFrontPage(
-          generateData!.website_id.toString(), 
-          homePage.id
-        );
-        if (frontPageError) {
-          console.error('Failed to set front page:', frontPageError);
-          // Continue anyway
-        }
-      }
-      setCurrentStep(4);
       setProgress(70);
 
-      // Step 5: Get admin URL for later autologin
-      const { data: domainsData, error: domainsError } = await apiClient.getDomains(generateData!.website_id.toString());
-      if (domainsData && !domainsError) {
-        updateApiData({ admin_url: domainsData.admin_url });
+      // Call publish-and-frontpage
+      const publishResponse = await fetch('https://eilpazegjrcrwgpujqni.supabase.co/functions/v1/ai-router?action=publish-and-frontpage', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'publish-and-frontpage',
+          website_id
+        })
+      });
+
+      if (!publishResponse.ok) {
+        const errorData = await publishResponse.json();
+        throw new Error(`Failed to publish: ${errorData.detail?.message || 'Unknown error'}`);
       }
-      setCurrentStep(5);
-      setProgress(85);
+
+      const publishData = await publishResponse.json();
       
-      // Step 6: Show auth modal for sign up
-      setShowAuthModal(true);
       setCurrentStep(6);
-      setProgress(95);
+      setProgress(100);
+
+      // Update with final URLs
+      updateApiData({
+        preview_url: publishData.preview_url,
+        admin_url: publishData.admin_url,
+      });
+      
+      toast.success('Website generated successfully!');
+      setTimeout(() => navigate({ to: '/ready' }), 1500);
       
     } catch (error) {
       console.error('Generation failed:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Generation failed';
+      let errorMessage = 'Website generation failed. Please try again.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('timeout')) {
+          errorMessage = 'Generation timed out. Your website might still be created - please wait a moment and check your dashboard.';
+        } else if (error.message.includes('network') || error.message.includes('Load failed')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+      }
+      
       setError(errorMessage);
       setHasError(true);
-      toast.error(errorMessage);
+    } finally {
       setIsGenerating(false);
     }
   };
 
   const updateSiteWithDesignPreferences = async () => {
-    if (!siteId) throw new Error('No site ID available');
+    if (!website_id) throw new Error('No website ID available');
     
-    const { error } = await apiClient.updateDesign({
-      siteId,
-      colors,
-      fonts,
-      pages_meta,
-      website_type,
-      seo_title,
-      seo_description,
-      seo_keyphrase,
-    });
-
-    if (error) {
-      throw new Error(error.message || 'Failed to update design preferences');
-    }
+    // This is now handled by the ai-router, so we can skip this step
+    console.log('Design preferences already saved in previous step');
   };
 
   const simulateRemainingProgress = async () => {
@@ -206,23 +233,18 @@ const Generate: React.FC = () => {
   };
 
   const attachSiteToUser = async () => {
-    if (!siteId) return;
+    if (!website_id) return;
     
     try {
-      const { error } = await apiClient.attachSite({ siteId });
-      if (error) {
-        console.error('Failed to attach site:', error);
-        // Don't throw here, just log - the site is still generated
-      }
-
+      // For now, just proceed to ready page
+      // In future, we could implement user attachment to sites table
       setShowAuthModal(false);
       setProgress(100);
-      toast.success('Website generated and attached to your account!');
+      toast.success('Website generated successfully!');
       setTimeout(() => navigate({ to: '/ready' }), 1500);
       
     } catch (error) {
-      console.error('Failed to attach site:', error);
-      // Still proceed to ready page
+      console.error('Failed to proceed:', error);
       setShowAuthModal(false);
       setProgress(100);
       setTimeout(() => navigate({ to: '/ready' }), 1500);

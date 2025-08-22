@@ -19,12 +19,12 @@ class APIClient {
   }
 
   private getTimeoutForOperation(operation: string): number {
-    // Longer timeouts for operations that can be slow
-    const longOperations = ['create-website', 'generate-sitemap', 'generate-site'];
-    // Increased to 180 seconds (3 minutes) for create-website due to 10Web API taking ~93.5 seconds
-    return operation === 'create-website' ? 180000 : 
-           longOperations.includes(operation) ? 90000 : 
-           this.defaultTimeout; // 180 seconds vs 90 seconds vs 30 seconds
+    // Updated timeouts for new ai-router actions
+    if (operation === 'create-website') return 120000; // 2 minutes
+    if (operation === 'generate-sitemap') return 90000; // 1.5 minutes  
+    if (operation === 'generate-from-sitemap') return 120000; // 2 minutes
+    if (operation === 'publish-and-frontpage') return 90000; // 1.5 minutes
+    return this.defaultTimeout; // 30 seconds for others
   }
 
   private async fetchWithTimeout(url: string, options: RequestInit, timeout: number): Promise<Response> {

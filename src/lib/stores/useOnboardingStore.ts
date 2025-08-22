@@ -12,12 +12,11 @@ export interface Page {
 
 export interface OnboardingState {
   // Basic info
-  email: string;
-  business_type: string;
   business_name: string;
   business_description: string;
+  business_type: string;
   
-  // SEO fields
+  // SEO fields (auto-generated)
   seo_title: string;
   seo_description: string;
   seo_keyphrase: string;
@@ -38,12 +37,10 @@ export interface OnboardingState {
   website_type: 'basic' | 'ecommerce';
   
   // API response data
-  siteId?: string;
   website_id?: number;
   unique_id?: string;
   preview_url?: string;
   admin_url?: string;
-  site_url?: string;
   
   // UI state
   currentStep: number;
@@ -53,12 +50,12 @@ export interface OnboardingState {
 
 export interface OnboardingActions {
   // Update methods
-  updateBasicInfo: (info: Partial<Pick<OnboardingState, 'email' | 'business_type' | 'business_name' | 'business_description'>>) => void;
+  updateBasicInfo: (info: Partial<Pick<OnboardingState, 'business_type' | 'business_name' | 'business_description'>>) => void;
   updateSEO: (seo: Partial<Pick<OnboardingState, 'seo_title' | 'seo_description' | 'seo_keyphrase'>>) => void;
   updateDesign: (design: Partial<Pick<OnboardingState, 'colors' | 'fonts'>>) => void;
   updatePages: (pages: Page[]) => void;
   updateWebsiteType: (type: 'basic' | 'ecommerce') => void;
-  updateApiData: (data: Partial<Pick<OnboardingState, 'siteId' | 'website_id' | 'unique_id' | 'preview_url' | 'admin_url' | 'site_url'>>) => void;
+  updateApiData: (data: Partial<Pick<OnboardingState, 'website_id' | 'unique_id' | 'preview_url' | 'admin_url'>>) => void;
   
   // Page management
   addPage: (page: Page) => void;
@@ -79,10 +76,9 @@ export interface OnboardingActions {
 type OnboardingStore = OnboardingState & OnboardingActions;
 
 const initialState: OnboardingState = {
-  email: '',
-  business_type: '',
   business_name: '',
   business_description: '',
+  business_type: 'basic',
   seo_title: '',
   seo_description: '',
   seo_keyphrase: '',
@@ -92,7 +88,7 @@ const initialState: OnboardingState = {
     background_dark: '#000000',
   },
   fonts: {
-    heading: 'Syne',
+    heading: 'Poppins',
     body: 'Inter',
   },
   pages_meta: [
@@ -171,7 +167,6 @@ export const useOnboardingStore = create<OnboardingStore>()(
     {
       name: 'onboarding-store',
       partialize: (state) => ({
-        email: state.email,
         business_type: state.business_type,
         business_name: state.business_name,
         business_description: state.business_description,
@@ -182,12 +177,10 @@ export const useOnboardingStore = create<OnboardingStore>()(
         fonts: state.fonts,
         pages_meta: state.pages_meta,
         website_type: state.website_type,
-        siteId: state.siteId,
         website_id: state.website_id,
         unique_id: state.unique_id,
         preview_url: state.preview_url,
         admin_url: state.admin_url,
-        site_url: state.site_url,
         currentStep: state.currentStep,
       }),
     }

@@ -15,12 +15,9 @@ const Ready: React.FC = () => {
 
   const {
     business_name,
-    email,
-    siteId,
     website_id,
     preview_url,
     admin_url,
-    site_url,
     colors,
     fonts,
     pages_meta,
@@ -28,7 +25,7 @@ const Ready: React.FC = () => {
   } = useOnboardingStore();
 
   useEffect(() => {
-    if (!siteId) {
+    if (!website_id) {
       navigate({ to: '/' });
       return;
     }
@@ -62,7 +59,7 @@ const Ready: React.FC = () => {
     }, 250);
 
     return () => clearInterval(interval);
-  }, [siteId, navigate]);
+  }, [website_id, navigate]);
 
   const handleGoToAdmin = async () => {
     if (!website_id) {
@@ -110,10 +107,8 @@ const Ready: React.FC = () => {
 
   const handleCopyPayload = () => {
     const debugPayload = {
-      siteId,
       website_id,
       business_name,
-      email,
       website_type,
       colors,
       fonts,
@@ -121,7 +116,6 @@ const Ready: React.FC = () => {
       urls: {
         preview_url,
         admin_url,
-        site_url,
       },
     };
 
@@ -132,8 +126,6 @@ const Ready: React.FC = () => {
   const handlePreview = () => {
     if (preview_url) {
       window.open(preview_url, '_blank');
-    } else if (site_url) {
-      window.open(site_url, '_blank');
     } else {
       toast.error('No preview URL available');
     }
@@ -183,7 +175,7 @@ const Ready: React.FC = () => {
                       <div className="w-3 h-3 bg-green-400 rounded-full"></div>
                     </div>
                     <div className="flex-1 text-xs text-muted-foreground text-center">
-                      {site_url || preview_url}
+                      {preview_url}
                     </div>
                   </div>
                   

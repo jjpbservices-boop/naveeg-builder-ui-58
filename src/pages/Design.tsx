@@ -19,6 +19,7 @@ const Design: React.FC = () => {
     fonts,
     pages_meta,
     website_type,
+    website_id,
     seo_title,
     seo_description,
     seo_keyphrase,
@@ -76,11 +77,11 @@ const Design: React.FC = () => {
     updatePage(pageId, { title });
   };
 
-  const handleSubmit = () => {
+  const handleSave = async () => {
     // Validate all colors before proceeding
     const hasValidationErrors = Object.values(validationErrors).some(error => error !== '');
     if (hasValidationErrors) {
-      toast.error('Please fix color validation errors before continuing');
+      toast.error('Please fix color validation errors before saving');
       return;
     }
 
@@ -92,6 +93,48 @@ const Design: React.FC = () => {
       return;
     }
 
+    try {
+      // Call update-design action
+      const response = await fetch('https://eilpazegjrcrwgpujqni.supabase.co/functions/v1/ai-router?action=update-design', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'update-design',
+          siteId: website_id,
+          design: {
+            colors: localColors,
+            fonts: {
+              heading: localFonts.heading,
+              body: localFonts.body
+            },
+            pages_meta,
+            seo: {
+              title: seo_title,
+              description: seo_description,
+              keyphrase: seo_keyphrase
+            },
+            website_type
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save design');
+      }
+
+      toast.success('Design saved successfully!');
+    } catch (error) {
+      console.error('Save design error:', error);
+      toast.error('Failed to save design. Please try again.');
+    }
+  };
+
+  const handleGenerate = async () => {
+    await handleSave(); // Save first
     navigate({ to: '/generate' });
   };
 
@@ -444,18 +487,29 @@ const Design: React.FC = () => {
         </div>
 
         {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-4 mt-8 max-w-2xl mx-auto">
+        <div className="flex flex-col sm:flex-row gap-4 pt-8 animate-slide-up">
           <Button
+            type="button"
             variant="outline"
             onClick={handleBack}
             className="touch-target rounded-2xl"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            {t('common:global.back')}
+            Back
           </Button>
           
           <Button
-            onClick={handleSubmit}
+            type="button"
+            variant="outline"
+            onClick={handleSave}
+            className="touch-target rounded-2xl"
+          >
+            Save Design
+          </Button>
+          
+          <Button
+            type="button"
+            onClick={handleGenerate}
             className="flex-1 touch-target bg-gradient-primary hover:bg-primary-hover text-white rounded-2xl"
           >
             Generate Website

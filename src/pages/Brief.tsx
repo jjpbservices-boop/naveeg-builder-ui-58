@@ -16,7 +16,6 @@ import { Progress } from '@/components/ui/progress';
 
 const briefSchema = z.object({
   businessName: z.string().min(1, 'Business name is required'),
-  businessType: z.string().min(1, 'Business type is required'),
   businessDescription: z.string().min(10, 'Please provide a more detailed description'),
 });
 
@@ -31,20 +30,22 @@ const Brief: React.FC = () => {
   
   const {
     business_name,
-    business_type,
     business_description,
     seo_title,
     seo_description,
     seo_keyphrase,
-    siteId,
+    website_id,
     unique_id,
     pages_meta,
     website_type,
+    colors,
+    fonts,
     updateBasicInfo,
     updateSEO,
     updateApiData,
     updatePages,
     updateWebsiteType,
+    updateDesign,
     setError,
   } = useOnboardingStore();
 
@@ -52,7 +53,6 @@ const Brief: React.FC = () => {
     resolver: zodResolver(briefSchema),
     defaultValues: {
       businessName: business_name,
-      businessType: business_type,
       businessDescription: business_description,
     },
   });
@@ -80,36 +80,55 @@ const Brief: React.FC = () => {
       
       console.log('Health check passed:', healthData);
       
+      // Auto-detect business type from description
+      const description = formData.businessDescription.toLowerCase();
+      const detectedType = (
+        description.includes('ecommerce') || 
+        description.includes('store') || 
+        description.includes('shop') || 
+        description.includes('products') || 
+        description.includes('cart') ||
+        description.includes('sell')
+      ) ? 'ecommerce' : 'basic';
+      
       // Update store with form data
       updateBasicInfo({
         business_name: formData.businessName,
-        business_type: formData.businessType,
+        business_type: detectedType,
         business_description: formData.businessDescription,
       });
 
       // Step 1: Create website if not already created
-      let currentSiteId = siteId;
+      let currentWebsiteId = website_id;
       setProgress(25);
 
-      if (!currentSiteId) {
+      if (!currentWebsiteId) {
         console.log('Creating website...');
-        const { data: websiteData, error: createError } = await apiClient.createWebsite({
-          businessName: formData.businessName,
+        
+        // Call new ai-router create-website action
+        const createResponse = await fetch('https://eilpazegjrcrwgpujqni.supabase.co/functions/v1/ai-router?action=create-website', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'create-website',
+            businessName: formData.businessName
+          })
         });
 
-        if (createError) {
-          console.error('Website creation failed:', createError);
-          throw new Error(`Failed to create website: ${createError.message || 'Unknown error'}`);
+        if (!createResponse.ok) {
+          const errorData = await createResponse.json();
+          throw new Error(`Failed to create website: ${errorData.detail?.message || 'Unknown error'}`);
         }
 
-        if (!websiteData) {
-          throw new Error('No data returned from website creation');
-        }
-
+        const websiteData = await createResponse.json();
         console.log('Website created successfully:', websiteData);
-        currentSiteId = websiteData.siteId;
+        
+        currentWebsiteId = websiteData.website_id;
         updateApiData({
-          siteId: websiteData.siteId,
           website_id: websiteData.website_id,
         });
       }
@@ -117,40 +136,53 @@ const Brief: React.FC = () => {
       setProgress(50);
 
       // Step 2: Generate sitemap
-      if (currentSiteId) {
-        console.log('Generating sitemap for site:', currentSiteId);
-        const { data: sitemapData, error: sitemapError } = await apiClient.generateSitemap({
-          siteId: currentSiteId,
-          business_type: formData.businessType,
-          business_name: formData.businessName,
-          business_description: formData.businessDescription,
+      if (currentWebsiteId) {
+        console.log('Generating sitemap for website:', currentWebsiteId);
+        
+        // Call new ai-router generate-sitemap action
+        const sitemapResponse = await fetch('https://eilpazegjrcrwgpujqni.supabase.co/functions/v1/ai-router?action=generate-sitemap', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'generate-sitemap',
+            website_id: currentWebsiteId,
+            params: {
+              business_type: detectedType,
+              business_name: formData.businessName,
+              business_description: formData.businessDescription
+            }
+          })
         });
 
-        if (sitemapError) {
-          console.error('Sitemap generation failed:', sitemapError);
-          throw new Error(`Failed to generate sitemap: ${sitemapError.message || 'Unknown error'}`);
+        if (!sitemapResponse.ok) {
+          const errorData = await sitemapResponse.json();
+          throw new Error(`Failed to generate sitemap: ${errorData.detail?.message || 'Unknown error'}`);
         }
 
-        if (!sitemapData) {
-          throw new Error('No sitemap data returned');
-        }
-
+        const sitemapData = await sitemapResponse.json();
         console.log('Sitemap generated successfully:', sitemapData);
         setProgress(75);
 
         // Auto-fill and update store
-        const autoSeoTitle = sitemapData.seo.seo_title || formData.businessName;
-        const autoSeoDescription = sitemapData.seo.seo_description || formData.businessDescription.substring(0, 160);
-        const autoSeoKeyphrase = sitemapData.seo.seo_keyphrase || formData.businessName;
-
         updateApiData({ unique_id: sitemapData.unique_id });
         updateSEO({
-          seo_title: autoSeoTitle,
-          seo_description: autoSeoDescription,
-          seo_keyphrase: autoSeoKeyphrase,
+          seo_title: sitemapData.seo.website_title,
+          seo_description: sitemapData.seo.website_description,
+          seo_keyphrase: sitemapData.seo.website_keyphrase,
         });
         updatePages(sitemapData.pages_meta);
         updateWebsiteType(sitemapData.website_type as 'basic' | 'ecommerce');
+        updateDesign({
+          colors: sitemapData.colors,
+          fonts: {
+            heading: 'Poppins',
+            body: sitemapData.fonts.primary_font as any
+          }
+        });
       }
 
       setProgress(100);
@@ -230,10 +262,10 @@ const Brief: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-8 animate-slide-up">
           <h1 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Step 1: Describe Your Business
+            Tell Us About Your Business
           </h1>
           <p className="text-lg text-muted-foreground">
-            Tell us about your business and we'll create the perfect website structure for you.
+            Just 2 simple questions - we'll create your perfect website from this.
           </p>
         </div>
 
@@ -261,25 +293,6 @@ const Brief: React.FC = () => {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="businessType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-medium">
-                      Business Type
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g., agency, restaurant, salon, plumber, bakery, ecommerce"
-                        className="h-12 rounded-2xl border-2 touch-target"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               <FormField
                 control={form.control}
