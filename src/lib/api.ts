@@ -29,7 +29,7 @@ async function req(
     const res = await fetch(url, {
       method,
       mode: 'cors',
-      credentials: 'omit',           // important for CORS
+      credentials: 'omit',
       headers: HEADERS,
       body: method === 'GET' ? undefined : JSON.stringify({ action, ...payload }),
       signal: ctl.signal,
@@ -46,6 +46,16 @@ async function req(
       throw err;
     }
     return json;
+  } catch (error: any) {
+    // Normalize AbortError to CLIENT_TIMEOUT for consistent handling
+    if (error.name === 'AbortError') {
+      const timeoutErr: any = new Error('CLIENT_TIMEOUT');
+      timeoutErr.code = 'CLIENT_TIMEOUT';
+      timeoutErr.status = 408;
+      timeoutErr.originalError = error;
+      throw timeoutErr;
+    }
+    throw error;
   } finally {
     clearTimeout(t);
   }
@@ -54,7 +64,7 @@ async function req(
 export const api = {
   health: () => req('health', {}, 30_000, 'GET'),
 
-  createWebsite:  (businessName: string) =>
+  createWebsite: (businessName: string) =>
     req('create-website', { businessName }, 90_000),
 
   generateSitemap: (website_id: number, params: any) =>
@@ -64,10 +74,49 @@ export const api = {
     req('update-design', { siteId, design }, 30_000),
 
   generateFrom: (website_id: number, unique_id: string, params: any) =>
-    req('generate-from-sitemap', { website_id, unique_id, params }, 180_000),
+    req('generate-from-sitemap', { website_id, unique_id, params }, 240_000), // Increased timeout
 
   publishAndFront: (website_id: number) =>
-    req('publish-and-frontpage', { website_id }, 120_000),
+    req('publish-and-frontpage', { website_id }, 180_000), // Increased timeout
+
+  // Polling version that treats CLIENT_TIMEOUT as "still processing"
+  generateFromWithPolling: async (website_id: number, unique_id: string, params: any) => {
+    const maxAttempts = 8; // ~16 minutes total (4min per attempt)
+    const attemptTimeout = 240_000; // 4 minutes per attempt
+    
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        return await req('generate-from-sitemap', { website_id, unique_id, params }, attemptTimeout);
+      } catch (error: any) {
+        if (error.code === 'CLIENT_TIMEOUT' && attempt < maxAttempts) {
+          // Client timeout means generation is still in progress, wait and retry
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          continue;
+        }
+        throw error;
+      }
+    }
+    throw new Error('Generation timeout after maximum attempts');
+  },
+
+  publishAndFrontWithPolling: async (website_id: number) => {
+    const maxAttempts = 6; // ~18 minutes total (3min per attempt)
+    const attemptTimeout = 180_000; // 3 minutes per attempt
+    
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        return await req('publish-and-frontpage', { website_id }, attemptTimeout);
+      } catch (error: any) {
+        if (error.code === 'CLIENT_TIMEOUT' && attempt < maxAttempts) {
+          // Client timeout means publishing is still in progress, wait and retry
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          continue;
+        }
+        throw error;
+      }
+    }
+    throw new Error('Publishing timeout after maximum attempts');
+  }
 };
 
 // Legacy named exports (keep existing imports working)

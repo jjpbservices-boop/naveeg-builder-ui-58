@@ -364,30 +364,54 @@ serve(async (req) => {
           }, origin);
         }
 
+        console.log("Starting generation with params:", JSON.stringify(params, null, 2));
+        
         try {
-          await tw("/v1/ai/generate_site_from_sitemap", {
+          const result = await tw("/v1/ai/generate_site_from_sitemap", {
             method: "POST",
             body: JSON.stringify({ website_id, unique_id, params }),
-            timeoutMs: 60_000,
+            timeoutMs: 120_000, // Increased timeout for generation
           });
+          console.log("Generation completed successfully:", result);
         } catch (e: any) {
           const msg = JSON.stringify(e?.json || e?.raw || e?.message || "");
+          console.log("Generation API error:", { status: e?.status, error: e?.json, raw: e?.raw });
+          
           if (e?.status === 422 && e?.json?.error?.details) {
-            return J(422, { code: "VALIDATION_ERROR", details: e.json.error.details }, origin);
+            console.log("Validation error details:", e.json.error.details);
+            return J(422, { 
+              code: "VALIDATION_ERROR", 
+              details: e.json.error.details,
+              hint: "Check that all required parameters are provided and valid"
+            }, origin);
           }
+          
           if (
             e?.status === 417 ||
             e?.status === 504 ||
             e?.name === "AbortError" ||
-            /in progress/i.test(msg)
+            /in progress/i.test(msg) ||
+            /template.*generation.*progress/i.test(msg)
           ) {
+            console.log("Generation still in progress, proceeding to poll");
             // proceed to poll
           } else {
-            return J(502, { code: "GENERATE_FAILED", detail: e?.json || e?.message || String(e) }, origin);
+            console.log("Generation failed with error:", e);
+            return J(502, { 
+              code: "GENERATE_FAILED", 
+              detail: e?.json || e?.message || String(e),
+              hint: "Try again or check if generation is still in progress"
+            }, origin);
           }
         }
 
-        const deadline = Date.now() + 180_000;
+        // Enhanced polling with exponential backoff
+        const deadline = Date.now() + 300_000; // 5 minutes total
+        let pollInterval = 3000; // Start with 3 seconds
+        let pollCount = 0;
+        
+        console.log("Starting page polling for website_id:", website_id);
+        
         while (Date.now() < deadline) {
           try {
             const pages = await tw(`/v1/builder/websites/${website_id}/pages`, {
@@ -395,11 +419,27 @@ serve(async (req) => {
               timeoutMs: 30_000,
             });
             const list = Array.isArray(pages?.data) ? pages.data : [];
-            if (list.length > 0) return J(200, { ok: true, pages_count: list.length }, origin);
-          } catch {}
-          await new Promise((r) => setTimeout(r, 3000));
+            console.log(`Poll ${++pollCount}: Found ${list.length} pages`);
+            
+            if (list.length > 0) {
+              console.log("Generation completed successfully, pages found:", list.length);
+              return J(200, { ok: true, pages_count: list.length }, origin);
+            }
+          } catch (e: any) {
+            console.log(`Poll ${pollCount} error:`, e?.status, e?.message);
+          }
+          
+          await new Promise((r) => setTimeout(r, pollInterval));
+          // Exponential backoff: 3s -> 5s -> 8s -> 10s (max)
+          pollInterval = Math.min(pollInterval * 1.5, 10000);
         }
-        return J(504, { code: "GENERATE_TIMEOUT", hint: "Still generating after 180s" }, origin);
+        
+        console.log("Generation polling timeout after 5 minutes");
+        return J(504, { 
+          code: "GENERATE_TIMEOUT", 
+          hint: "Generation taking longer than 5 minutes. It may still be processing - check back later.",
+          polls_completed: pollCount
+        }, origin);
       } catch (error: any) {
         return J(502, { code: "GENERATE_FROM_SITEMAP_FAILED", detail: error?.json || error?.message || String(error) }, origin);
       }

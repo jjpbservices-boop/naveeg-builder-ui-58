@@ -8,18 +8,25 @@ import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
 import { api } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 
+// Enhanced finalization with better error handling and polling
 async function finalizeSite(website_id: number) {
-  const end = Date.now() + 180_000;
-  while (Date.now() < end) {
-    try {
-      const r = await api.publishAndFront(website_id);
-      if (r?.ok) return r;
-    } catch (e: any) {
-      if (!['NO_PAGES_YET', 'PUBLISH_RETRY'].includes(e?.code) && ![409, 504].includes(e?.status)) throw e;
+  try {
+    console.log('Starting finalization for website:', website_id);
+    return await api.publishAndFrontWithPolling(website_id);
+  } catch (error: any) {
+    console.error('Finalization error:', error);
+    
+    // Handle specific error types
+    if (error.code === 'CLIENT_TIMEOUT') {
+      throw new Error('Publishing is taking longer than expected. The process is still running - please try again in a few minutes.');
     }
-    await new Promise(r => setTimeout(r, 3000));
+    
+    if (error.message?.includes('timeout after maximum attempts')) {
+      throw new Error('Publishing timeout. Your website may still be processing. Please check back in a few minutes.');
+    }
+    
+    throw error;
   }
-  throw new Error('Publishing is taking longer than expected. Try again.');
 }
 
 export default function Generating() {
@@ -58,6 +65,17 @@ export default function Generating() {
       setError(null);
       setStep(0);
 
+      console.log('Starting website generation with data:', {
+        website_id,
+        unique_id,
+        business_name,
+        business_description,
+        seo_title,
+        seo_description,
+        seo_keyphrase,
+        pages_meta
+      });
+
       // Skip create and sitemap - already done
       setStep(2);
       
@@ -76,18 +94,23 @@ export default function Generating() {
       await api.updateDesign(website_id, design);
       setStep(3);
 
-      // Generate from sitemap
+      // Generate from sitemap with enhanced parameters
       const params = {
-        business_name,
-        business_description,
-        business_type: 'basic',
+        // Required parameters for 10Web API
         pages_meta,
         website_title: seo_title,
         website_description: seo_description,
-        website_keyphrase: seo_keyphrase
+        website_keyphrase: seo_keyphrase,
+        
+        // Additional context parameters
+        business_name,
+        business_description,
+        business_type: 'basic'
       };
       
-      await api.generateFrom(website_id, unique_id, params);
+      console.log('Calling generateFromWithPolling with params:', params);
+      
+      await api.generateFromWithPolling(website_id, unique_id, params);
       setStep(4);
 
       // Finalize (publish + front page + URLs)
@@ -112,13 +135,21 @@ export default function Generating() {
     } catch (e: any) {
       console.error('Generation error:', e);
       
-      // Map specific error codes to user-friendly messages
+      // Enhanced error handling with specific messages
       let errorMessage = e?.message || 'Website generation failed. Please try again.';
       
-      if (e?.code === 'VALIDATION_ERROR' || e?.code === 'MISSING_REQUIRED_PARAMS') {
+      if (e?.code === 'CLIENT_TIMEOUT') {
+        errorMessage = 'Generation is taking longer than expected but is still processing. Please try again in a few minutes.';
+      } else if (e?.code === 'VALIDATION_ERROR' || e?.code === 'MISSING_REQUIRED_PARAMS') {
         errorMessage = 'There was an issue with your website configuration. Please go back and check your business details.';
       } else if (e?.code === 'GENERATE_FAILED') {
         errorMessage = 'Website generation failed. This might be a temporary issue - please try again.';
+      } else if (e?.code === 'GENERATE_TIMEOUT') {
+        errorMessage = 'Generation is taking longer than expected. Your website may still be processing - please try again in a few minutes.';
+      } else if (e?.status === 502) {
+        errorMessage = 'Server error during generation. Please try again.';
+      } else if (e?.status === 504) {
+        errorMessage = 'Generation timeout. Your website may still be processing - please check back in a few minutes.';
       }
       
       setError(errorMessage);
