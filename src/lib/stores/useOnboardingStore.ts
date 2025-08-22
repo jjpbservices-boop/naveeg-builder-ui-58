@@ -7,7 +7,7 @@ export interface Page {
   type: 'home' | 'about' | 'services' | 'gallery' | 'contact' | 'custom';
   description?: string;
   isRequired?: boolean;
-  sections?: { title: string }[];
+  sections?: { section_title: string }[];
 }
 
 export interface OnboardingState {

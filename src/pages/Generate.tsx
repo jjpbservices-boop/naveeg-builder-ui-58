@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
 import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
-import { apiClient } from '@/lib/api';
+import { generateFromSitemap, publishAndFrontpage } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, Loader, Circle, AlertCircle, UserPlus } from 'lucide-react';
