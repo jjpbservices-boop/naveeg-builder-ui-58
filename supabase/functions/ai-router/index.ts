@@ -86,10 +86,19 @@ async function logEvent(siteId: string, label: string, data: any = {}, supabase:
   }
 }
 
-async function fetchWithRetry(url: string, options: any, maxRetries = 3): Promise<Response> {
+async function fetchWithRetry(url: string, options: any, maxRetries = 3, timeoutMs = 30000): Promise<Response> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const response = await fetch(url, options);
+      // Add timeout to each fetch attempt
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
       
       if (response.status === 429) {
         const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
@@ -107,10 +116,15 @@ async function fetchWithRetry(url: string, options: any, maxRetries = 3): Promis
       
       return response;
     } catch (error) {
+      clearTimeout(timeoutId);
       if (attempt === maxRetries) throw error;
       
       const delay = Math.pow(2, attempt) * 1000;
-      console.log(`Network error, retrying in ${delay}ms...`, error);
+      if (error.name === 'AbortError') {
+        console.log(`Request timed out after ${timeoutMs}ms, retrying in ${delay}ms...`);
+      } else {
+        console.log(`Network error, retrying in ${delay}ms...`, error);
+      }
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -251,7 +265,7 @@ async function handleCreateWebsite(req: Request, { API_BASE, TENWEB_API_KEY, REG
       admin_username: 'admin',
       admin_password: adminPassword,
     }),
-  });
+  }, 3, 60000); // 60 second timeout for website creation
 
   if (!createWebsiteResponse.ok) {
     const error = await createWebsiteResponse.text();
@@ -320,7 +334,7 @@ async function handleGenerateSitemap(req: Request, { API_BASE, TENWEB_API_KEY, s
         business_description,
       },
     }),
-  });
+  }, 3, 45000); // 45 second timeout for sitemap generation
 
   if (!sitemapResponse.ok) {
     const error = await sitemapResponse.text();
@@ -458,7 +472,7 @@ async function handleGenerateFromSitemap(req: Request, { API_BASE, TENWEB_API_KE
       'x-api-key': TENWEB_API_KEY,
     },
     body: JSON.stringify(apiPayload),
-  });
+  }, 3, 60000); // 60 second timeout for site generation
 
   if (!generateResponse.ok) {
     const error = await generateResponse.text();

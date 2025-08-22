@@ -10,17 +10,23 @@ interface APIResponse<T = any> {
 
 class APIClient {
   private baseUrl: string;
-  private timeout: number;
+  private defaultTimeout: number;
 
   constructor() {
     // Use the base Supabase function URL without sub-paths
     this.baseUrl = 'https://eilpazegjrcrwgpujqni.supabase.co/functions/v1/ai-router';
-    this.timeout = 30000; // 30 seconds
+    this.defaultTimeout = 30000; // 30 seconds
   }
 
-  private async fetchWithTimeout(url: string, options: RequestInit): Promise<Response> {
+  private getTimeoutForOperation(operation: string): number {
+    // Longer timeouts for operations that can be slow
+    const longOperations = ['create-website', 'generate-sitemap', 'generate-from-sitemap'];
+    return longOperations.includes(operation) ? 90000 : this.defaultTimeout; // 90 seconds vs 30 seconds
+  }
+
+  private async fetchWithTimeout(url: string, options: RequestInit, timeout: number): Promise<Response> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
       const response = await fetch(url, {
@@ -51,17 +57,18 @@ class APIClient {
   ): Promise<APIResponse<T>> {
     try {
       let url = this.baseUrl;
+      const timeout = this.getTimeoutForOperation(action);
       
       // For GET requests, append action as query parameter
       if (options.method === 'GET') {
         url += `?action=${encodeURIComponent(action)}`;
       }
       
-      console.log(`API Request: ${options.method || 'GET'} ${url} - Action: ${action}`);
+      console.log(`API Request: ${options.method || 'GET'} ${url} - Action: ${action} (timeout: ${timeout}ms)`);
       console.log('Request headers:', options.headers);
       console.log('Request body:', options.body);
 
-      const response = await this.fetchWithTimeout(url, options);
+      const response = await this.fetchWithTimeout(url, options, timeout);
       
       let data: any;
       const contentType = response.headers.get('content-type');
@@ -104,7 +111,10 @@ class APIClient {
       
       // Make error messages more user-friendly
       if (error.name === 'AbortError') {
-        apiError.message = 'Request timed out. Please check your connection and try again.';
+        const operationName = action === 'create-website' ? 'website creation' : 
+                             action === 'generate-sitemap' ? 'sitemap generation' :
+                             action === 'generate-from-sitemap' ? 'website generation' : 'operation';
+        apiError.message = `${operationName.charAt(0).toUpperCase() + operationName.slice(1)} timed out. This can happen with slow server responses. Please try again.`;
       } else if (error.message === 'Load failed') {
         apiError.message = 'Network error. Please check your internet connection and try again.';
       } else if (error.message.includes('NetworkError')) {
