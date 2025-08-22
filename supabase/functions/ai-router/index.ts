@@ -10,39 +10,32 @@ const API_KEY = Deno.env.get("TENWEB_API_KEY") || "";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-/* ──────────────────────────────────────────────────────────────
-   CORS + Response helper
-   ────────────────────────────────────────────────────────────── */
-const corsHeaders = (origin: string | null) => {
-  const allowedOrigins = [
-    /^https?:\/\/localhost(:\d+)?$/i,
-    /^https:\/\/.*\.lovable\.app$/i,
-    /^https:\/\/.*\.supabase\.co$/i,
-    /^https:\/\/.*\.netlify\.app$/i,
-    /^https:\/\/.*\.vercel\.app$/i,
-  ];
-  const isAllowedOrigin = origin && allowedOrigins.some((p) => p.test(origin));
-  return {
-    "Access-Control-Allow-Origin": isAllowedOrigin ? origin! : "*",
-    "Access-Control-Allow-Headers":
-      "authorization, Authorization, apikey, x-api-key, content-type, x-client-info, x-requested-with, accept, accept-language, cache-control",
-    "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD",
-    "Access-Control-Max-Age": "86400",
-    "Access-Control-Allow-Credentials": "true",
-    "Vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers",
-  };
-};
+// CORS helpers
+const corsHeaders = (origin: string | null) => ({
+  "Access-Control-Allow-Origin":
+    origin &&
+    (/^http:\/\/localhost(:\d+)?$/i.test(origin) ||
+      /^https:\/\/.*\.lovable\.app$/i.test(origin))
+      ? origin
+      : "*",
+  "Access-Control-Allow-Headers":
+    "authorization, Authorization, apikey, x-api-key, content-type, x-client-info",
+  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+  "Access-Control-Max-Age": "86400",
+  Vary: "Origin",
+});
 
-const J = (code: number, data: unknown, origin?: string | null) =>
+const J = (code: number, data: unknown, origin: string | null) =>
   new Response(JSON.stringify(data), {
     status: code,
-    headers: { "content-type": "application/json", ...corsHeaders(origin ?? null) },
+    headers: { "content-type": "application/json", ...corsHeaders(origin) },
   });
 
-/* ──────────────────────────────────────────────────────────────
-   10Web fetch helper (safe JSON + retry)
-   ────────────────────────────────────────────────────────────── */
-const tw = async (path: string, init: RequestInit & { timeoutMs?: number } = {}) => {
+// 10Web fetch helper (safe JSON + retry)
+const tw = async (
+  path: string,
+  init: RequestInit & { timeoutMs?: number } = {},
+) => {
   const ctl = new AbortController();
   const id = setTimeout(() => ctl.abort(), init.timeoutMs ?? 90_000);
   try {
@@ -52,14 +45,20 @@ const tw = async (path: string, init: RequestInit & { timeoutMs?: number } = {})
       "Content-Type": "application/json",
       "User-Agent": "Supabase-Edge-Function/1.0",
       "x-api-key": API_KEY,
-      ...((init.headers as Record<string, string>) || {}),
+      ...(init.headers as Record<string, string> | undefined),
     };
     if (init.method === "POST" && bodyStr) {
-      headers["Content-Length"] = String(new TextEncoder().encode(bodyStr).length);
+      headers["Content-Length"] = String(
+        new TextEncoder().encode(bodyStr).length,
+      );
     }
 
     const hit = async () => {
-      const res = await fetch(`${API_BASE}${path}`, { ...init, signal: ctl.signal, headers });
+      const res = await fetch(`${API_BASE}${path}`, {
+        ...init,
+        signal: ctl.signal,
+        headers,
+      });
       const txt = await res.text();
       let json: any = null;
       try {
@@ -85,9 +84,6 @@ const tw = async (path: string, init: RequestInit & { timeoutMs?: number } = {})
   }
 };
 
-/* ──────────────────────────────────────────────────────────────
-   Utilities
-   ────────────────────────────────────────────────────────────── */
 const slugify = (t: string) =>
   (t || "site")
     .toLowerCase()
@@ -105,13 +101,14 @@ const listSites = async () => {
   try {
     return await tw("/v1/account/websites", { method: "GET", timeoutMs: 30_000 });
   } catch {
-    return { data: [] };
+    return { data: [] as any[] };
   }
 };
-
 const findBySub = async (sub: string) => {
   const s = await listSites();
-  return s.data?.find((w: any) => w?.site_url?.includes(`${sub}.`) || w?.admin_url?.includes(`${sub}.`));
+  return s.data?.find(
+    (w: any) => w?.site_url?.includes(`${sub}.`) || w?.admin_url?.includes(`${sub}.`),
+  );
 };
 
 const ensureFreeSub = async (base: string) => {
@@ -134,187 +131,17 @@ const ensureFreeSub = async (base: string) => {
         timeoutMs: 10_000,
       });
       return sub;
-    } catch {}
+    } catch {/* next */}
   }
   return subCandidate(base, Date.now().toString(36));
 };
 
-/* ──────────────────────────────────────────────────────────────
-   Generate-from helpers (validated + fallbacks + short polling)
-   ────────────────────────────────────────────────────────────── */
-function validateGenerationRequest(input: { website_id?: any; unique_id?: any; params?: any }) {
-  const { website_id, unique_id, params } = input || {};
-  if (!website_id || !unique_id || !params) {
-    return { isValid: false, error: { code: "MISSING_REQUIRED_FIELDS", error: "Missing website_id, unique_id, or params" } };
-  }
-  const required = ["pages_meta", "website_title", "website_description", "website_keyphrase"];
-  const missing = required.filter((k) => !params[k]);
-  if (missing.length) {
-    return {
-      isValid: false,
-      error: {
-        code: "MISSING_REQUIRED_PARAMS",
-        error: `Missing required parameters: ${missing.join(", ")}`,
-        received: Object.keys(params || {}),
-        required,
-      },
-    };
-  }
-  return { isValid: true };
-}
-
-function buildEnhancedPayload(website_id: number, unique_id: string, params: any) {
-  return {
-    website_id: Number(website_id),
-    unique_id,
-    params: {
-      // required
-      pages_meta: params.pages_meta,
-      website_title: params.website_title,
-      website_description: params.website_description,
-      website_keyphrase: params.website_keyphrase,
-
-      // business
-      business_name: params.business_name || params.website_title,
-      business_description: params.business_description || params.website_description,
-      business_type: params.business_type || "basic",
-
-      // extra SEO hints
-      seo: {
-        title: params.seo_title || params.website_title,
-        description: params.seo_description || params.website_description,
-        keyphrase: params.seo_keyphrase || params.website_keyphrase,
-      },
-
-      // design (safe defaults)
-      colors:
-        params.colors || {
-          primary_color: "#D4A574",
-          secondary_color: "#8B4513",
-          background_dark: "#2C1810",
-        },
-      fonts: params.fonts || { primary_font: "Playfair Display" },
-
-      // misc hints
-      website_type: params.website_type || "basic",
-      language: params.language || "fr",
-      locale: params.locale || "fr_FR",
-      industry: params.industry || "food-beverage",
-      category: params.category || "bakery",
-      tone: params.tone || "warm and artisanal",
-      style: params.style || "traditional bakery",
-
-      ...(params.contact ? { contact: params.contact } : {}),
-      ...(params.location ? { location: params.location } : {}),
-    },
-  };
-}
-
-function buildMinimalPayload(website_id: number, unique_id: string, params: any) {
-  return {
-    website_id: Number(website_id),
-    unique_id,
-    params: {
-      pages_meta: params.pages_meta,
-      website_title: params.website_title,
-      website_description: params.website_description,
-      website_keyphrase: params.website_keyphrase,
-      business_name: params.business_name || params.website_title,
-      business_type: params.business_type || "basic",
-    },
-  };
-}
-
-function buildFlatPayload(website_id: number, unique_id: string, params: any) {
-  // still under params to be spec-compatible with 10Web
-  return { website_id: Number(website_id), unique_id, params };
-}
-
-async function generateSiteWithFallbacks(
-  website_id: number,
-  unique_id: string,
-  params: any,
-  twFn: typeof tw,
-) {
-  const strategies = [
-    { name: "enhanced", payload: buildEnhancedPayload(website_id, unique_id, params) },
-    { name: "minimal", payload: buildMinimalPayload(website_id, unique_id, params) },
-    { name: "flat", payload: buildFlatPayload(website_id, unique_id, params) },
-  ] as const;
-
-  const errors: Record<string, unknown> = {};
-
-  for (const s of strategies) {
-    try {
-      const bodyStr = JSON.stringify(s.payload);
-      console.log(`🚀 Trying ${s.name} payload (${bodyStr.length} bytes)`);
-      const res = await twFn("/v1/ai/generate_site_from_sitemap", {
-        method: "POST",
-        body: bodyStr,
-        timeoutMs: 30_000, // do not hold edge too long
-      });
-      console.log(`✅ ${s.name} accepted`, res);
-      return { success: true, result: res };
-    } catch (e: any) {
-      const msg = e?.json?.message || e?.message || "";
-      console.log(`❌ ${s.name} failed`, { status: e?.status, message: msg, details: e?.json?.details });
-
-      // "in progress" / timeouts are acceptable (generation already running)
-      if (e?.status === 417 || /in progress|timeout|504/i.test(String(msg))) {
-        console.log(`ℹ️ ${s.name}: generation already in progress – proceeding`);
-        return { success: true, result: { accepted: true } };
-      }
-      errors[s.name] = { status: e?.status, message: msg, details: e?.json?.details };
-    }
-  }
-
-  return { success: false, error: { code: "ALL_PAYLOAD_FORMATS_FAILED", details: errors } };
-}
-
-async function pollForGenerationCompletionEdgeBudget(
-  website_id: number,
-  twFn: typeof tw,
-  budgetMs = 95_000,
-) {
-  const start = Date.now();
-  let interval = 3000;
-  const maxInterval = 10_000;
-  let polls = 0;
-  let consecutiveErrors = 0;
-
-  while (Date.now() - start < budgetMs) {
-    try {
-      const pages = await twFn(`/v1/builder/websites/${website_id}/pages`, { method: "GET", timeoutMs: 25_000 });
-      const list = Array.isArray(pages?.data) ? pages.data : [];
-      polls++;
-      console.log(`🔎 poll #${polls}: ${list.length} pages`);
-      consecutiveErrors = 0;
-
-      if (list.length > 0) {
-        const summary = list.map((p: any) => ({ id: p.id, title: p.title, status: p.status }));
-        return { done: true, response: { ok: true, pages_count: list.length, pages: summary } };
-      }
-    } catch (e: any) {
-      consecutiveErrors++;
-      console.log(`⚠️ poll error (${consecutiveErrors})`, e?.status || e?.message);
-      if (consecutiveErrors >= 4) break;
-    }
-
-    await new Promise((r) => setTimeout(r, interval));
-    interval = Math.min(Math.floor(interval * 1.2), maxInterval);
-  }
-  return { done: false, response: { ok: true, accepted: true, hint: "continue_client_poll" } };
-}
-
-/* ──────────────────────────────────────────────────────────────
-   Main router
-   ────────────────────────────────────────────────────────────── */
 serve(async (req) => {
   const origin = req.headers.get("origin");
 
-  // Preflight
+  // Always answer preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders(origin) });
+    return new Response("ok", { headers: corsHeaders(origin) });
   }
 
   try {
@@ -322,17 +149,22 @@ serve(async (req) => {
     let body: any = {};
     if (req.method === "POST") {
       try {
-        const text = await req.text();
-        body = text ? JSON.parse(text) : {};
+        body = await req.json();
       } catch {
         body = {};
       }
     }
 
-    let action = (url.searchParams.get("action") || body?.action || url.pathname.split("/").pop() || "")
-      .toString()
-      .trim()
-      .toLowerCase();
+    let action =
+      (
+        url.searchParams.get("action") ||
+        body?.action ||
+        url.pathname.split("/").pop() ||
+        ""
+      )
+        .toString()
+        .trim()
+        .toLowerCase();
     const aliases: Record<string, string> = {
       generate: "generate-from-sitemap",
       publish: "publish-and-frontpage",
@@ -341,19 +173,23 @@ serve(async (req) => {
     };
     action = aliases[action] || action;
 
-    // Health
     if (req.method === "GET" && action === "health") {
       return J(
         200,
         {
           status: "healthy",
           timestamp: new Date().toISOString(),
-          available_actions: ["create-website", "generate-sitemap", "update-design", "generate-from-sitemap", "publish-and-frontpage"],
+          available_actions: [
+            "create-website",
+            "generate-sitemap",
+            "update-design",
+            "generate-from-sitemap",
+            "publish-and-frontpage",
+          ],
         },
         origin,
       );
     }
-
     if (req.method === "POST" && !action) {
       return J(400, { code: "MISSING_ACTION" }, origin);
     }
@@ -363,12 +199,13 @@ serve(async (req) => {
       try {
         const businessName = (body.businessName || "New Site").toString().trim();
         const base = slugify(businessName);
+
         const existing = await findBySub(base);
         if (existing) {
           return J(200, { ok: true, website_id: existing.id, subdomain: base, reused: true }, origin);
         }
-        let candidate = await ensureFreeSub(base);
 
+        let candidate = await ensureFreeSub(base);
         const payload = (sub: string, region: string) => ({
           subdomain: sub,
           region,
@@ -382,13 +219,12 @@ serve(async (req) => {
             try {
               const r = await tw("/v1/hosting/website", {
                 method: "POST",
-                body: JSON.stringify(payload(candidate, "europe-west3-b")), // Frankfurt zone
+                body: JSON.stringify(payload(candidate, "europe-west3-b")),
                 timeoutMs: 25_000,
               });
               return J(200, { ok: true, website_id: r?.data?.website_id, subdomain: candidate, reused: false }, origin);
             } catch (e: any) {
               if (e?.status === 400 || e?.status === 422) {
-                // region fallback
                 const r2 = await tw("/v1/hosting/website", {
                   method: "POST",
                   body: JSON.stringify(payload(candidate, "europe-west3")),
@@ -427,7 +263,8 @@ serve(async (req) => {
     if (req.method === "POST" && action === "generate-sitemap") {
       try {
         const { website_id, params } = body || {};
-        if (!website_id || !params) return J(400, { error: "Missing website_id or params" }, origin);
+        if (!website_id || !params)
+          return J(400, { error: "Missing website_id or params" }, origin);
         if (!params.business_name || !params.business_description)
           return J(400, { error: "Missing required params: business_name, business_description" }, origin);
         if (!params.business_type) params.business_type = "informational";
@@ -443,10 +280,7 @@ serve(async (req) => {
           pages_meta = [
             { title: "Home", sections: [{ section_title: "Hero" }, { section_title: "About Us" }] },
             { title: "About", sections: [{ section_title: "Our Story" }, { section_title: "Team" }] },
-            {
-              title: params.business_type === "ecommerce" ? "Products" : "Services",
-              sections: [{ section_title: "Our Offerings" }],
-            },
+            { title: params.business_type === "ecommerce" ? "Products" : "Services", sections: [{ section_title: "Our Offerings" }] },
             { title: "Contact", sections: [{ section_title: "Get In Touch" }] },
           ];
         }
@@ -504,34 +338,110 @@ serve(async (req) => {
             updated_at: new Date().toISOString(),
           })
           .eq("website_id", siteId);
-        if (error) return J(500, { error: "Failed to update design" }, origin);
 
+        if (error) return J(500, { error: "Failed to update design" }, origin);
         return J(200, { ok: true }, origin);
       } catch (error: any) {
         return J(500, { code: "UPDATE_DESIGN_FAILED", detail: error?.message || String(error) }, origin);
       }
     }
 
-    // GENERATE FROM SITEMAP (fallbacks + short polling → 200 or 202)
+    // GENERATE FROM SITEMAP
     if (req.method === "POST" && action === "generate-from-sitemap") {
       try {
         const { website_id, unique_id, params } = body || {};
-        const validation = validateGenerationRequest({ website_id, unique_id, params });
-        if (!validation.isValid) return J(400, validation.error, origin);
+        if (!website_id || !unique_id || !params)
+          return J(400, { error: "Missing website_id, unique_id, or params" }, origin);
 
-        const generationResult = await generateSiteWithFallbacks(website_id, unique_id, params, tw);
-        if (!generationResult.success) return J(502, generationResult.error, origin);
+        const required = ["pages_meta", "website_title", "website_description", "website_keyphrase"];
+        const missing = required.filter((k) => !params[k]);
+        if (missing.length) {
+          return J(400, {
+            code: "MISSING_REQUIRED_PARAMS",
+            error: `Missing required parameters: ${missing.join(", ")}`,
+            received: Object.keys(params || {}),
+            required,
+          }, origin);
+        }
 
-        // short server-side polling (keep edge under time budget)
-        const poll = await pollForGenerationCompletionEdgeBudget(website_id, tw, 95_000);
-        if (poll.done) return J(200, poll.response, origin);
-        return J(202, poll.response, origin); // Accepted; let client continue (then publish/frontpage)
+        console.log("Starting generation with params:", JSON.stringify(params, null, 2));
+        
+        try {
+          const result = await tw("/v1/ai/generate_site_from_sitemap", {
+            method: "POST",
+            body: JSON.stringify({ website_id, unique_id, params }),
+            timeoutMs: 120_000, // Increased timeout for generation
+          });
+          console.log("Generation completed successfully:", result);
+        } catch (e: any) {
+          const msg = JSON.stringify(e?.json || e?.raw || e?.message || "");
+          console.log("Generation API error:", { status: e?.status, error: e?.json, raw: e?.raw });
+          
+          if (e?.status === 422 && e?.json?.error?.details) {
+            console.log("Validation error details:", e.json.error.details);
+            return J(422, { 
+              code: "VALIDATION_ERROR", 
+              details: e.json.error.details,
+              hint: "Check that all required parameters are provided and valid"
+            }, origin);
+          }
+          
+          if (
+            e?.status === 417 ||
+            e?.status === 504 ||
+            e?.name === "AbortError" ||
+            /in progress/i.test(msg) ||
+            /template.*generation.*progress/i.test(msg)
+          ) {
+            console.log("Generation still in progress, proceeding to poll");
+            // proceed to poll
+          } else {
+            console.log("Generation failed with error:", e);
+            return J(502, { 
+              code: "GENERATE_FAILED", 
+              detail: e?.json || e?.message || String(e),
+              hint: "Try again or check if generation is still in progress"
+            }, origin);
+          }
+        }
+
+        // Enhanced polling with exponential backoff
+        const deadline = Date.now() + 300_000; // 5 minutes total
+        let pollInterval = 3000; // Start with 3 seconds
+        let pollCount = 0;
+        
+        console.log("Starting page polling for website_id:", website_id);
+        
+        while (Date.now() < deadline) {
+          try {
+            const pages = await tw(`/v1/builder/websites/${website_id}/pages`, {
+              method: "GET",
+              timeoutMs: 30_000,
+            });
+            const list = Array.isArray(pages?.data) ? pages.data : [];
+            console.log(`Poll ${++pollCount}: Found ${list.length} pages`);
+            
+            if (list.length > 0) {
+              console.log("Generation completed successfully, pages found:", list.length);
+              return J(200, { ok: true, pages_count: list.length }, origin);
+            }
+          } catch (e: any) {
+            console.log(`Poll ${pollCount} error:`, e?.status, e?.message);
+          }
+          
+          await new Promise((r) => setTimeout(r, pollInterval));
+          // Exponential backoff: 3s -> 5s -> 8s -> 10s (max)
+          pollInterval = Math.min(pollInterval * 1.5, 10000);
+        }
+        
+        console.log("Generation polling timeout after 5 minutes");
+        return J(504, { 
+          code: "GENERATE_TIMEOUT", 
+          hint: "Generation taking longer than 5 minutes. It may still be processing - check back later.",
+          polls_completed: pollCount
+        }, origin);
       } catch (error: any) {
-        return J(
-          502,
-          { code: "GENERATE_FROM_SITEMAP_FAILED", detail: error?.json || error?.message || String(error) },
-          origin,
-        );
+        return J(502, { code: "GENERATE_FROM_SITEMAP_FAILED", detail: error?.json || error?.message || String(error) }, origin);
       }
     }
 
@@ -544,14 +454,16 @@ serve(async (req) => {
         const deadline = Date.now() + 180_000;
         while (Date.now() < deadline) {
           try {
-            const pages = await tw(`/v1/builder/websites/${website_id}/pages`, { method: "GET", timeoutMs: 30_000 });
-            const list = Array.isArray(pages?.data) ? pages.data : [];
+            const pages = await tw(`/v1/builder/websites/${website_id}/pages`, {
+              method: "GET",
+              timeoutMs: 30_000,
+            });
+            const list: any[] = Array.isArray(pages?.data) ? pages.data : [];
             if (list.length === 0) {
               await new Promise((r) => setTimeout(r, 3000));
               continue;
             }
 
-            // publish
             try {
               await tw(`/v1/builder/websites/${website_id}/pages/publish`, {
                 method: "POST",
@@ -568,9 +480,9 @@ serve(async (req) => {
               }
             }
 
-            // set front page
             const home =
-              list.find((p: any) => /home/i.test(p?.title) || p?.slug === "home" || p?.is_front_page) ?? list[0];
+              list.find((p: any) => /home/i.test(p?.title) || p?.slug === "home" || p?.is_front_page) ??
+              list[0];
             if (home) {
               try {
                 await tw(`/v1/builder/websites/${website_id}/pages/front/set`, {
@@ -583,11 +495,13 @@ serve(async (req) => {
               }
             }
 
-            // resolve URLs
             let preview_url: string | null = null;
             let admin_url: string | null = null;
             try {
-              const dn = await tw(`/v1/hosting/websites/${website_id}/domain-name`, { method: "GET", timeoutMs: 30_000 });
+              const dn = await tw(`/v1/hosting/websites/${website_id}/domain-name`, {
+                method: "GET",
+                timeoutMs: 30_000,
+              });
               preview_url = dn?.data?.default_domain_url || dn?.data?.site_url || null;
               admin_url = dn?.data?.admin_url || null;
             } catch {}
@@ -612,16 +526,17 @@ serve(async (req) => {
       }
     }
 
-    // Fallback 404
     return J(
       404,
       {
         error: "NOT_FOUND",
-        hint: "Use GET ?action=health or POST actions: create-website, generate-sitemap, update-design, generate-from-sitemap, publish-and-frontpage",
+        hint:
+          "Use GET ?action=health or POST actions: create-website, generate-sitemap, update-design, generate-from-sitemap, publish-and-frontpage",
       },
       origin,
     );
-  } catch (err: any) {
+  } catch (err) {
+    // GUARANTEED CORS ON UNHANDLED FAILURES
     console.error("UNHANDLED_ERROR", err);
     return new Response(JSON.stringify({ code: "UNHANDLED", message: String(err) }), {
       status: 500,
