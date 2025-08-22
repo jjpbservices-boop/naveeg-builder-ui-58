@@ -88,17 +88,18 @@ async function logEvent(siteId: string, label: string, data: any = {}, supabase:
 
 async function fetchWithRetry(url: string, options: any, maxRetries = 3, timeoutMs = 30000): Promise<Response> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    let timeoutId: number | undefined;
     try {
       // Add timeout to each fetch attempt
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      timeoutId = setTimeout(() => controller.abort(), timeoutMs);
       
       const response = await fetch(url, {
         ...options,
         signal: controller.signal
       });
       
-      clearTimeout(timeoutId);
+      if (timeoutId) clearTimeout(timeoutId);
       
       if (response.status === 429) {
         const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
@@ -116,7 +117,7 @@ async function fetchWithRetry(url: string, options: any, maxRetries = 3, timeout
       
       return response;
     } catch (error) {
-      clearTimeout(timeoutId);
+      if (timeoutId) clearTimeout(timeoutId);
       if (attempt === maxRetries) throw error;
       
       const delay = Math.pow(2, attempt) * 1000;
