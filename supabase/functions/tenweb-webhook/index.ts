@@ -53,6 +53,17 @@ serve(async (req) => {
     const payload = await req.json()
     console.log('Received 10Web webhook:', JSON.stringify(payload, null, 2))
 
+    // Handle 10Web validation requests
+    if (payload.test === true) {
+      console.log('10Web webhook validation test received')
+      return new Response(JSON.stringify({ 
+        success: true, 
+        message: 'Webhook validation successful' 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // Extract relevant information from the payload
     const { site_id, status, event_type, data } = payload
 
