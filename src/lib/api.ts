@@ -1,121 +1,72 @@
-const SUPABASE_URL = 'https://eilpazegjrcrwgpujqni.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpbHBhemVnanJjcndncHVqcW5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NzYxNjksImV4cCI6MjA3MDE1MjE2OX0.LV5FvbQQGf0Kv-O1uA0tsS-Yam6rB1x937BgqFsJoX4';
+const F_BASE = 'https://eilpazegjrcrwgpujqni.supabase.co/functions/v1/ai-router';
+const H = {
+  'Content-Type': 'application/json',
+  'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpbHBhemVnanJjcndncHVqcW5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NzYxNjksImV4cCI6MjA3MDE1MjE2OX0.LV5FvbQQGf0Kv-O1uA0tsS-Yam6rB1x937BgqFsJoX4',
+  'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpbHBhemVnanJjcndncHVqcW5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NzYxNjksImV4cCI6MjA3MDE1MjE2OX0.LV5FvbQQGf0Kv-O1uA0tsS-Yam6rB1x937BgqFsJoX4'
+};
 
-const apiRequest = async (
-  endpoint: string,
-  options: RequestInit = {},
-  timeoutMs: number = 60000 // Default 60 second timeout
-): Promise<any> => {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+const TIMEOUT = { 
+  short: 30000,   // 30 seconds
+  mid: 90000,     // 90 seconds  
+  long: 180000    // 180 seconds
+};
 
+async function request(body: any, timeout = TIMEOUT.mid) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), timeout);
+  
   try {
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/${endpoint}`, {
-      ...options,
-      signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'apikey': SUPABASE_ANON_KEY,
-        ...options.headers,
-      },
+    const res = await fetch(F_BASE, { 
+      method: 'POST', 
+      headers: H, 
+      body: JSON.stringify(body), 
+      signal: ctl.signal 
     });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const error = new Error(errorData.detail?.message || errorData.code || `HTTP error! status: ${response.status}`);
-      (error as any).code = errorData.code;
-      (error as any).status = response.status;
-      throw error;
-    }
-
-    return await response.json();
-  } catch (error) {
-    clearTimeout(timeoutId);
-    console.error('API request failed:', error);
     
-    if (error.name === 'AbortError') {
-      const timeoutError = new Error(`Request timeout after ${timeoutMs/1000} seconds`);
-      (timeoutError as any).code = 'TIMEOUT';
-      throw timeoutError;
+    const txt = await res.text();
+    const json = txt ? JSON.parse(txt) : null;
+    
+    if (!res.ok) {
+      const err: any = new Error(json?.code || res.statusText);
+      err.status = res.status; 
+      err.code = json?.code; 
+      err.detail = json;
+      throw err;
     }
     
-    throw error;
+    return json;
+  } catch (e: any) {
+    if (e?.name === 'AbortError') { 
+      e.code = 'CLIENT_TIMEOUT'; 
+    }
+    throw e;
+  } finally { 
+    clearTimeout(t); 
   }
+}
+
+export const api = {
+  createWebsite: (businessName: string) =>
+    request({ action: 'create-website', businessName }, TIMEOUT.mid),
+
+  generateSitemap: (website_id: number, params: any) =>
+    request({ action: 'generate-sitemap', website_id, params }, TIMEOUT.long),
+
+  generateFromSitemap: (payload: any) =>
+    request({ action: 'generate-from-sitemap', ...payload }, TIMEOUT.long),
+
+  publishAndFrontpage: (website_id: number) =>
+    request({ action: 'publish-and-frontpage', website_id }, TIMEOUT.mid),
 };
 
-export const healthCheck = async (): Promise<any> => {
-  return apiRequest('ai-router?action=health', {
-    method: 'GET',
-  });
-};
+// Legacy exports for backward compatibility
+export const createWebsite = api.createWebsite;
+export const generateSitemap = api.generateSitemap;
+export const generateFromSitemap = (websiteId: number, uniqueId: string, params: any) =>
+  api.generateFromSitemap({ website_id: websiteId, unique_id: uniqueId, params });
+export const publishAndFrontpage = api.publishAndFrontpage;
 
-export const createWebsite = async (businessName: string): Promise<any> => {
-  return apiRequest('ai-router', {
-    method: 'POST',
-    body: JSON.stringify({
-      action: 'create-website',
-      businessName,
-    }),
-  });
-};
-
-export const generateSitemap = async (
-  websiteId: number,
-  params: {
-    business_type: string;
-    business_name: string;
-    business_description: string;
-  }
-): Promise<any> => {
-  return apiRequest('ai-router', {
-    method: 'POST',
-    body: JSON.stringify({
-      action: 'generate-sitemap',
-      website_id: websiteId,
-      params,
-    }),
-  }, 120000); // 2 minute timeout for sitemap generation
-};
-
-export const updateDesign = async (
-  siteId: number | string,
-  design: any
-): Promise<any> => {
-  return apiRequest('ai-router', {
-    method: 'POST',
-    body: JSON.stringify({
-      action: 'update-design',
-      siteId,
-      design,
-    }),
-  });
-};
-
-export const generateFromSitemap = async (
-  websiteId: number,
-  uniqueId: string,
-  params: any
-): Promise<any> => {
-  return apiRequest('ai-router', {
-    method: 'POST',
-    body: JSON.stringify({
-      action: 'generate-from-sitemap',
-      website_id: websiteId,
-      unique_id: uniqueId,
-      params,
-    }),
-  });
-};
-
-export const publishAndFrontpage = async (websiteId: number): Promise<any> => {
-  return apiRequest('ai-router', {
-    method: 'POST',
-    body: JSON.stringify({
-      action: 'publish-and-frontpage',
-      website_id: websiteId,
-    }),
-  });
+// Add missing updateDesign export
+export const updateDesign = async (siteId: number | string, design: any): Promise<any> => {
+  return request({ action: 'update-design', siteId, design }, TIMEOUT.mid);
 };

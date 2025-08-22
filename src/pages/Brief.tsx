@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Loader2, ChevronRight } from 'lucide-react';
 import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
-import { createWebsite, generateSitemap } from '@/lib/api';
+import { api } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 
 export default function Brief() {
@@ -78,7 +78,7 @@ export default function Brief() {
     try {
       // Step 1: Create website
       console.log('Step 1: Creating website...');
-      const createResult = await createWebsite(business_name);
+      const createResult = await api.createWebsite(business_name);
       console.log('Create website result:', createResult);
       
       if (!createResult.ok) {
@@ -100,7 +100,7 @@ export default function Brief() {
         description: 'This may take up to 2 minutes. Please wait.',
       });
 
-      const sitemapResult = await generateSitemap(createResult.website_id, {
+      const sitemapResult = await api.generateSitemap(createResult.website_id, {
         business_type: businessType,
         business_name,
         business_description
