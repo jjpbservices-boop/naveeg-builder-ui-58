@@ -142,30 +142,63 @@ serve(async (req) => {
   }
 
   try {
+    // Route requests based on action in request body
     const url = new URL(req.url);
     const path = url.pathname.replace('/functions/v1/ai-router', '');
-
-    console.log(`AI Router: ${req.method} ${path}`);
-    console.log(`Full URL: ${req.url}`);
-
-    switch (path) {
-      case '/create-website':
+    
+    console.log(`Handling request: ${req.method} ${path}`);
+    
+    // For non-GET requests, read action from body
+    let action = '';
+    if (req.method === 'POST') {
+      try {
+        const body = await req.text();
+        const parsedBody = JSON.parse(body);
+        action = parsedBody.action || '';
+        
+        // Recreate request with the original body for handlers
+        req = new Request(req.url, {
+          method: req.method,
+          headers: req.headers,
+          body: body,
+        });
+      } catch (e) {
+        console.error('Error parsing request body:', e);
+        return new Response(
+          JSON.stringify({ error: 'Invalid JSON body' }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+    } else if (req.method === 'GET') {
+      action = url.searchParams.get('action') || '';
+    }
+    
+    console.log(`Action: ${action}`);
+    
+    switch (action) {
+      case 'create-website':
         return await handleCreateWebsite(req);
-      case '/generate-sitemap':
+      case 'generate-sitemap':
         return await handleGenerateSitemap(req);
-      case '/update-design':
+      case 'update-design':
         return await handleUpdateDesign(req);
-      case '/generate-from-sitemap':
+      case 'generate-from-sitemap':
         return await handleGenerateFromSitemap(req);
-      case '/attach-site':
+      case 'attach-site':
         return await handleAttachSite(req);
-      case '/autologin':
+      case 'autologin':
         return await handleAutologin(req);
       default:
-        console.log(`Route not found: ${path}`);
+        console.error(`Unknown action: ${action}`);
         return new Response(
-          JSON.stringify({ error: 'Route not found', path, method: req.method }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: `Unknown action: ${action}. Available actions: create-website, generate-sitemap, update-design, generate-from-sitemap, attach-site, autologin` }),
+          { 
+            status: 404,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
         );
     }
   } catch (error) {
@@ -555,39 +588,60 @@ async function handleAttachSite(req: Request): Promise<Response> {
 }
 
 async function handleAutologin(req: Request): Promise<Response> {
-  const url = new URL(req.url);
-  const website_id = url.searchParams.get('website_id');
-  const admin_url = url.searchParams.get('admin_url');
+  try {
+    const body = await req.json();
+    const { website_id, admin_url } = body;
 
-  const { website_id: validatedWebsiteId, admin_url: validatedAdminUrl } = 
-    AutologinSchema.parse({ website_id, admin_url });
+    const validationResult = AutologinSchema.safeParse({ website_id, admin_url });
+    if (!validationResult.success) {
+      console.error('Autologin validation failed:', validationResult.error);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid request data', 
+          details: validationResult.error.errors 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
 
-  console.log('Getting autologin URL for website:', validatedWebsiteId);
+    const { website_id: validatedWebsiteId, admin_url: validatedAdminUrl } = validationResult.data;
 
-  // Get autologin URL
-  const autologinResponse = await fetchWithRetry(`${API_BASE}/v1/account/websites/${validatedWebsiteId}/single?admin_url=${encodeURIComponent(validatedAdminUrl)}`, {
-    method: 'GET',
-    headers: {
-      'x-api-key': TENWEB_API_KEY,
-    },
-  });
+    console.log('Getting autologin URL for website:', validatedWebsiteId);
 
-  if (!autologinResponse.ok) {
-    const error = await autologinResponse.text();
-    console.error('Autologin failed:', error);
-    throw new Error(`Failed to get autologin URL: ${error}`);
+    // Get autologin URL
+    const autologinResponse = await fetchWithRetry(`${API_BASE}/v1/account/websites/${validatedWebsiteId}/single?admin_url=${encodeURIComponent(validatedAdminUrl)}`, {
+      method: 'GET',
+      headers: {
+        'x-api-key': TENWEB_API_KEY,
+      },
+    });
+
+    if (!autologinResponse.ok) {
+      const error = await autologinResponse.text();
+      console.error('Autologin failed:', error);
+      throw new Error(`Failed to get autologin URL: ${error}`);
+    }
+
+    const autologinData = await autologinResponse.json();
+    console.log('Autologin URL generated:', autologinData);
+
+    await logEvent('', 'autologin_generated', { 
+      website_id: validatedWebsiteId, 
+      admin_url: validatedAdminUrl 
+    });
+
+    return new Response(
+      JSON.stringify({ admin_url: autologinData.admin_url }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Autologin error:', error);
+    return new Response(
+      JSON.stringify({ error: 'Failed to generate autologin URL', details: error.message }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
-
-  const autologinData = await autologinResponse.json();
-  console.log('Autologin URL generated:', autologinData);
-
-  await logEvent('', 'autologin_generated', { 
-    website_id: validatedWebsiteId, 
-    admin_url: validatedAdminUrl 
-  });
-
-  return new Response(
-    JSON.stringify({ admin_url: autologinData.admin_url }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
 }

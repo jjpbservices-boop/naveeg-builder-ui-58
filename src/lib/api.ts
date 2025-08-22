@@ -13,7 +13,7 @@ class APIClient {
   private timeout: number;
 
   constructor() {
-    // Use the full Supabase function URL
+    // Use the base Supabase function URL without sub-paths
     this.baseUrl = 'https://eilpazegjrcrwgpujqni.supabase.co/functions/v1/ai-router';
     this.timeout = 30000; // 30 seconds
   }
@@ -44,12 +44,12 @@ class APIClient {
   }
 
   private async request<T>(
-    endpoint: string, 
+    action: string, 
     options: RequestInit = {}
   ): Promise<APIResponse<T>> {
     try {
-      const url = `${this.baseUrl}${endpoint}`;
-      console.log(`API Request: ${options.method || 'GET'} ${url}`);
+      const url = this.baseUrl;
+      console.log(`API Request: ${options.method || 'GET'} ${url} - Action: ${action}`);
       console.log('Request headers:', options.headers);
       console.log('Request body:', options.body);
 
@@ -87,7 +87,7 @@ class APIClient {
       return { data };
     } catch (error) {
       console.error('API Request failed:', {
-        endpoint,
+        action,
         error: error.message,
         stack: error.stack
       });
@@ -114,9 +114,9 @@ class APIClient {
     siteId: string;
     website_id: number;
   }>> {
-    return this.request('/create-website', {
+    return this.request('create-website', {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ action: 'create-website', ...payload }),
     });
   }
 
@@ -135,18 +135,18 @@ class APIClient {
     };
     website_type: string;
   }>> {
-    return this.request('/generate-sitemap', {
+    return this.request('generate-sitemap', {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ action: 'generate-sitemap', ...payload }),
     });
   }
 
   async generateFromSitemap(siteId: string): Promise<APIResponse<{
     url: string;
   }>> {
-    return this.request('/generate-from-sitemap', {
+    return this.request('generate-from-sitemap', {
       method: 'POST',
-      body: JSON.stringify({ siteId }),
+      body: JSON.stringify({ action: 'generate-from-sitemap', siteId }),
     });
   }
 
@@ -169,18 +169,18 @@ class APIClient {
     seo_description?: string;
     seo_keyphrase?: string;
   }): Promise<APIResponse<{ success: boolean }>> {
-    return this.request('/update-design', {
+    return this.request('update-design', {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ action: 'update-design', ...payload }),
     });
   }
 
   async attachSite(payload: {
     siteId: string;
   }): Promise<APIResponse<{ success: boolean }>> {
-    return this.request('/attach-site', {
+    return this.request('attach-site', {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ action: 'attach-site', ...payload }),
     });
   }
 
@@ -188,13 +188,9 @@ class APIClient {
     website_id: string,
     admin_url: string
   ): Promise<APIResponse<{ admin_url: string }>> {
-    const params = new URLSearchParams({
-      website_id,
-      admin_url,
-    });
-    
-    return this.request(`/autologin?${params.toString()}`, {
-      method: 'GET',
+    return this.request('autologin', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'autologin', website_id, admin_url }),
     });
   }
 }
