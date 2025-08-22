@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,7 +27,7 @@ export default function Brief() {
   } = useOnboardingStore();
 
   const handleAnalyze = async () => {
-    if (!business_name.trim() || !business_description.trim()) {
+    if (!business_name?.trim() || !business_description?.trim()) {
       toast({
         title: 'Incomplete form',
         description: 'Please fill in all fields',
@@ -90,7 +90,7 @@ export default function Brief() {
 
       // Navigate to design step
       setCurrentStep(1);
-      navigate('/design');
+      navigate({ to: '/design' });
       
     } catch (error) {
       console.error('Error during analyze:', error);
