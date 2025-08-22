@@ -5,20 +5,26 @@ const API_BASE = Deno.env.get('TENWEB_API_BASE') || 'https://api.10web.io';
 const API_KEY  = Deno.env.get('TENWEB_API_KEY')!;
 const H = { 'content-type': 'application/json', 'x-api-key': API_KEY };
 
-const ORIGINS = [
-  'http://localhost:5173',
-  'https://preview-naveeg-builder-ui.lovable.app',
-  'https://naveeg-builder-ui.lovable.app'
+const ORIGIN_ALLOW = [
+  /^https?:\/\/localhost:\d+$/,
+  /^https:\/\/(preview-)?naveeg-builder-ui(-[\w]+)?\.lovable\.app$/,
+  /^https:\/\/preview-.*\.lovable\.app$/
 ];
-const cors = (o: string) => ({
-  'Access-Control-Allow-Origin': ORIGINS.includes(o) ? o : ORIGINS[1],
-  'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info',
-  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-  'Access-Control-Max-Age': '86400',
-  Vary: 'Origin'
-});
-const J = (code: number, data: unknown, o = '') =>
-  new Response(JSON.stringify(data), { status: code, headers: { 'content-type': 'application/json', ...cors(o) } });
+
+function corsHeaders(origin: string) {
+  const ok = ORIGIN_ALLOW.some(r => r.test(origin));
+  const allow = ok ? origin : 'https://preview-naveeg-builder-ui.lovable.app';
+  return {
+    'Access-Control-Allow-Origin': allow,
+    'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Max-Age': '86400',
+    'Vary': 'Origin'
+  };
+}
+
+const J = (code: number, data: unknown, origin = '') =>
+  new Response(JSON.stringify(data), { status: code, headers: { 'content-type': 'application/json', ...corsHeaders(origin) } });
 
 function slugify(s = 'site') {
   return s.normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
@@ -104,7 +110,7 @@ async function createWebsite(businessName: string) {
 
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin') || '';
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors(origin) });
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(origin) });
 
   try {
     const url = new URL(req.url);
