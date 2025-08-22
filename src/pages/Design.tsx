@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
 import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, ArrowRight, Check, Plus, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 const Design: React.FC = () => {
   const { t } = useTranslation(['design', 'common']);
@@ -19,38 +19,42 @@ const Design: React.FC = () => {
     fonts,
     pages_meta,
     website_type,
+    seo_title,
+    seo_description,
+    seo_keyphrase,
     updateDesign,
     addPage,
     removePage,
     updatePage,
     updateWebsiteType,
+    updateSEO,
   } = useOnboardingStore();
 
-  const handleColorChange = (colorType: 'primary' | 'secondary', value: string) => {
-    updateDesign({
-      colors: {
-        ...colors,
-        [colorType]: value,
-      },
-    });
+  const [localColors, setLocalColors] = useState(colors);
+  const [localFonts, setLocalFonts] = useState(fonts);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  // Validation function for HEX colors
+  const isValidHex = (value: string): boolean => {
+    return /^#([A-Fa-f0-9]{6})$/.test(value);
   };
 
-  const handleBackgroundToggle = (checked: boolean) => {
-    updateDesign({
-      colors: {
-        ...colors,
-        background_dark: checked,
-      },
-    });
+  const validateAndSetColor = (colorType: keyof typeof colors, value: string) => {
+    const newColors = { ...localColors, [colorType]: value };
+    setLocalColors(newColors);
+
+    if (isValidHex(value)) {
+      updateDesign({ colors: newColors });
+      setValidationErrors(prev => ({ ...prev, [colorType]: '' }));
+    } else {
+      setValidationErrors(prev => ({ ...prev, [colorType]: 'Enter HEX like #A1B2C3' }));
+    }
   };
 
   const handleFontChange = (fontType: 'heading' | 'body', value: string) => {
-    updateDesign({
-      fonts: {
-        ...fonts,
-        [fontType]: value as any,
-      },
-    });
+    const newFonts = { ...localFonts, [fontType]: value as any };
+    setLocalFonts(newFonts);
+    updateDesign({ fonts: newFonts });
   };
 
   const handleAddPage = () => {
@@ -62,6 +66,7 @@ const Design: React.FC = () => {
       type: 'custom' as const,
       description: 'Custom page description',
       isRequired: false,
+      sections: [],
     };
     
     addPage(newPage);
@@ -72,6 +77,21 @@ const Design: React.FC = () => {
   };
 
   const handleSubmit = () => {
+    // Validate all colors before proceeding
+    const hasValidationErrors = Object.values(validationErrors).some(error => error !== '');
+    if (hasValidationErrors) {
+      toast.error('Please fix color validation errors before continuing');
+      return;
+    }
+
+    // Ensure all colors are valid HEX
+    if (!isValidHex(localColors.primary_color) || 
+        !isValidHex(localColors.secondary_color) || 
+        !isValidHex(localColors.background_dark)) {
+      toast.error('Please enter valid HEX colors for all fields');
+      return;
+    }
+
     navigate({ to: '/generate' });
   };
 
@@ -79,17 +99,42 @@ const Design: React.FC = () => {
     navigate({ to: '/onboarding/brief' });
   };
 
-  const fontOptions = [
-    { value: 'syne', label: t('design:fonts.syne'), class: 'font-syne' },
-    { value: 'playfair', label: t('design:fonts.playfair'), class: 'font-serif' },
-    { value: 'montserrat', label: t('design:fonts.montserrat'), class: 'font-sans' },
+  const headingFontOptions = [
+    { value: 'Syne', label: 'Syne' },
+    { value: 'Playfair Display', label: 'Playfair Display' },
+    { value: 'Montserrat', label: 'Montserrat' },
+    { value: 'Poppins', label: 'Poppins' },
+    { value: 'Merriweather', label: 'Merriweather' },
+    { value: 'DM Sans', label: 'DM Sans' },
+    { value: 'Karla', label: 'Karla' },
   ];
 
   const bodyFontOptions = [
-    { value: 'inter', label: t('design:fonts.inter'), class: 'font-sans' },
-    { value: 'lato', label: t('design:fonts.lato'), class: 'font-sans' },
-    { value: 'roboto', label: t('design:fonts.roboto'), class: 'font-sans' },
+    { value: 'Inter', label: 'Inter' },
+    { value: 'Roboto', label: 'Roboto' },
+    { value: 'Lato', label: 'Lato' },
+    { value: 'Open Sans', label: 'Open Sans' },
+    { value: 'Source Sans 3', label: 'Source Sans 3' },
+    { value: 'Noto Sans', label: 'Noto Sans' },
   ];
+
+  // Load Google Fonts dynamically
+  useEffect(() => {
+    const loadFont = (fontName: string) => {
+      const fontUrl = `https://fonts.googleapis.com/css2?family=${fontName.replace(/\s+/g, '+')}:wght@400;700&display=swap`;
+      
+      if (!document.querySelector(`link[href="${fontUrl}"]`)) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = fontUrl;
+        document.head.appendChild(link);
+      }
+    };
+
+    // Load selected fonts
+    loadFont(localFonts.heading);
+    loadFont(localFonts.body);
+  }, [localFonts]);
 
   return (
     <div className="min-h-screen py-8">
@@ -111,7 +156,7 @@ const Design: React.FC = () => {
                 <span className="text-sm font-medium">2</span>
               </div>
               <span className="ml-2 text-sm font-medium text-primary">
-                Design
+                Design & Review
               </span>
             </div>
           </div>
@@ -120,10 +165,10 @@ const Design: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-8 animate-slide-up">
           <h1 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
-            {t('design:title')}
+            Design & Review
           </h1>
           <p className="text-lg text-muted-foreground">
-            {t('design:subtitle')}
+            Customize colors, fonts, and review your website structure.
           </p>
         </div>
 
@@ -131,90 +176,88 @@ const Design: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Design Controls */}
           <div className="space-y-6 animate-slide-up">
-            {/* Website Type */}
-            <div className="bg-card rounded-3xl border shadow-soft p-6">
-              <h3 className="text-xl font-semibold mb-4">Website Type</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  variant={website_type === 'basic' ? 'default' : 'outline'}
-                  onClick={() => updateWebsiteType('basic')}
-                  className="h-16 flex-col rounded-2xl"
-                >
-                  <span className="font-semibold">Basic</span>
-                  <span className="text-xs opacity-70">Standard website</span>
-                </Button>
-                <Button
-                  variant={website_type === 'ecommerce' ? 'default' : 'outline'}
-                  onClick={() => updateWebsiteType('ecommerce')}
-                  className="h-16 flex-col rounded-2xl"
-                >
-                  <span className="font-semibold">E-commerce</span>
-                  <span className="text-xs opacity-70">Online store</span>
-                </Button>
-              </div>
-            </div>
-
             {/* Colors Section */}
             <div className="bg-card rounded-3xl border shadow-soft p-6">
               <h3 className="text-xl font-semibold mb-6">Colors</h3>
               
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="space-y-4">
                 <div>
                   <Label className="text-sm font-medium mb-2 block">
-                    {t('design:colors.primary')}
+                    Primary Color
                   </Label>
                   <div className="flex items-center space-x-3">
                     <Input
                       type="color"
-                      value={colors.primary}
-                      onChange={(e) => handleColorChange('primary', e.target.value)}
+                      value={localColors.primary_color}
+                      onChange={(e) => validateAndSetColor('primary_color', e.target.value)}
                       className="w-12 h-12 rounded-lg border-2 cursor-pointer"
                     />
-                    <Input
-                      type="text"
-                      value={colors.primary}
-                      onChange={(e) => handleColorChange('primary', e.target.value)}
-                      className="flex-1 h-12 rounded-2xl border-2"
-                      placeholder="#FF7A00"
-                    />
+                    <div className="flex-1">
+                      <Input
+                        type="text"
+                        value={localColors.primary_color}
+                        onChange={(e) => validateAndSetColor('primary_color', e.target.value)}
+                        className="h-12 rounded-2xl border-2"
+                        placeholder="#FF4A1C"
+                      />
+                      {validationErrors.primary_color && (
+                        <p className="text-xs text-destructive mt-1">{validationErrors.primary_color}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
                 
                 <div>
                   <Label className="text-sm font-medium mb-2 block">
-                    {t('design:colors.secondary')}
+                    Secondary Color
                   </Label>
                   <div className="flex items-center space-x-3">
                     <Input
                       type="color"
-                      value={colors.secondary}
-                      onChange={(e) => handleColorChange('secondary', e.target.value)}
+                      value={localColors.secondary_color}
+                      onChange={(e) => validateAndSetColor('secondary_color', e.target.value)}
                       className="w-12 h-12 rounded-lg border-2 cursor-pointer"
                     />
-                    <Input
-                      type="text"
-                      value={colors.secondary}
-                      onChange={(e) => handleColorChange('secondary', e.target.value)}
-                      className="flex-1 h-12 rounded-2xl border-2"
-                      placeholder="#6B7280"
-                    />
+                    <div className="flex-1">
+                      <Input
+                        type="text"
+                        value={localColors.secondary_color}
+                        onChange={(e) => validateAndSetColor('secondary_color', e.target.value)}
+                        className="h-12 rounded-2xl border-2"
+                        placeholder="#6B7280"
+                      />
+                      {validationErrors.secondary_color && (
+                        <p className="text-xs text-destructive mt-1">{validationErrors.secondary_color}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-2xl">
                 <div>
-                  <Label className="text-sm font-medium">
-                    {t('design:colors.darkBackground')}
+                  <Label className="text-sm font-medium mb-2 block">
+                    Background Dark
                   </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Use a dark background theme
-                  </p>
+                  <div className="flex items-center space-x-3">
+                    <Input
+                      type="color"
+                      value={localColors.background_dark}
+                      onChange={(e) => validateAndSetColor('background_dark', e.target.value)}
+                      className="w-12 h-12 rounded-lg border-2 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <Input
+                        type="text"
+                        value={localColors.background_dark}
+                        onChange={(e) => validateAndSetColor('background_dark', e.target.value)}
+                        className="h-12 rounded-2xl border-2"
+                        placeholder="#000000"
+                      />
+                      {validationErrors.background_dark && (
+                        <p className="text-xs text-destructive mt-1">{validationErrors.background_dark}</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <Switch
-                  checked={colors.background_dark}
-                  onCheckedChange={handleBackgroundToggle}
-                />
               </div>
             </div>
 
@@ -222,19 +265,19 @@ const Design: React.FC = () => {
             <div className="bg-card rounded-3xl border shadow-soft p-6">
               <h3 className="text-xl font-semibold mb-6">Typography</h3>
               
-              <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-4">
                 <div>
                   <Label className="text-sm font-medium mb-2 block">
-                    {t('design:fonts.heading')}
+                    Heading Font
                   </Label>
-                  <Select value={fonts.heading} onValueChange={(value) => handleFontChange('heading', value)}>
+                  <Select value={localFonts.heading} onValueChange={(value) => handleFontChange('heading', value)}>
                     <SelectTrigger className="h-12 rounded-2xl border-2">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      {fontOptions.map((font) => (
+                    <SelectContent className="bg-popover border border-border shadow-lg z-50">
+                      {headingFontOptions.map((font) => (
                         <SelectItem key={font.value} value={font.value}>
-                          <span className={font.class}>{font.label}</span>
+                          <span style={{ fontFamily: font.value }}>{font.label}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -243,16 +286,16 @@ const Design: React.FC = () => {
                 
                 <div>
                   <Label className="text-sm font-medium mb-2 block">
-                    {t('design:fonts.body')}
+                    Body Font
                   </Label>
-                  <Select value={fonts.body} onValueChange={(value) => handleFontChange('body', value)}>
+                  <Select value={localFonts.body} onValueChange={(value) => handleFontChange('body', value)}>
                     <SelectTrigger className="h-12 rounded-2xl border-2">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-popover border border-border shadow-lg z-50">
                       {bodyFontOptions.map((font) => (
                         <SelectItem key={font.value} value={font.value}>
-                          <span className={font.class}>{font.label}</span>
+                          <span style={{ fontFamily: font.value }}>{font.label}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -261,7 +304,7 @@ const Design: React.FC = () => {
               </div>
             </div>
 
-            {/* Page Management Section */}
+            {/* Canvas - Page Management */}
             <div className="bg-card rounded-3xl border shadow-soft p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-semibold">Website Pages</h3>
@@ -309,28 +352,26 @@ const Design: React.FC = () => {
             </div>
           </div>
 
-          {/* Live Preview */}
+          {/* Canvas Preview */}
           <div className="animate-slide-up">
             <div className="bg-card rounded-3xl border shadow-soft p-6 sticky top-8">
-              <h3 className="text-xl font-semibold mb-6">{t('design:preview.title')}</h3>
+              <h3 className="text-xl font-semibold mb-6">Live Preview</h3>
               
               {/* Preview Area */}
               <div 
-                className={`rounded-2xl border-2 p-6 transition-colors ${
-                  colors.background_dark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'
-                }`}
+                className="rounded-2xl border-2 p-6 transition-colors bg-white border-gray-200"
                 style={{
-                  '--primary-color': colors.primary,
-                  '--secondary-color': colors.secondary,
-                } as React.CSSProperties}
+                  backgroundColor: localColors.background_dark,
+                  borderColor: localColors.secondary_color,
+                }}
               >
                 {/* Preview Header */}
                 <div className="flex items-center justify-between mb-6">
                   <h2 
-                    className={`text-2xl font-bold ${colors.background_dark ? 'text-white' : 'text-gray-900'}`}
+                    className="text-2xl font-bold"
                     style={{ 
-                      fontFamily: fonts.heading === 'syne' ? 'Syne' : fonts.heading === 'playfair' ? 'serif' : 'sans-serif',
-                      color: colors.primary
+                      fontFamily: localFonts.heading,
+                      color: localColors.primary_color
                     }}
                   >
                     {business_name || 'Your Business'}
@@ -345,39 +386,38 @@ const Design: React.FC = () => {
                 {/* Preview Content */}
                 <div className="space-y-4">
                   <h3 
-                    className={`text-xl font-semibold ${colors.background_dark ? 'text-white' : 'text-gray-900'}`}
+                    className="text-xl font-semibold text-white"
                     style={{ 
-                      fontFamily: fonts.heading === 'syne' ? 'Syne' : fonts.heading === 'playfair' ? 'serif' : 'sans-serif' 
+                      fontFamily: localFonts.heading 
                     }}
                   >
-                    {t('design:preview.sampleHeading')}
+                    Welcome to Your Business
                   </h3>
                   
                   <p 
-                    className={`text-sm ${colors.background_dark ? 'text-gray-300' : 'text-gray-600'}`}
+                    className="text-sm text-gray-300"
                     style={{ 
-                      fontFamily: fonts.body === 'inter' ? 'Inter' : fonts.body 
+                      fontFamily: localFonts.body 
                     }}
                   >
-                    {t('design:preview.sampleText')}
+                    This is how your content will appear on your website. The colors and fonts you choose will be applied throughout your entire site.
                   </p>
                   
                   <Button
-                    className="rounded-xl"
+                    className="rounded-xl text-white"
                     style={{ 
-                      backgroundColor: colors.primary,
-                      borderColor: colors.primary,
-                      color: 'white'
+                      backgroundColor: localColors.primary_color,
+                      borderColor: localColors.primary_color,
                     }}
                   >
-                    {t('design:preview.sampleButton')}
+                    Get Started
                   </Button>
                 </div>
               </div>
 
               {/* Sitemap Preview */}
               <div className="mt-6">
-                <h4 className="text-sm font-semibold mb-3">{t('design:sitemap.title')}</h4>
+                <h4 className="text-sm font-semibold mb-3">Your Website Structure</h4>
                 <div className="grid grid-cols-2 gap-2">
                   {pages_meta.slice(0, 4).map((page) => (
                     <div key={page.id} className="p-2 bg-muted rounded-lg text-center">

@@ -57,6 +57,7 @@ export type Database = {
           email: string | null
           fonts: Json | null
           id: string
+          owner_email: string | null
           pages_meta: Json | null
           payload: Json | null
           seo_description: string | null
@@ -66,6 +67,7 @@ export type Database = {
           status: string | null
           unique_id: string | null
           updated_at: string | null
+          user_id: string | null
           website_id: number | null
           website_type: string | null
         }
@@ -79,6 +81,7 @@ export type Database = {
           email?: string | null
           fonts?: Json | null
           id?: string
+          owner_email?: string | null
           pages_meta?: Json | null
           payload?: Json | null
           seo_description?: string | null
@@ -88,6 +91,7 @@ export type Database = {
           status?: string | null
           unique_id?: string | null
           updated_at?: string | null
+          user_id?: string | null
           website_id?: number | null
           website_type?: string | null
         }
@@ -101,6 +105,7 @@ export type Database = {
           email?: string | null
           fonts?: Json | null
           id?: string
+          owner_email?: string | null
           pages_meta?: Json | null
           payload?: Json | null
           seo_description?: string | null
@@ -110,6 +115,7 @@ export type Database = {
           status?: string | null
           unique_id?: string | null
           updated_at?: string | null
+          user_id?: string | null
           website_id?: number | null
           website_type?: string | null
         }

@@ -7,6 +7,7 @@ export interface Page {
   type: 'home' | 'about' | 'services' | 'gallery' | 'contact' | 'custom';
   description?: string;
   isRequired?: boolean;
+  sections?: { title: string }[];
 }
 
 export interface OnboardingState {
@@ -23,13 +24,13 @@ export interface OnboardingState {
   
   // Design preferences
   colors: {
-    primary: string;
-    secondary: string;
-    background_dark: boolean;
+    primary_color: string;
+    secondary_color: string;
+    background_dark: string;
   };
   fonts: {
-    heading: 'syne' | 'playfair' | 'montserrat';
-    body: 'inter' | 'lato' | 'roboto';
+    heading: 'Syne' | 'Playfair Display' | 'Montserrat' | 'Poppins' | 'Merriweather' | 'DM Sans' | 'Karla';
+    body: 'Inter' | 'Roboto' | 'Lato' | 'Open Sans' | 'Source Sans 3' | 'Noto Sans';
   };
   
   // Site structure
@@ -86,19 +87,19 @@ const initialState: OnboardingState = {
   seo_description: '',
   seo_keyphrase: '',
   colors: {
-    primary: '#FF7A00',
-    secondary: '#6B7280', 
-    background_dark: false,
+    primary_color: '#FF4A1C',
+    secondary_color: '#6B7280', 
+    background_dark: '#000000',
   },
   fonts: {
-    heading: 'syne',
-    body: 'inter',
+    heading: 'Syne',
+    body: 'Inter',
   },
   pages_meta: [
-    { id: '1', title: 'Home', type: 'home', isRequired: true },
-    { id: '2', title: 'About', type: 'about', isRequired: true },
-    { id: '3', title: 'Services', type: 'services', isRequired: true },
-    { id: '4', title: 'Contact', type: 'contact', isRequired: true },
+    { id: '1', title: 'Home', type: 'home', isRequired: true, sections: [] },
+    { id: '2', title: 'About', type: 'about', isRequired: true, sections: [] },
+    { id: '3', title: 'Services', type: 'services', isRequired: true, sections: [] },
+    { id: '4', title: 'Contact', type: 'contact', isRequired: true, sections: [] },
   ],
   website_type: 'basic',
   currentStep: 0,

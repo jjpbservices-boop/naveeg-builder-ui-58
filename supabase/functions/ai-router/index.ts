@@ -9,7 +9,8 @@ const corsHeaders = {
 
 // Environment variables
 const TENWEB_API_KEY = Deno.env.get('TENWEB_API_KEY');
-const TENWEB_API_BASE = Deno.env.get('TENWEB_API_BASE') || 'https://api.10web.io';
+const API_BASE = 'https://api.10web.io';
+const REGION = 'europe-west3-b';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -22,37 +23,53 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 // Validation schemas
 const CreateWebsiteSchema = z.object({
-  email: z.string().email(),
-  subdomainSlug: z.string().optional(),
-  region: z.string().default('us'),
-  siteTitle: z.string(),
-  adminUsername: z.string().optional(),
-  businessName: z.string(),
-  businessType: z.string(),
-  businessDescription: z.string(),
-  seoTitle: z.string().optional(),
-  seoDescription: z.string().optional(),
-  seoKeyphrase: z.string().optional(),
+  subdomain: z.string().optional(),
+  siteTitle: z.string().optional(),
 });
 
 const GenerateSitemapSchema = z.object({
   siteId: z.string().uuid(),
+  business_type: z.string(),
+  business_name: z.string(), 
+  business_description: z.string(),
+});
+
+const UpdateDesignSchema = z.object({
+  siteId: z.string().uuid(),
+  colors: z.object({
+    primary_color: z.string().regex(/^#([A-Fa-f0-9]{6})$/, 'Invalid HEX color'),
+    secondary_color: z.string().regex(/^#([A-Fa-f0-9]{6})$/, 'Invalid HEX color'),
+    background_dark: z.string().regex(/^#([A-Fa-f0-9]{6})$/, 'Invalid HEX color'),
+  }),
+  fonts: z.object({
+    heading: z.string(),
+    body: z.string(),
+  }),
+  pages_meta: z.array(z.object({
+    id: z.string(),
+    title: z.string(),
+    type: z.string(),
+    sections: z.array(z.object({
+      title: z.string()
+    })).optional().default([]),
+  })),
+  website_type: z.enum(['basic', 'ecommerce']),
+  seo_title: z.string().optional(),
+  seo_description: z.string().optional(),
+  seo_keyphrase: z.string().optional(),
 });
 
 const GenerateFromSitemapSchema = z.object({
   siteId: z.string().uuid(),
 });
 
-const PublishAndFrontpageSchema = z.object({
-  website_id: z.number(),
-  front_page_id: z.number(),
-  publish_ids: z.array(z.number()),
+const AttachSiteSchema = z.object({
+  siteId: z.string().uuid(),
 });
 
 const AutologinSchema = z.object({
   website_id: z.string(),
   admin_url: z.string(),
-  email: z.string(),
 });
 
 // Helper functions
@@ -132,10 +149,12 @@ serve(async (req) => {
         return await handleCreateWebsite(req);
       case '/generate-sitemap':
         return await handleGenerateSitemap(req);
+      case '/update-design':
+        return await handleUpdateDesign(req);
       case '/generate-from-sitemap':
         return await handleGenerateFromSitemap(req);
-      case '/publish-and-frontpage':
-        return await handlePublishAndFrontpage(req);
+      case '/attach-site':
+        return await handleAttachSite(req);
       case '/autologin':
         return await handleAutologin(req);
       default:
@@ -159,22 +178,22 @@ async function handleCreateWebsite(req: Request): Promise<Response> {
 
   // Generate admin password and subdomain if not provided
   const adminPassword = generateStrongPassword();
-  const subdomainSlug = data.subdomainSlug || `${slugify(data.businessName)}-${Date.now()}`;
+  const subdomain = data.subdomain || `site-${Date.now()}`;
 
-  console.log('Creating website with subdomain:', subdomainSlug);
+  console.log('Creating website with subdomain:', subdomain);
 
   // Call provider API to create website
-  const createWebsiteResponse = await fetchWithRetry(`${TENWEB_API_BASE}/v1/hosting/websites`, {
+  const createWebsiteResponse = await fetchWithRetry(`${API_BASE}/v1/hosting/website`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-api-key': TENWEB_API_KEY,
     },
     body: JSON.stringify({
-      subdomain: subdomainSlug,
-      region: data.region,
-      site_title: data.siteTitle,
-      admin_username: data.adminUsername || 'admin',
+      subdomain,
+      region: REGION,
+      site_title: data.siteTitle || 'New Site',
+      admin_username: 'admin',
       admin_password: adminPassword,
     }),
   });
@@ -192,16 +211,10 @@ async function handleCreateWebsite(req: Request): Promise<Response> {
   const { data: site, error: dbError } = await supabase
     .from('sites')
     .insert({
-      email: data.email,
-      business_type: data.businessType,
-      business_name: data.businessName,
-      business_description: data.businessDescription,
-      seo_title: data.seoTitle,
-      seo_description: data.seoDescription,
-      seo_keyphrase: data.seoKeyphrase,
       website_id: websiteData.website_id,
-      site_url: websiteData.site_url,
-      admin_url: websiteData.admin_url,
+      business_name: '',
+      business_type: '',
+      business_description: '',
       status: 'created',
     })
     .select()
@@ -212,14 +225,12 @@ async function handleCreateWebsite(req: Request): Promise<Response> {
     throw new Error(`Failed to save website data: ${dbError.message}`);
   }
 
-  await logEvent(site.id, 'website_created', { website_id: websiteData.website_id });
+  await logEvent(site.id, 'website_created', { website_id: websiteData.website_id, subdomain });
 
   return new Response(
     JSON.stringify({
       siteId: site.id,
       website_id: websiteData.website_id,
-      site_url: websiteData.site_url,
-      admin_url: websiteData.admin_url,
     }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   );
@@ -227,7 +238,7 @@ async function handleCreateWebsite(req: Request): Promise<Response> {
 
 async function handleGenerateSitemap(req: Request): Promise<Response> {
   const body = await req.json();
-  const { siteId } = GenerateSitemapSchema.parse(body);
+  const { siteId, business_type, business_name, business_description } = GenerateSitemapSchema.parse(body);
 
   // Load site data
   const { data: site, error: dbError } = await supabase
@@ -243,7 +254,7 @@ async function handleGenerateSitemap(req: Request): Promise<Response> {
   console.log('Generating sitemap for website:', site.website_id);
 
   // Call provider API to generate sitemap
-  const sitemapResponse = await fetchWithRetry(`${TENWEB_API_BASE}/v1/ai/generate_sitemap`, {
+  const sitemapResponse = await fetchWithRetry(`${API_BASE}/v1/ai/generate_sitemap`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -252,9 +263,9 @@ async function handleGenerateSitemap(req: Request): Promise<Response> {
     body: JSON.stringify({
       website_id: site.website_id,
       params: {
-        business_type: site.business_type,
-        business_name: site.business_name,
-        business_description: site.business_description,
+        business_type,
+        business_name,
+        business_description,
       },
     }),
   });
@@ -268,21 +279,81 @@ async function handleGenerateSitemap(req: Request): Promise<Response> {
   const sitemapData = await sitemapResponse.json();
   console.log('Sitemap generated:', sitemapData);
 
-  // Update site with unique_id
+  // Auto-fill SEO fields
+  const seo_title = sitemapData.website_title || business_name;
+  const seo_description = sitemapData.website_description || business_description.substring(0, 160);
+  const seo_keyphrase = sitemapData.website_keyphrase || business_name;
+  const website_type = sitemapData.website_type || (business_type === 'ecommerce' ? 'ecommerce' : 'basic');
+
+  // Update site with all response data
   const { error: updateError } = await supabase
     .from('sites')
-    .update({ unique_id: sitemapData.unique_id })
+    .update({ 
+      unique_id: sitemapData.unique_id,
+      pages_meta: sitemapData.pages_meta,
+      colors: sitemapData.colors,
+      fonts: sitemapData.fonts,
+      business_name,
+      business_type,
+      business_description,
+      seo_title,
+      seo_description,
+      seo_keyphrase,
+      website_type,
+    })
     .eq('id', siteId);
 
   if (updateError) {
-    console.error('Failed to update unique_id:', updateError);
+    console.error('Failed to update site:', updateError);
     throw new Error(`Failed to update site: ${updateError.message}`);
   }
 
   await logEvent(siteId, 'sitemap_generated', { unique_id: sitemapData.unique_id });
 
   return new Response(
-    JSON.stringify({ unique_id: sitemapData.unique_id }),
+    JSON.stringify({ 
+      unique_id: sitemapData.unique_id,
+      pages_meta: sitemapData.pages_meta,
+      seo: {
+        seo_title,
+        seo_description,
+        seo_keyphrase,
+      },
+      website_type,
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
+async function handleUpdateDesign(req: Request): Promise<Response> {
+  const body = await req.json();
+  const data = UpdateDesignSchema.parse(body);
+
+  console.log('Updating design for site:', data.siteId);
+
+  // Update site with design data
+  const { error: updateError } = await supabase
+    .from('sites')
+    .update({
+      colors: data.colors,
+      fonts: data.fonts,
+      pages_meta: data.pages_meta,
+      website_type: data.website_type,
+      seo_title: data.seo_title,
+      seo_description: data.seo_description,
+      seo_keyphrase: data.seo_keyphrase,
+    })
+    .eq('id', data.siteId);
+
+  if (updateError) {
+    console.error('Failed to update design:', updateError);
+    throw new Error(`Failed to update design: ${updateError.message}`);
+  }
+
+  await logEvent(data.siteId, 'design_updated', data);
+
+  return new Response(
+    JSON.stringify({ success: true }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   );
 }
@@ -327,14 +398,43 @@ async function handleGenerateFromSitemap(req: Request): Promise<Response> {
     },
   };
 
+  // Transform pages_meta for API
+  const transformedPagesMeta = site.pages_meta?.map((p: any) => ({
+    title: p.title,
+    sections: (p.sections || []).map((s: any) => s.title)
+  })) || [];
+
+  const apiPayload = {
+    website_id: site.website_id,
+    unique_id: site.unique_id,
+    params: {
+      business_type: site.business_type,
+      business_name: site.business_name, 
+      business_description: site.business_description,
+      colors: {
+        background_dark: site.colors?.background_dark || '#000000',
+        primary_color: site.colors?.primary_color || '#FF4A1C',
+        secondary_color: site.colors?.secondary_color || '#6B7280',
+      },
+      fonts: {
+        primary_font: site.fonts?.body || 'inter',
+      },
+      pages_meta: transformedPagesMeta,
+      website_title: site.seo_title,
+      website_description: site.seo_description,
+      website_keyphrase: site.seo_keyphrase,
+      website_type: site.website_type,
+    },
+  };
+
   // Call provider API to generate site from sitemap
-  const generateResponse = await fetchWithRetry(`${TENWEB_API_BASE}/v1/ai/generate_site_from_sitemap`, {
+  const generateResponse = await fetchWithRetry(`${API_BASE}/v1/ai/generate_site_from_sitemap`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-api-key': TENWEB_API_KEY,
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(apiPayload),
   });
 
   if (!generateResponse.ok) {
@@ -350,7 +450,7 @@ async function handleGenerateFromSitemap(req: Request): Promise<Response> {
   const { error: updateError } = await supabase
     .from('sites')
     .update({
-      payload: payload,
+      payload: apiPayload,
       status: 'generated',
     })
     .eq('id', siteId);
@@ -368,43 +468,40 @@ async function handleGenerateFromSitemap(req: Request): Promise<Response> {
   );
 }
 
-async function handlePublishAndFrontpage(req: Request): Promise<Response> {
+async function handleAttachSite(req: Request): Promise<Response> {
+  // Extract JWT token and validate user
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    throw new Error('Missing or invalid authorization header');
+  }
+
+  const token = authHeader.split(' ')[1];
+  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+  if (authError || !user) {
+    throw new Error('Invalid or expired token');
+  }
+
   const body = await req.json();
-  const { website_id, front_page_id, publish_ids } = PublishAndFrontpageSchema.parse(body);
+  const { siteId } = AttachSiteSchema.parse(body);
 
-  console.log('Publishing pages for website:', website_id);
+  console.log('Attaching site to user:', user.id);
 
-  // Publish pages
-  const publishResponse = await fetchWithRetry(`${TENWEB_API_BASE}/v1/builder/websites/${website_id}/pages/publish`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': TENWEB_API_KEY,
-    },
-    body: JSON.stringify({ ids: publish_ids }),
-  });
+  // Update site with user_id and owner_email
+  const { error: updateError } = await supabase
+    .from('sites')
+    .update({
+      user_id: user.id,
+      owner_email: user.email,
+    })
+    .eq('id', siteId);
 
-  if (!publishResponse.ok) {
-    const error = await publishResponse.text();
-    console.error('Publish pages failed:', error);
-    throw new Error(`Failed to publish pages: ${error}`);
+  if (updateError) {
+    console.error('Failed to attach site:', updateError);
+    throw new Error(`Failed to attach site: ${updateError.message}`);
   }
 
-  // Set front page
-  const frontpageResponse = await fetchWithRetry(`${TENWEB_API_BASE}/v1/builder/websites/${website_id}/pages/front/set`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': TENWEB_API_KEY,
-    },
-    body: JSON.stringify({ page_id: front_page_id }),
-  });
-
-  if (!frontpageResponse.ok) {
-    const error = await frontpageResponse.text();
-    console.error('Set front page failed:', error);
-    throw new Error(`Failed to set front page: ${error}`);
-  }
+  await logEvent(siteId, 'site_attached', { user_id: user.id, owner_email: user.email });
 
   return new Response(
     JSON.stringify({ success: true }),
@@ -416,15 +513,14 @@ async function handleAutologin(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const website_id = url.searchParams.get('website_id');
   const admin_url = url.searchParams.get('admin_url');
-  const email = url.searchParams.get('email');
 
-  const { website_id: validatedWebsiteId, admin_url: validatedAdminUrl, email: validatedEmail } = 
-    AutologinSchema.parse({ website_id, admin_url, email });
+  const { website_id: validatedWebsiteId, admin_url: validatedAdminUrl } = 
+    AutologinSchema.parse({ website_id, admin_url });
 
   console.log('Getting autologin URL for website:', validatedWebsiteId);
 
   // Get autologin URL
-  const autologinResponse = await fetchWithRetry(`${TENWEB_API_BASE}/v1/account/websites/${validatedWebsiteId}/single?admin_url=${encodeURIComponent(validatedAdminUrl)}`, {
+  const autologinResponse = await fetchWithRetry(`${API_BASE}/v1/account/websites/${validatedWebsiteId}/single?admin_url=${encodeURIComponent(validatedAdminUrl)}`, {
     method: 'GET',
     headers: {
       'x-api-key': TENWEB_API_KEY,
@@ -440,11 +536,9 @@ async function handleAutologin(req: Request): Promise<Response> {
   const autologinData = await autologinResponse.json();
   console.log('Autologin URL generated:', autologinData);
 
-  // Log event
   await logEvent('', 'autologin_generated', { 
     website_id: validatedWebsiteId, 
-    admin_url: validatedAdminUrl,
-    email: validatedEmail 
+    admin_url: validatedAdminUrl 
   });
 
   return new Response(

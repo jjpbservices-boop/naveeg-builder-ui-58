@@ -6,23 +6,18 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
 import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
 import { apiClient } from '@/lib/api';
-import { generateSubdomain } from '@/lib/slug';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { ArrowRight, ArrowLeft, Check, Loader, Globe, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { Progress } from '@/components/ui/progress';
 
 const briefSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
   businessName: z.string().min(1, 'Business name is required'),
-  businessType: z.enum(['informational', 'ecommerce', 'restaurant', 'services', 'portfolio', 'blog']),
+  businessType: z.string().min(1, 'Business type is required'),
   businessDescription: z.string().min(10, 'Please provide a more detailed description'),
-  websiteTitle: z.string().min(1, 'Website title is required'),
-  websiteDescription: z.string().max(160, 'Description should be 160 characters or less'),
-  websiteKeyphrase: z.string().min(1, 'Keyphrase is required'),
 });
 
 type BriefFormData = z.infer<typeof briefSchema>;
@@ -32,9 +27,9 @@ const Brief: React.FC = () => {
   const navigate = useNavigate();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
+  const [progress, setProgress] = useState(0);
   
   const {
-    email,
     business_name,
     business_type,
     business_description,
@@ -43,22 +38,22 @@ const Brief: React.FC = () => {
     seo_keyphrase,
     siteId,
     unique_id,
+    pages_meta,
+    website_type,
     updateBasicInfo,
     updateSEO,
     updateApiData,
+    updatePages,
+    updateWebsiteType,
     setError,
   } = useOnboardingStore();
 
   const form = useForm<BriefFormData>({
     resolver: zodResolver(briefSchema),
     defaultValues: {
-      email: email,
       businessName: business_name,
-      businessType: business_type as any || 'services',
+      businessType: business_type,
       businessDescription: business_description,
-      websiteTitle: seo_title,
-      websiteDescription: seo_description,
-      websiteKeyphrase: seo_keyphrase,
     },
   });
 
@@ -68,40 +63,24 @@ const Brief: React.FC = () => {
 
     const formData = form.getValues();
     setIsAnalyzing(true);
+    setProgress(0);
     setError(undefined);
 
     try {
       // Update store with form data
       updateBasicInfo({
-        email: formData.email,
         business_name: formData.businessName,
         business_type: formData.businessType,
         business_description: formData.businessDescription,
       });
-      
-      updateSEO({
-        seo_title: formData.websiteTitle,
-        seo_description: formData.websiteDescription,
-        seo_keyphrase: formData.websiteKeyphrase,
-      });
 
       // Step 1: Create website if not already created
       let currentSiteId = siteId;
-      let currentUniqueId = unique_id;
+      setProgress(25);
 
       if (!currentSiteId) {
-        const subdomainSlug = generateSubdomain(formData.businessName);
-        
         const { data: websiteData, error: createError } = await apiClient.createWebsite({
-          email: formData.email,
-          subdomainSlug,
-          siteTitle: formData.websiteTitle,
-          businessName: formData.businessName,
-          businessType: formData.businessType,
-          businessDescription: formData.businessDescription,
-          seoTitle: formData.websiteTitle,
-          seoDescription: formData.websiteDescription,
-          seoKeyphrase: formData.websiteKeyphrase,
+          siteTitle: formData.businessName,
         });
 
         if (createError) {
@@ -112,25 +91,42 @@ const Brief: React.FC = () => {
         updateApiData({
           siteId: websiteData!.siteId,
           website_id: websiteData!.website_id,
-          site_url: websiteData!.site_url,
-          admin_url: websiteData!.admin_url,
         });
-
-        toast.success('Website created successfully!');
       }
 
-      // Step 2: Generate sitemap if not already done
-      if (!currentUniqueId && currentSiteId) {
-        const { data: sitemapData, error: sitemapError } = await apiClient.generateSitemap(currentSiteId);
+      setProgress(50);
+
+      // Step 2: Generate sitemap
+      if (currentSiteId) {
+        const { data: sitemapData, error: sitemapError } = await apiClient.generateSitemap({
+          siteId: currentSiteId,
+          business_type: formData.businessType,
+          business_name: formData.businessName,
+          business_description: formData.businessDescription,
+        });
 
         if (sitemapError) {
           throw new Error(sitemapError.message || 'Failed to generate sitemap');
         }
 
+        setProgress(75);
+
+        // Auto-fill and update store
+        const autoSeoTitle = sitemapData!.seo.seo_title || formData.businessName;
+        const autoSeoDescription = sitemapData!.seo.seo_description || formData.businessDescription.substring(0, 160);
+        const autoSeoKeyphrase = sitemapData!.seo.seo_keyphrase || formData.businessName;
+
         updateApiData({ unique_id: sitemapData!.unique_id });
-        toast.success('Sitemap generated successfully!');
+        updateSEO({
+          seo_title: autoSeoTitle,
+          seo_description: autoSeoDescription,
+          seo_keyphrase: autoSeoKeyphrase,
+        });
+        updatePages(sitemapData!.pages_meta);
+        updateWebsiteType(sitemapData!.website_type as 'basic' | 'ecommerce');
       }
 
+      setProgress(100);
       setHasAnalyzed(true);
       toast.success('Analysis complete! Your website structure is ready.');
       
@@ -145,37 +141,12 @@ const Brief: React.FC = () => {
   };
 
   const handleContinue = () => {
-    const formData = form.getValues();
-    
-    // Update store one more time before navigation
-    updateBasicInfo({
-      email: formData.email,
-      business_name: formData.businessName,
-      business_type: formData.businessType,
-      business_description: formData.businessDescription,
-    });
-    
-    updateSEO({
-      seo_title: formData.websiteTitle,
-      seo_description: formData.websiteDescription,
-      seo_keyphrase: formData.websiteKeyphrase,
-    });
-
     navigate({ to: '/onboarding/design' });
   };
 
   const handleBack = () => {
     navigate({ to: '/' });
   };
-
-  const businessTypeOptions = [
-    { value: 'informational', label: t('onboarding:brief.businessTypeOptions.informational') },
-    { value: 'ecommerce', label: t('onboarding:brief.businessTypeOptions.ecommerce') },
-    { value: 'restaurant', label: t('onboarding:brief.businessTypeOptions.restaurant') },
-    { value: 'services', label: t('onboarding:brief.businessTypeOptions.services') },
-    { value: 'portfolio', label: t('onboarding:brief.businessTypeOptions.portfolio') },
-    { value: 'blog', label: t('onboarding:brief.businessTypeOptions.blog') },
-  ];
 
   return (
     <div className="min-h-screen py-8">
@@ -206,10 +177,10 @@ const Brief: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-8 animate-slide-up">
           <h1 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
-            {t('onboarding:brief.title')}
+            Describe Your Website
           </h1>
           <p className="text-lg text-muted-foreground">
-            {t('onboarding:brief.subtitle')}
+            Tell us about your business and we'll create the perfect website for you.
           </p>
         </div>
 
@@ -219,36 +190,15 @@ const Brief: React.FC = () => {
             <form className="space-y-6">
               <FormField
                 control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-medium">
-                      Email Address
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="Enter your email address"
-                        className="h-12 rounded-2xl border-2 touch-target"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
                 name="businessName"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base font-medium">
-                      {t('onboarding:brief.businessName')}
+                      Business Name
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder={t('onboarding:brief.businessNamePlaceholder')}
+                        placeholder="e.g., Smith & Associates Law Firm"
                         className="h-12 rounded-2xl border-2 touch-target"
                         {...field}
                       />
@@ -264,22 +214,15 @@ const Brief: React.FC = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base font-medium">
-                      {t('onboarding:brief.businessType')}
+                      Business Type
                     </FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="h-12 rounded-2xl border-2 touch-target">
-                          <SelectValue placeholder="Select business type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {businessTypeOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., agency, restaurant, salon, plumber, bakery, ecommerce"
+                        className="h-12 rounded-2xl border-2 touch-target"
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -291,11 +234,11 @@ const Brief: React.FC = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base font-medium">
-                      {t('onboarding:brief.businessDescription')}
+                      Business Description
                     </FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder={t('onboarding:brief.businessDescriptionPlaceholder')}
+                        placeholder="Describe your business, products, or services in detail..."
                         className="min-h-[120px] rounded-2xl border-2 resize-none"
                         {...field}
                       />
@@ -305,91 +248,42 @@ const Brief: React.FC = () => {
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="websiteTitle"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base font-medium">
-                        {t('onboarding:brief.websiteTitle')}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t('onboarding:brief.websiteTitlePlaceholder')}
-                          className="h-12 rounded-2xl border-2 touch-target"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              {/* AI Generation Progress Banner */}
+              {isAnalyzing && (
+                <div className="bg-primary/10 rounded-2xl p-6 animate-slide-up border border-primary/20">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-semibold text-primary flex items-center">
+                      <Sparkles className="h-5 w-5 mr-2 animate-pulse" />
+                      AI Generation in Progress
+                    </h3>
+                    <span className="text-sm text-primary/70">{progress}%</span>
+                  </div>
+                  <p className="text-sm text-primary/80 mb-4">
+                    Analyzing your prompt and creating your website structure...
+                  </p>
+                  <Progress value={progress} className="h-2" />
+                </div>
+              )}
 
-                <FormField
-                  control={form.control}
-                  name="websiteKeyphrase"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base font-medium">
-                        {t('onboarding:brief.websiteKeyphrase')}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t('onboarding:brief.websiteKeyphrasePlaceholder')}
-                          className="h-12 rounded-2xl border-2 touch-target"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="websiteDescription"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-medium">
-                      {t('onboarding:brief.websiteDescription')}
-                    </FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder={t('onboarding:brief.websiteDescriptionPlaceholder')}
-                        className="min-h-[80px] rounded-2xl border-2 resize-none"
-                        maxLength={160}
-                        {...field}
-                      />
-                    </FormControl>
-                    <div className="text-sm text-muted-foreground text-right">
-                      {field.value?.length || 0}/160
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Sitemap Preview */}
-              {hasAnalyzed && (
+              {/* Canvas Preview */}
+              {hasAnalyzed && pages_meta && (
                 <div className="bg-muted/50 rounded-2xl p-6 animate-slide-up">
                   <h3 className="text-lg font-semibold mb-4 flex items-center">
                     <Globe className="h-5 w-5 mr-2" />
                     Your Website Structure
                   </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {[
-                      { name: 'Home', type: 'home' },
-                      { name: 'About', type: 'about' },
-                      { name: 'Services', type: 'services' },
-                      { name: 'Contact', type: 'contact' },
-                    ].map((page, index) => (
-                      <div key={page.name} className="bg-background rounded-lg p-3 text-center border">
-                        <div className="text-sm font-medium">{page.name}</div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {pages_meta.map((page) => (
+                      <div key={page.id} className="bg-background rounded-lg p-3 text-center border">
+                        <div className="text-sm font-medium">{page.title}</div>
                         <div className="text-xs text-muted-foreground">{page.type}</div>
                       </div>
                     ))}
+                  </div>
+                  <div className="mt-4 text-center">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                      {website_type === 'basic' ? 'Standard Website' : 'E-commerce Store'}
+                    </span>
                   </div>
                 </div>
               )}
@@ -421,7 +315,7 @@ const Brief: React.FC = () => {
                     ) : (
                       <>
                         <Sparkles className="mr-2 h-4 w-4" />
-                        Analyze & Create Structure
+                        Analyze
                       </>
                     )}
                   </Button>
@@ -431,7 +325,7 @@ const Brief: React.FC = () => {
                     onClick={handleContinue}
                     className="flex-1 touch-target bg-gradient-primary hover:bg-primary-hover text-white rounded-2xl"
                   >
-                    Continue to Design
+                    Next Step
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 )}

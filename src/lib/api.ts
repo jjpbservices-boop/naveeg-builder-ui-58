@@ -79,22 +79,11 @@ class APIClient {
   }
 
   async createWebsite(payload: {
-    email: string;
-    subdomainSlug?: string;
-    region?: string;
-    siteTitle: string;
-    adminUsername?: string;
-    businessName: string;
-    businessType: string;
-    businessDescription: string;
-    seoTitle?: string;
-    seoDescription?: string;
-    seoKeyphrase?: string;
+    subdomain?: string;
+    siteTitle?: string;
   }): Promise<APIResponse<{
     siteId: string;
     website_id: number;
-    site_url: string;
-    admin_url: string;
   }>> {
     return this.request('/create-website', {
       method: 'POST',
@@ -102,12 +91,24 @@ class APIClient {
     });
   }
 
-  async generateSitemap(siteId: string): Promise<APIResponse<{
+  async generateSitemap(payload: {
+    siteId: string;
+    business_type: string;
+    business_name: string;
+    business_description: string;
+  }): Promise<APIResponse<{
     unique_id: string;
+    pages_meta: any[];
+    seo: {
+      seo_title: string;
+      seo_description: string;
+      seo_keyphrase: string;
+    };
+    website_type: string;
   }>> {
     return this.request('/generate-sitemap', {
       method: 'POST',
-      body: JSON.stringify({ siteId }),
+      body: JSON.stringify(payload),
     });
   }
 
@@ -120,12 +121,35 @@ class APIClient {
     });
   }
 
-  async publishAndFrontpage(payload: {
-    website_id: number;
-    front_page_id: number;
-    publish_ids: number[];
+  async updateDesign(payload: {
+    siteId: string;
+    colors: { 
+      primary_color: string; 
+      secondary_color: string; 
+      background_dark: string;
+    };
+    fonts: { heading: string; body: string };
+    pages_meta: Array<{ 
+      id: string; 
+      title: string; 
+      type: string; 
+      sections?: { title: string }[];
+    }>;
+    website_type: 'basic' | 'ecommerce';
+    seo_title?: string;
+    seo_description?: string;
+    seo_keyphrase?: string;
   }): Promise<APIResponse<{ success: boolean }>> {
-    return this.request('/publish-and-frontpage', {
+    return this.request('/update-design', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async attachSite(payload: {
+    siteId: string;
+  }): Promise<APIResponse<{ success: boolean }>> {
+    return this.request('/attach-site', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -133,13 +157,11 @@ class APIClient {
 
   async getAutologinUrl(
     website_id: string,
-    admin_url: string,
-    email: string
+    admin_url: string
   ): Promise<APIResponse<{ admin_url: string }>> {
     const params = new URLSearchParams({
       website_id,
       admin_url,
-      email,
     });
     
     return this.request(`/autologin?${params.toString()}`, {
