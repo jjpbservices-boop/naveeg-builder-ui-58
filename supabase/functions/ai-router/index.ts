@@ -76,6 +76,33 @@ function slugify(text: string): string {
     .replace(/^-|-$/g, '');
 }
 
+// Generate a unique subdomain using crypto.randomUUID and fallback methods
+function generateUniqueSubdomain(baseSubdomain?: string): string {
+  if (baseSubdomain && baseSubdomain.trim()) {
+    // If user provided a subdomain, use it as-is (validation will happen later)
+    return slugify(baseSubdomain.trim());
+  }
+  
+  // Generate unique subdomain using UUID
+  try {
+    const uuid = crypto.randomUUID();
+    const shortUuid = uuid.split('-')[0]; // Use first segment for shorter subdomain
+    return `site-${shortUuid}`;
+  } catch (e) {
+    // Fallback to timestamp + random string if crypto.randomUUID fails
+    const timestamp = Date.now();
+    const randomStr = Math.random().toString(36).substring(2, 8);
+    return `site-${timestamp}-${randomStr}`;
+  }
+}
+
+// Check if an error response indicates subdomain is in use
+function isSubdomainInUseError(errorText: string): boolean {
+  return errorText.includes('subdomain_in_use') || 
+         errorText.includes('Subdomain is currently in use') ||
+         errorText.includes('subdomain is already taken');
+}
+
 async function logEvent(siteId: string, label: string, data: any = {}, supabase: any) {
   try {
     await supabase
@@ -249,60 +276,112 @@ async function handleCreateWebsite(req: Request, { API_BASE, TENWEB_API_KEY, REG
   const data = CreateWebsiteSchema.parse(body);
 
   const adminPassword = generateStrongPassword();
-  const subdomain = data.subdomain || `site-${Date.now()}`;
+  let subdomain = generateUniqueSubdomain(data.subdomain);
+  let lastError = '';
+  
+  // Retry up to 3 times with different subdomains if we get collision errors
+  const maxAttempts = 3;
+  
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    console.log(`Creating website attempt ${attempt}/${maxAttempts} with subdomain:`, subdomain);
 
-  console.log('Creating website with subdomain:', subdomain);
+    try {
+      const createWebsiteResponse = await fetchWithRetry(`${API_BASE}/v1/hosting/website`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': TENWEB_API_KEY,
+        },
+        body: JSON.stringify({
+          subdomain,
+          region: REGION,
+          site_title: data.siteTitle || 'New Site',
+          admin_username: 'admin',
+          admin_password: adminPassword,
+        }),
+      }, 3, 60000); // 60 second timeout for website creation
 
-  const createWebsiteResponse = await fetchWithRetry(`${API_BASE}/v1/hosting/website`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': TENWEB_API_KEY,
-    },
-    body: JSON.stringify({
-      subdomain,
-      region: REGION,
-      site_title: data.siteTitle || 'New Site',
-      admin_username: 'admin',
-      admin_password: adminPassword,
-    }),
-  }, 3, 60000); // 60 second timeout for website creation
+      if (createWebsiteResponse.ok) {
+        // Success case
+        const websiteData = await createWebsiteResponse.json();
+        console.log('Website created successfully:', websiteData);
 
-  if (!createWebsiteResponse.ok) {
-    const error = await createWebsiteResponse.text();
-    console.error('Create website failed:', error);
-    throw new Error(`Failed to create website: ${error}`);
+        // Ensure we have a valid website_id before proceeding
+        if (!websiteData.website_id) {
+          console.error('Website created but no website_id in response:', websiteData);
+          throw new Error('Website created but no website_id returned from 10Web API');
+        }
+
+        const { data: site, error: dbError } = await supabase
+          .from('sites')
+          .insert({
+            website_id: websiteData.website_id,
+            business_name: '',
+            business_type: '',
+            business_description: '',
+            status: 'created',
+          })
+          .select()
+          .single();
+
+        if (dbError) {
+          console.error('Database insert failed:', dbError);
+          throw new Error(`Failed to save website data: ${dbError.message}`);
+        }
+
+        await logEvent(site.id, 'website_created', { website_id: websiteData.website_id, subdomain }, supabase);
+
+        return new Response(
+          JSON.stringify({
+            siteId: site.id,
+            website_id: websiteData.website_id,
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } else {
+        // Error case - check if it's a subdomain collision
+        const errorText = await createWebsiteResponse.text();
+        lastError = errorText;
+        console.error(`Create website failed (attempt ${attempt}/${maxAttempts}):`, errorText);
+        
+        if (isSubdomainInUseError(errorText) && attempt < maxAttempts) {
+          // Generate a new subdomain and try again
+          subdomain = generateUniqueSubdomain();
+          console.log(`Subdomain collision detected, retrying with new subdomain: ${subdomain}`);
+          
+          // Add a small delay before retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          continue;
+        } else {
+          // Not a subdomain collision or we've exhausted retries
+          throw new Error(`Failed to create website: ${errorText}`);
+        }
+      }
+    } catch (error) {
+      console.error(`Website creation attempt ${attempt} failed:`, error);
+      lastError = error.message;
+      
+      // Check if it's a subdomain collision error in the exception message
+      if (isSubdomainInUseError(error.message) && attempt < maxAttempts) {
+        subdomain = generateUniqueSubdomain();
+        console.log(`Subdomain collision in exception, retrying with new subdomain: ${subdomain}`);
+        
+        // Add a small delay before retry
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        continue;
+      } else if (attempt === maxAttempts) {
+        // Last attempt failed, throw the error
+        throw error;
+      }
+      
+      // For other errors, retry with the same subdomain (in case it was a network issue)
+      console.log(`Non-subdomain error on attempt ${attempt}, retrying...`);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
   }
-
-  const websiteData = await createWebsiteResponse.json();
-  console.log('Website created:', websiteData);
-
-  const { data: site, error: dbError } = await supabase
-    .from('sites')
-    .insert({
-      website_id: websiteData.website_id,
-      business_name: '',
-      business_type: '',
-      business_description: '',
-      status: 'created',
-    })
-    .select()
-    .single();
-
-  if (dbError) {
-    console.error('Database insert failed:', dbError);
-    throw new Error(`Failed to save website data: ${dbError.message}`);
-  }
-
-  await logEvent(site.id, 'website_created', { website_id: websiteData.website_id, subdomain }, supabase);
-
-  return new Response(
-    JSON.stringify({
-      siteId: site.id,
-      website_id: websiteData.website_id,
-    }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
+  
+  // If we get here, all attempts failed
+  throw new Error(`Failed to create website after ${maxAttempts} attempts. Last error: ${lastError}`);
 }
 
 async function handleGenerateSitemap(req: Request, { API_BASE, TENWEB_API_KEY, supabase }): Promise<Response> {
