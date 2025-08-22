@@ -31,15 +31,34 @@ export default function Brief() {
     seo_keyphrase
   } = useOnboardingStore();
 
+  // Debug logging
+  useEffect(() => {
+    console.log('Brief Component Mount - Store State:', {
+      business_name,
+      business_description,
+      website_id,
+      seo_title,
+      hasAnalyzedData: !!(website_id && seo_title)
+    });
+  }, []);
+
   // Check if we already have analyzed data
   useEffect(() => {
+    console.log('Checking analyzed state:', { website_id, seo_title });
     if (website_id && seo_title) {
+      console.log('Setting isAnalyzed to true');
       setIsAnalyzed(true);
+    } else {
+      console.log('Not setting isAnalyzed - missing data');
+      setIsAnalyzed(false);
     }
   }, [website_id, seo_title]);
 
   const handleAnalyze = async () => {
+    console.log('handleAnalyze called with:', { business_name, business_description });
+    
     if (!business_name?.trim() || !business_description?.trim()) {
+      console.log('Validation failed - missing fields');
       toast({
         title: 'Incomplete form',
         description: 'Please fill in all fields',
@@ -49,10 +68,13 @@ export default function Brief() {
     }
 
     setIsLoading(true);
+    console.log('Starting analysis process...');
     
     try {
       // Step 1: Create website
+      console.log('Step 1: Creating website...');
       const createResult = await createWebsite(business_name);
+      console.log('Create website result:', createResult);
       
       if (!createResult.ok) {
         throw new Error('Failed to create website');
@@ -64,15 +86,19 @@ export default function Brief() {
         business_description.toLowerCase().includes(keyword)
       );
       const businessType = isEcommerce ? 'ecommerce' : 'basic';
+      console.log('Detected business type:', businessType);
 
       // Step 2: Generate sitemap
+      console.log('Step 2: Generating sitemap...');
       const sitemapResult = await generateSitemap(createResult.website_id, {
         business_type: businessType,
         business_name,
         business_description
       });
+      console.log('Sitemap result:', sitemapResult);
 
       // Update store with all data
+      console.log('Step 3: Updating store...');
       updateApiData({
         website_id: createResult.website_id,
         unique_id: sitemapResult.unique_id
@@ -95,6 +121,7 @@ export default function Brief() {
       updatePages(sitemapResult.pages_meta);
       updateWebsiteType(sitemapResult.website_type);
 
+      console.log('Store updated, setting isAnalyzed to true');
       setIsAnalyzed(true);
 
       toast({
@@ -103,19 +130,31 @@ export default function Brief() {
       });
 
       // Navigate to design step
+      console.log('Step 4: Navigating to design...');
       setCurrentStep(1);
-      navigate({ to: '/design' });
+      
+      // Use setTimeout to ensure state updates are processed
+      setTimeout(() => {
+        console.log('Attempting navigation to /design');
+        navigate({ to: '/design' });
+      }, 100);
       
     } catch (error) {
       console.error('Error during analyze:', error);
       toast({
         title: 'Analysis failed',
-        description: 'Please try again later.',
+        description: error.message || 'Please try again later.',
         variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleNextStep = () => {
+    console.log('handleNextStep called');
+    setCurrentStep(1);
+    navigate({ to: '/design' });
   };
 
   return (
@@ -179,17 +218,20 @@ export default function Brief() {
                   )}
                 </Button>
               ) : (
-                <Button
-                  onClick={() => {
-                    setCurrentStep(1);
-                    navigate({ to: '/design' });
-                  }}
-                  className="w-full text-lg py-6"
-                  size="lg"
-                >
-                  Next Step
-                  <ChevronRight className="ml-2 h-5 w-5" />
-                </Button>
+                <div className="space-y-4">
+                  <div className="p-4 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-2">✅ Analysis Complete</p>
+                    <p className="text-sm">Website structure generated successfully. Ready to proceed to design customization.</p>
+                  </div>
+                  <Button
+                    onClick={handleNextStep}
+                    className="w-full text-lg py-6"
+                    size="lg"
+                  >
+                    Continue to Design
+                    <ChevronRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>
