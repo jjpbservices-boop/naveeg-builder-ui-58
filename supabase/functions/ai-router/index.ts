@@ -1,5 +1,5 @@
 // supabase/functions/ai-router/index.ts
-// Complete 2-step onboarding Edge Function router
+// Complete 2-step onboarding Edge Function router (10Web v1)
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -12,27 +12,117 @@ const API_KEY = Deno.env.get("TENWEB_API_KEY")!;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+// ---------- utils ----------
+type TWInit = RequestInit & { timeoutMs?: number };
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+const tw = async (path: string, init: TWInit = {}) => {
+  const ctl = new AbortController();
+  const id = setTimeout(() => ctl.abort(), init.timeoutMs ?? 90_000);
+  try {
+    const headers: Record<string, string> = {
+      "content-type": "application/json",
+      accept: "application/json",
+      "user-agent": "Supabase-Edge-Function/1.0",
+      // Header name is case-insensitive, set both just in case.
+      "x-api-key": API_KEY,
+      "X-API-Key": API_KEY,
+      ...(init.headers as Record<string, string>),
+    };
+
+    const res = await fetch(`${API_BASE}${path}`, { ...init, signal: ctl.signal, headers });
+    const text = await res.text();
+    const json = text ? JSON.parse(text) : null;
+
+    if (!res.ok) {
+      // Retry once on 429/5xx
+      if (res.status === 429 || res.status >= 500) {
+        await sleep(1500);
+        return await tw(path, init);
+      }
+      const err: any = new Error(`10Web ${res.status} ${res.statusText}`);
+      err.status = res.status;
+      err.json = json;
+      throw err;
+    }
+    return json;
+  } finally {
+    clearTimeout(id);
+  }
+};
+
+const slugify = (text: string) =>
+  (text || "site")
+    .toLowerCase()
+    .trim()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 45) || "site";
+
+const listSites = async () => {
+  try {
+    return await tw("/v1/account/websites", { method: "GET", timeoutMs: 30_000 });
+  } catch {
+    return { data: [] as any[] };
+  }
+};
+
+const findBySub = async (sub: string) => {
+  const sites = await listSites();
+  return sites.data?.find(
+    (w: any) =>
+      w?.site_url?.includes(`${sub}.`) ||
+      w?.admin_url?.includes(`${sub}.`) ||
+      w?.name?.includes(`${sub}.`),
+  );
+};
+
+const ensureFreeSub = async (base: string): Promise<string> => {
+  let sub = base;
+  for (let i = 0; i < 6; i++) {
+    try {
+      // 200 => available
+      await tw("/v1/hosting/websites/subdomain/check", {
+        method: "POST",
+        body: JSON.stringify({ subdomain: sub }),
+        timeoutMs: 15_000,
+      });
+      return sub;
+    } catch {
+      try {
+        const g = await tw("/v1/hosting/websites/subdomain/generate", {
+          method: "POST",
+          timeoutMs: 15_000,
+        });
+        sub = g?.subdomain || `${base}-${crypto.randomUUID().slice(0, 8)}`;
+      } catch {
+        sub = `${base}-${Date.now().toString(36)}`;
+      }
+    }
+  }
+  throw Object.assign(new Error("No free subdomain"), { code: "NO_FREE_SUBDOMAIN" });
+};
+
+// ---------- server ----------
 serve(async (req) => {
-  // --- CORS: permissive + echo requested headers ---
   const origin = req.headers.get("origin") ?? "";
-  const requestedHeaders =
-    req.headers.get("access-control-request-headers") ??
-    "authorization,apikey,content-type,x-client-info";
+  const allowed = [/^https?:\/\/localhost(:\d+)?$/, /^https:\/\/.*\.lovable\.app$/].some((r) => r.test(origin));
+  const corsOrigin = allowed ? origin : "*"; // avoid CORS failures in preview
+
   const cors = {
-    "Access-Control-Allow-Origin": origin || "*",
-    "Access-Control-Allow-Headers": requestedHeaders,
+    "Access-Control-Allow-Origin": corsOrigin,
+    "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info, x-api-key",
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
     "Access-Control-Max-Age": "86400",
-    "Vary": "Origin, Access-Control-Request-Headers",
-  } as Record<string, string>;
+    Vary: "Origin",
+  };
 
   const J = (code: number, data: unknown) =>
-    new Response(JSON.stringify(data), {
-      status: code,
-      headers: { "content-type": "application/json", ...cors },
-    });
+    new Response(JSON.stringify(data), { status: code, headers: { "content-type": "application/json", ...cors } });
 
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+  if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
 
   const url = new URL(req.url);
   let body: any = {};
@@ -44,123 +134,22 @@ serve(async (req) => {
     }
   }
 
-  // --- action resolver (supports aliases & path suffix) ---
-  let action = (
-    url.searchParams.get("action") ||
-    body?.action ||
-    url.pathname.split("/").pop() ||
-    ""
-  )
-    .toString()
-    .trim()
-    .toLowerCase();
-
-  const aliases: Record<string, string> = {
+  // resolve action (query, body, or last path segment)
+  const alias: Record<string, string> = {
     generate: "generate-from-sitemap",
     publish: "publish-and-frontpage",
     sitemap: "generate-sitemap",
     update: "update-design",
   };
-  action = aliases[action] || action;
-
-  if (req.method === "POST" && !action) {
-    return J(400, { code: "MISSING_ACTION", hint: "Add ?action=... or body.action" });
-  }
-
-  // --- 10Web fetch helper ---
-  const tw = async (path: string, init: RequestInit & { timeoutMs?: number } = {}) => {
-    const ctl = new AbortController();
-    const id = setTimeout(() => ctl.abort(), init.timeoutMs ?? 90_000);
-    try {
-      // content-length (helps some proxies)
-      const b = init.body as string | undefined;
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "User-Agent": "Supabase-Edge-Function/1.0",
-        // send both casings to be safe across gateways
-        "x-api-key": API_KEY,
-        "X-API-Key": API_KEY,
-        ...((init.headers as Record<string, string>) ?? {}),
-      };
-      if (init.method === "POST" && typeof b === "string") {
-        headers["Content-Length"] = String(new TextEncoder().encode(b).length);
-      }
-
-      const res = await fetch(`${API_BASE}${path}`, {
-        ...init,
-        signal: ctl.signal,
-        headers,
-      });
-
-      const txt = await res.text();
-      const json = txt ? JSON.parse(txt) : null;
-
-      if (!res.ok) {
-        // simple retry on 429/5xx
-        if (res.status === 429 || res.status >= 500) {
-          await new Promise((r) => setTimeout(r, 2000));
-          return await tw(path, { ...init, timeoutMs: init.timeoutMs });
-        }
-        throw { status: res.status, json, message: `API request failed: ${res.status}` };
-      }
-      return json;
-    } finally {
-      clearTimeout(id);
-    }
-  };
-
-  const slugify = (text: string) =>
-    text
-      .toLowerCase()
+  let action =
+    (url.searchParams.get("action") ||
+      body?.action ||
+      url.pathname.split("/").filter(Boolean).pop() ||
+      "")!
+      .toString()
       .trim()
-      .normalize("NFKD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 45) || "site";
-
-  const listSites = async () => {
-    try {
-      return await tw("/v1/account/websites", { method: "GET", timeoutMs: 30_000 });
-    } catch {
-      return { data: [] };
-    }
-  };
-
-  const findBySub = async (subdomain: string) => {
-    const sites = await listSites();
-    return sites.data?.find(
-      (s: any) => s.site_url?.includes(`${subdomain}.`) || s.admin_url?.includes(`${subdomain}.`)
-    );
-  };
-
-  const ensureFreeSub = async (base: string): Promise<string> => {
-    let sub = base;
-    for (let i = 0; i < 6; i++) {
-      try {
-        await tw("/v1/hosting/websites/subdomain/check", {
-          method: "POST",
-          body: JSON.stringify({ subdomain: sub }),
-          timeoutMs: 15_000,
-        });
-        return sub;
-      } catch {
-        try {
-          const g = await tw("/v1/hosting/websites/subdomain/generate", {
-            method: "POST",
-            timeoutMs: 15_000,
-          });
-          sub = g?.subdomain || `${base}-${crypto.randomUUID().slice(0, 8)}`;
-        } catch {
-          sub = `${base}-${Date.now().toString(36)}`;
-        }
-      }
-    }
-    throw { code: "NO_FREE_SUBDOMAIN" };
-  };
-
-  // -------- actions --------
+      .toLowerCase();
+  action = alias[action] || action;
 
   if (req.method === "GET" && action === "health") {
     return J(200, {
@@ -176,6 +165,11 @@ serve(async (req) => {
     });
   }
 
+  if (req.method === "POST" && !action) {
+    return J(400, { code: "MISSING_ACTION", hint: "Add ?action=... or body.action" });
+  }
+
+  // ---------- create-website ----------
   if (req.method === "POST" && action === "create-website") {
     try {
       const businessName = body.businessName || "New Site";
@@ -187,8 +181,9 @@ serve(async (req) => {
       }
 
       const sub = await ensureFreeSub(base);
+
       try {
-        const result = await tw("/v1/hosting/website", {
+        const res = await tw("/v1/hosting/website", {
           method: "POST",
           body: JSON.stringify({
             subdomain: sub,
@@ -199,88 +194,87 @@ serve(async (req) => {
           }),
           timeoutMs: 25_000,
         });
-        return J(200, {
-          ok: true,
-          website_id: result?.data?.website_id,
-          subdomain: sub,
-          reused: false,
-        });
-      } catch (createError: any) {
-        if (createError?.name === "AbortError") {
+        return J(200, { ok: true, website_id: res?.data?.website_id, subdomain: sub, reused: false });
+      } catch (e: any) {
+        if (e?.name === "AbortError") {
           for (let i = 0; i < 20; i++) {
-            await new Promise((r) => setTimeout(r, 2000));
+            await sleep(2000);
             const polled = await findBySub(sub);
             if (polled) return J(200, { ok: true, website_id: polled.id, subdomain: sub, reused: false });
           }
         }
-        const code = createError?.json?.error?.code;
+        const code = e?.json?.error?.code;
         if (code === "error.subdomain_in_use2") return J(409, { code: "SUBDOMAIN_IN_USE" });
-        throw createError;
+        throw e;
       }
     } catch (error: any) {
+      console.error("Create website error:", error);
       return J(502, { code: "CREATE_FAILED", detail: error?.json ?? error?.message ?? error });
     }
   }
 
+  // ---------- generate-sitemap ----------
   if (req.method === "POST" && action === "generate-sitemap") {
     try {
-      const { website_id, params } = body;
+      const { website_id, params } = body || {};
       if (!website_id || !params) return J(400, { error: "Missing website_id or params" });
+
       if (!params.business_name || !params.business_description) {
         return J(400, { error: "Missing required params: business_name, business_description" });
       }
       if (!params.business_type) params.business_type = "informational";
 
-      const result = await tw("/v1/ai/generate_sitemap", {
+      const resp = await tw("/v1/ai/generate_sitemap", {
         method: "POST",
         body: JSON.stringify({ website_id, params }),
         timeoutMs: 120_000,
-      });
+      }); // returns {msg,status,data:{...}} per spec
 
-      let pages_meta = result.pages_meta || [];
+      const data = resp?.data || {};
+      let pages_meta = Array.isArray(data.pages_meta) ? data.pages_meta : [];
+
       if (!pages_meta.length) {
         pages_meta = [
           { title: "Home", sections: [{ section_title: "Hero" }, { section_title: "About Us" }] },
-          { title: "About", sections: [{ section_title: "Our Story" }, { section_title: "Team" }] },
-          {
-            title: params.business_type === "ecommerce" ? "Products" : "Services",
-            sections: [{ section_title: "Our Offerings" }],
-          },
+          { title: "About Us", sections: [{ section_title: "Our Story" }] },
+          { title: params.business_type === "ecommerce" ? "Products" : "Services", sections: [{ section_title: "Our Offerings" }] },
           { title: "Contact", sections: [{ section_title: "Get In Touch" }] },
         ];
       }
 
       return J(200, {
-        unique_id: result.unique_id || crypto.randomUUID(),
+        unique_id: data.unique_id || crypto.randomUUID(),
         pages_meta,
         seo: {
-          website_title: result.seo?.website_title || params.business_name,
-          website_description: result.seo?.website_description || params.business_description,
-          website_keyphrase: result.seo?.website_keyphrase || params.business_name,
+          website_title: data.website_title || params.business_name,
+          website_description: data.website_description || params.business_description,
+          website_keyphrase: data.website_keyphrase || params.business_name,
         },
         colors: {
-          primary_color: result.colors?.primary_color || "#FF7A00",
-          secondary_color: result.colors?.secondary_color || "#1E62FF",
-          background_dark: result.colors?.background_dark || "#121212",
+          primary_color: data?.colors?.primary_color || "#FF7A00",
+          secondary_color: data?.colors?.secondary_color || "#1E62FF",
+          background_dark: data?.colors?.background_dark || "#121212",
         },
-        fonts: { primary_font: result.fonts?.primary_font || "Inter" },
-        website_type: params.business_type === "ecommerce" ? "ecommerce" : "basic",
+        fonts: { primary_font: data?.fonts?.primary_font || "Inter" },
+        website_type: data.website_type || (params.business_type === "ecommerce" ? "ecommerce" : "basic"),
       });
     } catch (error: any) {
+      console.error("Generate sitemap error:", error);
       return J(502, { code: "GENERATE_SITEMAP_FAILED", detail: error?.json ?? error?.message ?? error });
     }
   }
 
+  // ---------- update-design ----------
   if (req.method === "POST" && action === "update-design") {
     try {
-      const { siteId, design } = body;
+      const { siteId, design } = body || {};
       if (!siteId || !design) return J(400, { error: "Missing siteId or design" });
 
       const hex = /^#[A-Fa-f0-9]{6}$/;
-      const { primary_color, secondary_color, background_dark } = design.colors ?? {};
-      if (primary_color && !hex.test(primary_color)) return J(400, { error: "Invalid primary_color format" });
-      if (secondary_color && !hex.test(secondary_color)) return J(400, { error: "Invalid secondary_color format" });
-      if (background_dark && !hex.test(background_dark)) return J(400, { error: "Invalid background_dark format" });
+      const c = design.colors || {};
+      if (c.primary_color && !hex.test(c.primary_color)) return J(400, { error: "Invalid primary_color format" });
+      if (c.secondary_color && !hex.test(c.secondary_color)) return J(400, { error: "Invalid secondary_color format" });
+      if (c.background_dark && !hex.test(c.background_dark)) return J(400, { error: "Invalid background_dark format" });
 
       const { error } = await supabase
         .from("sites")
@@ -296,19 +290,22 @@ serve(async (req) => {
         })
         .eq("website_id", siteId);
 
-      if (error) return J(500, { error: "Failed to update design" });
+      if (error) {
+        console.error("Supabase update error:", error);
+        return J(500, { error: "Failed to update design" });
+      }
       return J(200, { ok: true });
     } catch (error: any) {
+      console.error("Update design error:", error);
       return J(500, { code: "UPDATE_DESIGN_FAILED", detail: error?.message ?? error });
     }
   }
 
+  // ---------- generate-from-sitemap ----------
   if (req.method === "POST" && action === "generate-from-sitemap") {
     try {
-      const { website_id, unique_id, params } = body;
-      if (!website_id || !unique_id || !params) {
-        return J(400, { error: "Missing website_id, unique_id, or params" });
-      }
+      const { website_id, unique_id, params } = body || {};
+      if (!website_id || !unique_id || !params) return J(400, { error: "Missing website_id, unique_id, or params" });
 
       const required = ["pages_meta", "website_title", "website_description", "website_keyphrase"];
       const missing = required.filter((k) => !params[k]);
@@ -328,7 +325,7 @@ serve(async (req) => {
           timeoutMs: 60_000,
         });
       } catch (e: any) {
-        const msg = JSON.stringify(e?.json || e?.message || e);
+        const txt = JSON.stringify(e?.json || e?.message || e);
         if (e?.status === 422 && e?.json?.error?.details) {
           return J(422, {
             code: "VALIDATION_ERROR",
@@ -336,87 +333,105 @@ serve(async (req) => {
             details: e.json.error.details,
           });
         }
-        if (!(msg.includes("Template generation is in progress") || msg.includes("417") || msg.includes("timeout") || msg.includes("504"))) {
+        if (!(txt.includes("Template generation is in progress") || txt.includes("417") || txt.includes("timeout") || txt.includes("504"))) {
           return J(502, { code: "GENERATE_FAILED", detail: e?.json ?? e?.message ?? e });
         }
       }
 
-      const deadline = Date.now() + 180_000;
-      while (Date.now() < deadline) {
+      // Poll pages (up to 3 minutes)
+      const end = Date.now() + 180_000;
+      while (Date.now() < end) {
         try {
           const pages = await tw(`/v1/builder/websites/${website_id}/pages`, { method: "GET", timeoutMs: 30_000 });
-          const list = pages?.data || [];
-          if (Array.isArray(list) && list.length > 0) return J(200, { ok: true, pages_count: list.length });
-        } catch {}
-        await new Promise((r) => setTimeout(r, 3000));
+          const list = Array.isArray(pages?.data) ? pages.data : [];
+          if (list.length > 0) return J(200, { ok: true, pages_count: list.length });
+        } catch {
+          /* ignore transient */
+        }
+        await sleep(3000);
       }
       return J(504, { code: "GENERATE_TIMEOUT", hint: "Still generating after 180s" });
     } catch (error: any) {
+      console.error("Generate from sitemap error:", error);
       return J(502, { code: "GENERATE_FROM_SITEMAP_FAILED", detail: error?.json ?? error?.message ?? error });
     }
   }
 
+  // ---------- publish-and-frontpage ----------
   if (req.method === "POST" && action === "publish-and-frontpage") {
     try {
-      const { website_id } = body as any;
+      const { website_id } = body || {};
       if (!website_id) return J(400, { error: "Missing website_id" });
 
-      const deadline = Date.now() + 180_000;
-      while (Date.now() < deadline) {
+      const end = Date.now() + 180_000;
+      while (Date.now() < end) {
         try {
           const pages = await tw(`/v1/builder/websites/${website_id}/pages`, { method: "GET", timeoutMs: 30_000 });
-          const list = Array.isArray(pages?.data) ? pages.data : [];
-          if (list.length === 0) {
-            await new Promise((r) => setTimeout(r, 3000));
+          const list: any[] = Array.isArray(pages?.data) ? pages.data : [];
+          if (!list.length) {
+            await sleep(3000);
             continue;
           }
 
+          // publish (spec requires action + page_ids)
           try {
             await tw(`/v1/builder/websites/${website_id}/pages/publish`, {
               method: "POST",
               timeoutMs: 60_000,
-              body: JSON.stringify({ page_ids: list.map((p: any) => p.id) }),
+              body: JSON.stringify({ action: "publish", page_ids: list.map((p: any) => p.ID ?? p.id) }),
             });
           } catch (e: any) {
             if (![400, 409, 422].includes(e?.status ?? 0)) throw e;
           }
 
+          // set front page
           const home =
-            list.find((p: any) => /home/i.test(p?.title) || p?.slug === "home" || p?.is_front_page) ?? list[0];
-          if (home) {
+            list.find((p: any) => /home/i.test(p?.title) || p?.slug === "home" || p?.page_on_front || p?.is_front_page) ??
+            list[0];
+          if (home?.ID || home?.id) {
             try {
               await tw(`/v1/builder/websites/${website_id}/pages/front/set`, {
                 method: "POST",
                 timeoutMs: 30_000,
-                body: JSON.stringify({ page_id: home.id }),
+                body: JSON.stringify({ page_id: home.ID ?? home.id }),
               });
             } catch (e: any) {
               if (![400, 409, 422].includes(e?.status ?? 0)) throw e;
             }
           }
 
-          let preview_url: string | null = null,
-            admin_url: string | null = null;
+          // resolve URLs
+          let preview_url: string | null = null;
+          let admin_url: string | null = null;
+
           try {
             const dn = await tw(`/v1/hosting/websites/${website_id}/domain-name`, { method: "GET", timeoutMs: 30_000 });
-            preview_url = dn?.data?.default_domain_url || dn?.data?.site_url || null;
-            admin_url = dn?.data?.admin_url || null;
-          } catch {}
+            const arr: any[] = Array.isArray(dn?.data) ? dn.data : [];
+            const def = arr.find((d: any) => d.default === 1) || arr[0];
+            preview_url = def?.site_url || null;
+            admin_url = def?.admin_url || null;
+          } catch {
+            /* ignore */
+          }
 
           if (!preview_url || !admin_url) {
             const acc = await listSites();
             const hit = acc?.data?.find?.((w: any) => w?.id === website_id);
-            const sub = hit?.subdomain;
-            preview_url = preview_url || hit?.site_url || (sub ? `https://${sub}.10web.site` : null);
-            admin_url = admin_url || hit?.admin_url || (sub ? `https://${sub}.10web.site/wp-admin` : null);
+            if (hit) {
+              preview_url = preview_url || hit?.site_url || null;
+              admin_url = admin_url || hit?.admin_url || null;
+            }
           }
 
           if (preview_url && admin_url) return J(200, { ok: true, preview_url, admin_url });
-        } catch {}
-        await new Promise((r) => setTimeout(r, 3000));
+        } catch {
+          /* ignore transient */
+        }
+        await sleep(3000);
       }
       return J(504, { code: "PUBLISH_RETRY", hint: "Still finalizing after 180s" });
     } catch (error: any) {
+      console.error("Publish/front error:", error);
       return J(502, { code: "PUBLISH_AND_FRONTPAGE_FAILED", detail: error?.json ?? error?.message ?? error });
     }
   }
