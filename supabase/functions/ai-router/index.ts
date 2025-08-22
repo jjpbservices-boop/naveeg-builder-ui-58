@@ -9,7 +9,7 @@ const API_BASE = Deno.env.get("TENWEB_API_BASE") || "https://api.10web.io";
 const API_KEY = Deno.env.get("TENWEB_API_KEY") || "";
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-// ---- CORS
+// ---------- CORS
 const corsHeaders = (origin: string | null) => ({
   "Access-Control-Allow-Origin":
     origin && (
@@ -25,7 +25,7 @@ const corsHeaders = (origin: string | null) => ({
 const J = (code: number, data: unknown, origin: string | null) =>
   new Response(JSON.stringify(data), { status: code, headers: { "content-type": "application/json", ...corsHeaders(origin) } });
 
-// ---- 10Web fetch helper
+// ---------- 10Web fetch helper
 type TwInit = RequestInit & { timeoutMs?: number };
 const tw = async (path: string, init: TwInit = {}) => {
   const ctl = new AbortController();
@@ -61,7 +61,7 @@ const tw = async (path: string, init: TwInit = {}) => {
   } finally { clearTimeout(id); }
 };
 
-// ---- utils
+// ---------- utils
 const slugify = (t?: string) =>
   (t || "site").toLowerCase().trim().normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 45) || "site";
@@ -92,16 +92,14 @@ const ensureFreeSub = async (base: string) => {
   return subCandidate(base, Date.now().toString(36));
 };
 
-// ---- schema normalizers (critical)
-type SitemapParamsIn = any;
+// ---------- schema helpers
 const minimalPagesMeta = (pages_meta: any): { title: string; sections: { section_title: string }[] }[] => {
   if (!Array.isArray(pages_meta) || pages_meta.length === 0) {
     return [
-      { title: "Home", sections: [{ section_title: "Hero" }, { section_title: "About Us" }] },
+      { title: "Home",    sections: [{ section_title: "Hero" }, { section_title: "About Us" }] },
       { title: "Contact", sections: [{ section_title: "Get In Touch" }] },
     ];
   }
-  // keep only fields 10Web accepts
   return pages_meta.map((p: any) => ({
     title: String(p?.title || "Page"),
     sections: Array.isArray(p?.sections) && p.sections.length
@@ -110,15 +108,13 @@ const minimalPagesMeta = (pages_meta: any): { title: string; sections: { section
   }));
 };
 
-const normalizeSitemapParams = (raw: SitemapParamsIn) => {
+const normalizeSitemapParams = (raw: any) => {
   const p = { ...(raw || {}) };
-  // accept alternate keys Lovable might send
   p.business_name = p.business_name || p.businessName || p.site_title || p.brand || "Business";
   p.business_description = p.business_description || p.businessDescription || p.description || "";
   p.business_type = p.business_type || p.businessType || "informational";
   if (p.style?.colors && !p.colors) p.colors = p.style.colors;
   if (p.style?.fonts && !p.fonts) p.fonts = p.style.fonts;
-  // 10Web ignores unexpected keys; keep them minimal
   return {
     business_name: String(p.business_name),
     business_description: String(p.business_description),
@@ -131,24 +127,36 @@ const normalizeSitemapParams = (raw: SitemapParamsIn) => {
   };
 };
 
-type GenParamsIn = any;
-const normalizeGenerationParams = (raw: GenParamsIn) => {
+const normalizeGenerationParams = (raw: any, carry: any = {}) => {
   const p = { ...(raw || {}) };
 
-  // allow both flattened and nested seo
-  const seo = p.seo || {
-    website_title: p.website_title || p.title || "Website",
-    website_description: p.website_description || p.description || "",
-    website_keyphrase: p.website_keyphrase || p.keyphrase || (p.website_title || "Website"),
-  };
+  const business_name = p.business_name || carry.business_name || carry.site_title || "Business";
+  const business_description = p.business_description || carry.business_description || "";
+  const business_type = p.business_type || carry.business_type || "informational";
 
-  const website_type = p.website_type || p.business_type || "basic";
+  const website_title =
+    p.website_title || p.seo?.website_title || business_name;
+  const website_description =
+    p.website_description || p.seo?.website_description || business_description;
+  const website_keyphrase =
+    p.website_keyphrase || p.seo?.website_keyphrase || website_title;
+
   const pages_meta = minimalPagesMeta(p.pages_meta);
+  const website_type = p.website_type || "basic";
 
-  return { seo, website_type, pages_meta };
+  return {
+    business_name,
+    business_description,
+    business_type,
+    website_title,
+    website_description,
+    website_keyphrase,
+    website_type,
+    pages_meta,
+  };
 };
 
-// ---- server
+// ---------- server
 serve(async (req) => {
   const origin = req.headers.get("origin");
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders(origin) });
@@ -175,7 +183,7 @@ serve(async (req) => {
     }
     if (req.method === "POST" && !action) return J(400, { code: "MISSING_ACTION" }, origin);
 
-    // ---- CREATE WEBSITE
+    // ----- CREATE WEBSITE
     if (req.method === "POST" && action === "create-website") {
       try {
         const businessName = (body.businessName || body.business_name || "New Site").toString().trim();
@@ -224,7 +232,7 @@ serve(async (req) => {
       }
     }
 
-    // ---- GENERATE SITEMAP
+    // ----- GENERATE SITEMAP
     if (req.method === "POST" && action === "generate-sitemap") {
       try {
         const { website_id } = body || {};
@@ -249,13 +257,21 @@ serve(async (req) => {
           website_description: result?.seo?.website_description || params.business_description,
           website_keyphrase: result?.seo?.website_keyphrase || params.business_name,
         };
+        const colors = {
+          primary_color: result?.colors?.primary_color || "#FF7A00",
+          secondary_color: result?.colors?.secondary_color || "#1E62FF",
+          background_dark: result?.colors?.background_dark || "#121212",
+        };
+        const fonts = (result?.fonts && result.fonts.primary_font)
+          ? result.fonts
+          : { primary_font: "Inter" };
 
         return J(200, {
           unique_id: result?.unique_id || result?.sitemap_unique_id || crypto.randomUUID(),
           pages_meta,
           seo,
-          colors: result?.colors || undefined,
-          fonts: result?.fonts || undefined,
+          colors,
+          fonts,
           website_type: params.business_type === "ecommerce" ? "ecommerce" : "basic",
         }, origin);
       } catch (error: any) {
@@ -263,7 +279,7 @@ serve(async (req) => {
       }
     }
 
-    // ---- UPDATE DESIGN
+    // ----- UPDATE DESIGN (store only)
     if (req.method === "POST" && action === "update-design") {
       try {
         const { siteId, design } = body || {};
@@ -296,7 +312,7 @@ serve(async (req) => {
       }
     }
 
-    // ---- GENERATE FROM SITEMAP
+    // ----- GENERATE FROM SITEMAP
     if (req.method === "POST" && action === "generate-from-sitemap") {
       try {
         const { website_id } = body || {};
@@ -304,19 +320,34 @@ serve(async (req) => {
         let params = body?.params;
         if (!website_id || !unique_id || !params) return J(400, { error: "Missing website_id, unique_id, or params" }, origin);
 
-        // normalize to 10Web expected shape
-        const norm = normalizeGenerationParams(params);
-        params = { pages_meta: norm.pages_meta, seo: norm.seo, website_type: norm.website_type };
+        const norm = normalizeGenerationParams(params, {
+          business_name: body?.business_name,
+          business_description: body?.business_description,
+          business_type: body?.business_type,
+        });
+        params = {
+          business_name: norm.business_name,
+          business_description: norm.business_description,
+          business_type: norm.business_type,
+          website_title: norm.website_title,
+          website_description: norm.website_description,
+          website_keyphrase: norm.website_keyphrase,
+          website_type: norm.website_type,
+          pages_meta: norm.pages_meta,
+        };
 
-        // hard validation
+        // strict validation for 10Web flat schema
         if (!Array.isArray(params.pages_meta) || params.pages_meta.length === 0) {
           return J(400, { code: "MISSING_REQUIRED_PARAMS", error: "pages_meta is empty" }, origin);
         }
-        if (!params.seo?.website_title || !params.seo?.website_description || !params.seo?.website_keyphrase) {
-          return J(400, { code: "MISSING_REQUIRED_PARAMS", error: "seo.website_* fields are required" }, origin);
+        for (const k of [
+          "business_name","business_description","business_type",
+          "website_title","website_description","website_keyphrase",
+        ]) {
+          if (!params[k as keyof typeof params]) {
+            return J(400, { code: "MISSING_REQUIRED_PARAMS", error: `${k} is required` }, origin);
+          }
         }
-
-        console.log("Starting generation with params:", JSON.stringify({ website_id, unique_id }, null, 2));
 
         try {
           await tw("/v1/ai/generate_site_from_sitemap", {
@@ -326,19 +357,17 @@ serve(async (req) => {
           });
         } catch (e: any) {
           const msg = JSON.stringify(e?.json || e?.raw || e?.message || "");
-          console.log("Generation API error:", { status: e?.status, error: e?.json, raw: e?.raw });
           if (e?.status === 422 && e?.json?.error?.details) {
             return J(422, { code: "VALIDATION_ERROR", details: e.json.error.details, hint: "Fix params schema" }, origin);
           }
-          // many backends return 417/504 while job is queued; fall through to poll
           if (e?.status === 417 || e?.status === 504 || e?.name === "AbortError" || /in progress/i.test(msg)) {
-            // proceed to poll
+            // fall through to poll
           } else {
             return J(502, { code: "GENERATE_FAILED", detail: e?.json || e?.message || String(e) }, origin);
           }
         }
 
-        // Poll pages with backoff
+        // poll pages
         const deadline = Date.now() + 300_000;
         let pollInterval = 3000;
         let pollCount = 0;
@@ -346,13 +375,11 @@ serve(async (req) => {
           try {
             const pages = await tw(`/v1/builder/websites/${website_id}/pages`, { method: "GET", timeoutMs: 30_000 });
             const list = Array.isArray(pages?.data) ? pages.data : [];
-            console.log(`Poll ${++pollCount}: Found ${list.length} pages`);
             if (list.length > 0) return J(200, { ok: true, pages_count: list.length }, origin);
-          } catch (e: any) {
-            console.log(`Poll ${pollCount} error:`, e?.status, e?.message);
-          }
+          } catch (e: any) { /* ignore */ }
           await new Promise(r => setTimeout(r, pollInterval));
           pollInterval = Math.min(Math.round(pollInterval * 1.5), 10_000);
+          pollCount++;
         }
         return J(504, { code: "GENERATE_TIMEOUT", hint: "Still processing. Try publish step later.", polls_completed: pollCount }, origin);
       } catch (error: any) {
@@ -360,7 +387,7 @@ serve(async (req) => {
       }
     }
 
-    // ---- PUBLISH + SET FRONT PAGE
+    // ----- PUBLISH + FRONT PAGE
     if (req.method === "POST" && action === "publish-and-frontpage") {
       try {
         const { website_id } = body || {};
@@ -390,7 +417,7 @@ serve(async (req) => {
               }
             }
 
-            // set front page heuristics
+            // set front page
             const home = list.find((p: any) => /home|accueil/i.test(p?.title) || p?.slug === "home" || p?.is_front_page) ?? list[0];
             if (home) {
               try {
@@ -423,7 +450,7 @@ serve(async (req) => {
       }
     }
 
-    // ---- 404
+    // ----- 404
     return J(404, { error: "NOT_FOUND", hint: "Use GET ?action=health or POST actions: create-website, generate-sitemap, update-design, generate-from-sitemap, publish-and-frontpage" }, origin);
   } catch (err: any) {
     console.error("UNHANDLED_ERROR", err);
