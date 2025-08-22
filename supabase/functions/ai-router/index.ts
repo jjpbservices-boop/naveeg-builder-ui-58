@@ -404,13 +404,51 @@ serve(async (req) => {
         return J(400, { error: 'Missing website_id, unique_id, or params' });
       }
 
-      await tw('/v1/ai/generate_site_from_sitemap', {
-        method: 'POST',
-        body: JSON.stringify({ website_id, unique_id, params }),
-        timeoutMs: 120000
-      });
+      // Try to generate the site
+      try {
+        await tw('/v1/ai/generate_site_from_sitemap', {
+          method: 'POST',
+          body: JSON.stringify({ website_id, unique_id, params }),
+          timeoutMs: 120000
+        });
+      } catch (e: any) {
+        const msg = JSON.stringify(e?.json || e?.message || e);
+        if (msg.includes('Template generation is in progress')) {
+          console.log('Template generation already in progress, polling for completion...');
+          // Fall through to poll below
+        } else {
+          console.error('Generate from sitemap failed:', e);
+          return J(502, { 
+            code: 'GENERATE_FAILED', 
+            detail: e?.json ?? e?.message ?? e 
+          });
+        }
+      }
 
-      return J(200, { ok: true });
+      // Poll site readiness (up to 3 minutes). Ready = pages appear.
+      const deadline = Date.now() + 180000; // 3 minutes
+      while (Date.now() < deadline) {
+        try {
+          const pages = await tw(`/v1/builder/websites/${website_id}/pages`, { 
+            method: 'GET', 
+            timeoutMs: 30000 
+          });
+          const list = pages?.data || [];
+          if (Array.isArray(list) && list.length > 0) {
+            console.log(`Site generation completed with ${list.length} pages`);
+            return J(200, { ok: true, pages_count: list.length });
+          }
+        } catch (pollError) {
+          console.log('Polling pages failed, retrying...', pollError);
+        }
+        await new Promise(r => setTimeout(r, 3000)); // Wait 3 seconds
+      }
+      
+      console.error('Site generation timeout after 180s');
+      return J(504, { 
+        code: 'GENERATE_TIMEOUT', 
+        hint: 'Still generating after 180s' 
+      });
       
     } catch (error: any) {
       console.error('Generate from sitemap error:', error);
@@ -430,17 +468,24 @@ serve(async (req) => {
         return J(400, { error: 'Missing website_id' });
       }
 
-      // Get pages
+      // Get pages - robust check
       const pages = await tw(`/v1/builder/websites/${website_id}/pages`, {
         method: 'GET',
         timeoutMs: 30000
       });
 
-      if (!pages?.data?.length) {
-        return J(400, { error: 'No pages found to publish' });
+      const list = pages?.data || [];
+      if (!list.length) {
+        console.log('No pages found yet for website', website_id);
+        return J(409, { 
+          code: 'NO_PAGES_YET',
+          hint: 'Pages not ready for publishing yet' 
+        });
       }
 
-      const pageIds = pages.data.map((p: any) => p.id);
+      console.log(`Found ${list.length} pages ready for publishing`);
+
+      const pageIds = list.map((p: any) => p.id);
 
       // Publish all pages
       await tw(`/v1/builder/websites/${website_id}/pages/publish`, {
@@ -450,11 +495,11 @@ serve(async (req) => {
       });
 
       // Set Home page as front page
-      const homePage = pages.data.find((p: any) => 
+      const homePage = list.find((p: any) => 
         p.title?.toLowerCase().includes('home') || 
         p.slug === 'home' || 
         p.is_front_page
-      ) || pages.data[0];
+      ) || list[0];
 
       if (homePage) {
         await tw(`/v1/builder/websites/${website_id}/pages/front/set`, {
