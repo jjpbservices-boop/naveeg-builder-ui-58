@@ -67,6 +67,8 @@ const Brief: React.FC = () => {
     setError(undefined);
 
     try {
+      console.log('Starting analysis with form data:', formData);
+      
       // Update store with form data
       updateBasicInfo({
         business_name: formData.businessName,
@@ -79,18 +81,25 @@ const Brief: React.FC = () => {
       setProgress(25);
 
       if (!currentSiteId) {
+        console.log('Creating website...');
         const { data: websiteData, error: createError } = await apiClient.createWebsite({
           siteTitle: formData.businessName,
         });
 
         if (createError) {
-          throw new Error(createError.message || 'Failed to create website');
+          console.error('Website creation failed:', createError);
+          throw new Error(`Failed to create website: ${createError.message || 'Unknown error'}`);
         }
 
-        currentSiteId = websiteData!.siteId;
+        if (!websiteData) {
+          throw new Error('No data returned from website creation');
+        }
+
+        console.log('Website created successfully:', websiteData);
+        currentSiteId = websiteData.siteId;
         updateApiData({
-          siteId: websiteData!.siteId,
-          website_id: websiteData!.website_id,
+          siteId: websiteData.siteId,
+          website_id: websiteData.website_id,
         });
       }
 
@@ -98,6 +107,7 @@ const Brief: React.FC = () => {
 
       // Step 2: Generate sitemap
       if (currentSiteId) {
+        console.log('Generating sitemap for site:', currentSiteId);
         const { data: sitemapData, error: sitemapError } = await apiClient.generateSitemap({
           siteId: currentSiteId,
           business_type: formData.businessType,
@@ -106,24 +116,30 @@ const Brief: React.FC = () => {
         });
 
         if (sitemapError) {
-          throw new Error(sitemapError.message || 'Failed to generate sitemap');
+          console.error('Sitemap generation failed:', sitemapError);
+          throw new Error(`Failed to generate sitemap: ${sitemapError.message || 'Unknown error'}`);
         }
 
+        if (!sitemapData) {
+          throw new Error('No sitemap data returned');
+        }
+
+        console.log('Sitemap generated successfully:', sitemapData);
         setProgress(75);
 
         // Auto-fill and update store
-        const autoSeoTitle = sitemapData!.seo.seo_title || formData.businessName;
-        const autoSeoDescription = sitemapData!.seo.seo_description || formData.businessDescription.substring(0, 160);
-        const autoSeoKeyphrase = sitemapData!.seo.seo_keyphrase || formData.businessName;
+        const autoSeoTitle = sitemapData.seo.seo_title || formData.businessName;
+        const autoSeoDescription = sitemapData.seo.seo_description || formData.businessDescription.substring(0, 160);
+        const autoSeoKeyphrase = sitemapData.seo.seo_keyphrase || formData.businessName;
 
-        updateApiData({ unique_id: sitemapData!.unique_id });
+        updateApiData({ unique_id: sitemapData.unique_id });
         updateSEO({
           seo_title: autoSeoTitle,
           seo_description: autoSeoDescription,
           seo_keyphrase: autoSeoKeyphrase,
         });
-        updatePages(sitemapData!.pages_meta);
-        updateWebsiteType(sitemapData!.website_type as 'basic' | 'ecommerce');
+        updatePages(sitemapData.pages_meta);
+        updateWebsiteType(sitemapData.website_type as 'basic' | 'ecommerce');
       }
 
       setProgress(100);
@@ -131,10 +147,36 @@ const Brief: React.FC = () => {
       toast.success('Analysis complete! Your website structure is ready.');
       
     } catch (error) {
-      console.error('Analysis failed:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Analysis failed';
+      console.error('Analysis failed with error:', error);
+      
+      // Create user-friendly error messages
+      let errorMessage = 'Analysis failed. Please try again.';
+      
+      if (error instanceof Error) {
+        const msg = error.message.toLowerCase();
+        
+        if (msg.includes('network') || msg.includes('load failed') || msg.includes('fetch')) {
+          errorMessage = 'Network connection failed. Please check your internet connection and try again.';
+        } else if (msg.includes('timeout') || msg.includes('timed out')) {
+          errorMessage = 'Request timed out. Please check your connection and try again.';
+        } else if (msg.includes('create website')) {
+          errorMessage = 'Failed to create website. Please try again or contact support if the problem persists.';
+        } else if (msg.includes('generate sitemap')) {
+          errorMessage = 'Failed to generate sitemap. Please check your business information and try again.';
+        } else if (msg.includes('unauthorized') || msg.includes('forbidden')) {
+          errorMessage = 'Authentication error. Please refresh the page and try again.';
+        } else if (msg.includes('server error') || (error as any).status >= 500) {
+          errorMessage = 'Server error. Please try again in a few moments.';
+        } else if (error.message && error.message !== 'Load failed' && !msg.includes('unknown error')) {
+          errorMessage = error.message;
+        }
+      }
+      
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error(errorMessage, {
+        duration: 5000,
+        description: 'If the problem persists, please contact support.'
+      });
     } finally {
       setIsAnalyzing(false);
     }

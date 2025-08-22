@@ -50,6 +50,8 @@ class APIClient {
     try {
       const url = `${this.baseUrl}${endpoint}`;
       console.log(`API Request: ${options.method || 'GET'} ${url}`);
+      console.log('Request headers:', options.headers);
+      console.log('Request body:', options.body);
 
       const response = await this.fetchWithTimeout(url, options);
       
@@ -65,15 +67,42 @@ class APIClient {
       if (!response.ok) {
         const error: APIError = new Error(data.error || data || `HTTP ${response.status}`);
         error.status = response.status;
-        console.error('API Error:', error);
+        
+        // Add more specific error details
+        if (data.details) {
+          error.message = `${error.message} - ${data.details}`;
+        }
+        
+        console.error('API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          url,
+          error: error.message,
+          data
+        });
         return { error };
       }
 
       console.log('API Success:', data);
       return { data };
     } catch (error) {
-      console.error('API Request failed:', error);
+      console.error('API Request failed:', {
+        endpoint,
+        error: error.message,
+        stack: error.stack
+      });
+      
       const apiError: APIError = error as APIError;
+      
+      // Make error messages more user-friendly
+      if (error.name === 'AbortError') {
+        apiError.message = 'Request timed out. Please check your connection and try again.';
+      } else if (error.message === 'Load failed') {
+        apiError.message = 'Network error. Please check your internet connection and try again.';
+      } else if (error.message.includes('NetworkError')) {
+        apiError.message = 'Network connection failed. Please try again.';
+      }
+      
       return { error: apiError };
     }
   }

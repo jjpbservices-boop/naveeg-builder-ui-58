@@ -133,8 +133,11 @@ async function fetchWithRetry(url: string, options: any, maxRetries = 3): Promis
 }
 
 serve(async (req) => {
+  console.log(`Incoming request: ${req.method} ${req.url}`);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('Handling CORS preflight request');
     return new Response(null, { headers: corsHeaders });
   }
 
@@ -143,6 +146,7 @@ serve(async (req) => {
     const path = url.pathname.replace('/functions/v1/ai-router', '');
 
     console.log(`AI Router: ${req.method} ${path}`);
+    console.log(`Full URL: ${req.url}`);
 
     switch (path) {
       case '/create-website':
@@ -158,15 +162,21 @@ serve(async (req) => {
       case '/autologin':
         return await handleAutologin(req);
       default:
+        console.log(`Route not found: ${path}`);
         return new Response(
-          JSON.stringify({ error: 'Route not found' }),
+          JSON.stringify({ error: 'Route not found', path, method: req.method }),
           { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
     }
   } catch (error) {
     console.error('AI Router error:', error);
+    console.error('Error stack:', error.stack);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'Internal server error',
+        details: error.stack,
+        timestamp: new Date().toISOString()
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
@@ -469,44 +479,79 @@ async function handleGenerateFromSitemap(req: Request): Promise<Response> {
 }
 
 async function handleAttachSite(req: Request): Promise<Response> {
+  console.log('handleAttachSite called');
+  
   // Extract JWT token and validate user
   const authHeader = req.headers.get('Authorization');
+  console.log('Auth header present:', !!authHeader);
+  
   if (!authHeader?.startsWith('Bearer ')) {
-    throw new Error('Missing or invalid authorization header');
+    console.error('Missing or invalid authorization header');
+    return new Response(
+      JSON.stringify({ error: 'Missing or invalid authorization header' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 
   const token = authHeader.split(' ')[1];
-  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+  console.log('Attempting to validate token...');
+  
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError) {
+      console.error('Auth error:', authError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired token', details: authError.message }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    if (!user) {
+      console.error('No user found from token');
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-  if (authError || !user) {
-    throw new Error('Invalid or expired token');
+    console.log('User validated:', user.id);
+
+    const body = await req.json();
+    const { siteId } = AttachSiteSchema.parse(body);
+
+    console.log('Attaching site to user:', user.id, 'Site ID:', siteId);
+
+    // Update site with user_id and owner_email
+    const { error: updateError } = await supabase
+      .from('sites')
+      .update({
+        user_id: user.id,
+        owner_email: user.email,
+      })
+      .eq('id', siteId);
+
+    if (updateError) {
+      console.error('Failed to attach site:', updateError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to attach site', details: updateError.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    await logEvent(siteId, 'site_attached', { user_id: user.id, owner_email: user.email });
+
+    return new Response(
+      JSON.stringify({ success: true }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Unexpected error in handleAttachSite:', error);
+    return new Response(
+      JSON.stringify({ error: 'Internal server error', details: error.message }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
-
-  const body = await req.json();
-  const { siteId } = AttachSiteSchema.parse(body);
-
-  console.log('Attaching site to user:', user.id);
-
-  // Update site with user_id and owner_email
-  const { error: updateError } = await supabase
-    .from('sites')
-    .update({
-      user_id: user.id,
-      owner_email: user.email,
-    })
-    .eq('id', siteId);
-
-  if (updateError) {
-    console.error('Failed to attach site:', updateError);
-    throw new Error(`Failed to attach site: ${updateError.message}`);
-  }
-
-  await logEvent(siteId, 'site_attached', { user_id: user.id, owner_email: user.email });
-
-  return new Response(
-    JSON.stringify({ success: true }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
 }
 
 async function handleAutologin(req: Request): Promise<Response> {
