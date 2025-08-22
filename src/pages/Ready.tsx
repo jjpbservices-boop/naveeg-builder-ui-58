@@ -74,8 +74,7 @@ const Ready: React.FC = () => {
     try {
       const { data, error } = await apiClient.getAutologinUrl(
         website_id.toString(),
-        admin_url,
-        email
+        admin_url
       );
 
       if (error) {
@@ -178,8 +177,8 @@ const Ready: React.FC = () => {
                     <h4 
                       className="text-lg font-bold mb-2"
                       style={{ 
-                        color: colors.primary,
-                        fontFamily: fonts.heading === 'syne' ? 'Syne' : 'inherit'
+                        color: colors.primary_color,
+                        fontFamily: fonts.heading === 'Syne' ? 'Syne' : 'inherit'
                       }}
                     >
                       {business_name}

@@ -1,1 +1,7 @@
 project_id = "eilpazegjrcrwgpujqni"
+
+[functions.ai-router]
+verify_jwt = false
+
+[functions."ai-router/attach-site"]
+verify_jwt = true

@@ -1,0 +1,2 @@
+-- Update supabase/config.toml to disable JWT for public endpoints
+-- This needs to be configured in the config file
