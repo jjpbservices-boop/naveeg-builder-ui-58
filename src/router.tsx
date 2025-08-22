@@ -72,6 +72,32 @@ const legalRoute = createRoute({
   component: Legal,
 });
 
+// Onboarding routes
+const onboardingBriefRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/onboarding/brief',
+  component: Brief,
+});
+
+const onboardingDesignRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/onboarding/design',
+  component: Design,
+});
+
+const generateRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/generate',
+  component: Generate,
+});
+
+const readyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/ready',
+  component: Ready,
+});
+
+// Legacy routes for backward compatibility
 const describeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/describe',
@@ -88,18 +114,6 @@ const designRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/design',
   component: Design,
-});
-
-const generateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/generate',
-  component: Generate,
-});
-
-const readyRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/ready',
-  component: Ready,
 });
 
 const previewRoute = createRoute({
@@ -141,6 +155,8 @@ const routeTree = rootRoute.addChildren([
   faqRoute,
   contactRoute,
   legalRoute,
+  onboardingBriefRoute,
+  onboardingDesignRoute,
   describeRoute,
   briefRoute,
   designRoute,

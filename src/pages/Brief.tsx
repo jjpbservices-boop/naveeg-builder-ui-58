@@ -1,18 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
+import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
+import { apiClient } from '@/lib/api';
+import { generateSubdomain } from '@/lib/slug';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { ArrowRight, ArrowLeft, Check } from 'lucide-react';
-import { useApp } from '@/context/AppContext';
+import { ArrowRight, ArrowLeft, Check, Loader, Globe, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 
 const briefSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
   businessName: z.string().min(1, 'Business name is required'),
   businessType: z.enum(['informational', 'ecommerce', 'restaurant', 'services', 'portfolio', 'blog']),
   businessDescription: z.string().min(10, 'Please provide a more detailed description'),
@@ -26,30 +30,142 @@ type BriefFormData = z.infer<typeof briefSchema>;
 const Brief: React.FC = () => {
   const { t } = useTranslation(['onboarding', 'common']);
   const navigate = useNavigate();
-  const { state, dispatch } = useApp();
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [hasAnalyzed, setHasAnalyzed] = useState(false);
+  
+  const {
+    email,
+    business_name,
+    business_type,
+    business_description,
+    seo_title,
+    seo_description,
+    seo_keyphrase,
+    siteId,
+    unique_id,
+    updateBasicInfo,
+    updateSEO,
+    updateApiData,
+    setError,
+  } = useOnboardingStore();
 
   const form = useForm<BriefFormData>({
     resolver: zodResolver(briefSchema),
     defaultValues: {
-      businessName: state.brief.businessName,
-      businessType: state.brief.businessType as any,
-      businessDescription: state.brief.businessDescription,
-      websiteTitle: state.brief.websiteTitle,
-      websiteDescription: state.brief.websiteDescription,
-      websiteKeyphrase: state.brief.websiteKeyphrase,
+      email: email,
+      businessName: business_name,
+      businessType: business_type as any || 'services',
+      businessDescription: business_description,
+      websiteTitle: seo_title,
+      websiteDescription: seo_description,
+      websiteKeyphrase: seo_keyphrase,
     },
   });
 
-  const onSubmit = (data: BriefFormData) => {
-    dispatch({
-      type: 'UPDATE_BRIEF',
-      payload: data,
+  const handleAnalyze = async () => {
+    const isValid = await form.trigger();
+    if (!isValid) return;
+
+    const formData = form.getValues();
+    setIsAnalyzing(true);
+    setError(undefined);
+
+    try {
+      // Update store with form data
+      updateBasicInfo({
+        email: formData.email,
+        business_name: formData.businessName,
+        business_type: formData.businessType,
+        business_description: formData.businessDescription,
+      });
+      
+      updateSEO({
+        seo_title: formData.websiteTitle,
+        seo_description: formData.websiteDescription,
+        seo_keyphrase: formData.websiteKeyphrase,
+      });
+
+      // Step 1: Create website if not already created
+      let currentSiteId = siteId;
+      let currentUniqueId = unique_id;
+
+      if (!currentSiteId) {
+        const subdomainSlug = generateSubdomain(formData.businessName);
+        
+        const { data: websiteData, error: createError } = await apiClient.createWebsite({
+          email: formData.email,
+          subdomainSlug,
+          siteTitle: formData.websiteTitle,
+          businessName: formData.businessName,
+          businessType: formData.businessType,
+          businessDescription: formData.businessDescription,
+          seoTitle: formData.websiteTitle,
+          seoDescription: formData.websiteDescription,
+          seoKeyphrase: formData.websiteKeyphrase,
+        });
+
+        if (createError) {
+          throw new Error(createError.message || 'Failed to create website');
+        }
+
+        currentSiteId = websiteData!.siteId;
+        updateApiData({
+          siteId: websiteData!.siteId,
+          website_id: websiteData!.website_id,
+          site_url: websiteData!.site_url,
+          admin_url: websiteData!.admin_url,
+        });
+
+        toast.success('Website created successfully!');
+      }
+
+      // Step 2: Generate sitemap if not already done
+      if (!currentUniqueId && currentSiteId) {
+        const { data: sitemapData, error: sitemapError } = await apiClient.generateSitemap(currentSiteId);
+
+        if (sitemapError) {
+          throw new Error(sitemapError.message || 'Failed to generate sitemap');
+        }
+
+        updateApiData({ unique_id: sitemapData!.unique_id });
+        toast.success('Sitemap generated successfully!');
+      }
+
+      setHasAnalyzed(true);
+      toast.success('Analysis complete! Your website structure is ready.');
+      
+    } catch (error) {
+      console.error('Analysis failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Analysis failed';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleContinue = () => {
+    const formData = form.getValues();
+    
+    // Update store one more time before navigation
+    updateBasicInfo({
+      email: formData.email,
+      business_name: formData.businessName,
+      business_type: formData.businessType,
+      business_description: formData.businessDescription,
     });
-    navigate({ to: '/design' });
+    
+    updateSEO({
+      seo_title: formData.websiteTitle,
+      seo_description: formData.websiteDescription,
+      seo_keyphrase: formData.websiteKeyphrase,
+    });
+
+    navigate({ to: '/onboarding/design' });
   };
 
   const handleBack = () => {
-    navigate({ to: '/describe' });
+    navigate({ to: '/' });
   };
 
   const businessTypeOptions = [
@@ -69,7 +185,7 @@ const Brief: React.FC = () => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center">
               <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center">
-                <Check className="h-4 w-4" />
+                {hasAnalyzed ? <Check className="h-4 w-4" /> : <span className="text-sm font-medium">1</span>}
               </div>
               <span className="ml-2 text-sm font-medium text-primary">
                 {t('onboarding:wizard.step1')}
@@ -100,7 +216,28 @@ const Brief: React.FC = () => {
         {/* Form */}
         <div className="bg-card rounded-3xl border shadow-soft p-8 animate-slide-up">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form className="space-y-6">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base font-medium">
+                      Email Address
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="Enter your email address"
+                        className="h-12 rounded-2xl border-2 touch-target"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="businessName"
@@ -234,6 +371,29 @@ const Brief: React.FC = () => {
                 )}
               />
 
+              {/* Sitemap Preview */}
+              {hasAnalyzed && (
+                <div className="bg-muted/50 rounded-2xl p-6 animate-slide-up">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center">
+                    <Globe className="h-5 w-5 mr-2" />
+                    Your Website Structure
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                      { name: 'Home', type: 'home' },
+                      { name: 'About', type: 'about' },
+                      { name: 'Services', type: 'services' },
+                      { name: 'Contact', type: 'contact' },
+                    ].map((page, index) => (
+                      <div key={page.name} className="bg-background rounded-lg p-3 text-center border">
+                        <div className="text-sm font-medium">{page.name}</div>
+                        <div className="text-xs text-muted-foreground">{page.type}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-4 pt-6">
                 <Button
@@ -246,13 +406,35 @@ const Brief: React.FC = () => {
                   {t('common:global.back')}
                 </Button>
                 
-                <Button
-                  type="submit"
-                  className="flex-1 touch-target bg-gradient-primary hover:bg-primary-hover text-white rounded-2xl"
-                >
-                  {t('onboarding:brief.nextStep')}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                {!hasAnalyzed ? (
+                  <Button
+                    type="button"
+                    onClick={handleAnalyze}
+                    disabled={isAnalyzing}
+                    className="flex-1 touch-target bg-gradient-primary hover:bg-primary-hover text-white rounded-2xl"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader className="mr-2 h-4 w-4 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Analyze & Create Structure
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={handleContinue}
+                    className="flex-1 touch-target bg-gradient-primary hover:bg-primary-hover text-white rounded-2xl"
+                  >
+                    Continue to Design
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </form>
           </Form>
