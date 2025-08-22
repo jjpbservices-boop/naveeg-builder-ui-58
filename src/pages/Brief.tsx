@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { toast } from '@/hooks/use-toast';
 export default function Brief() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isAnalyzed, setIsAnalyzed] = useState(false);
   
   const {
     business_name,
@@ -23,8 +24,19 @@ export default function Brief() {
     updateDesign,
     updatePages,
     updateWebsiteType,
-    setCurrentStep
+    setCurrentStep,
+    website_id,
+    seo_title,
+    seo_description,
+    seo_keyphrase
   } = useOnboardingStore();
+
+  // Check if we already have analyzed data
+  useEffect(() => {
+    if (website_id && seo_title) {
+      setIsAnalyzed(true);
+    }
+  }, [website_id, seo_title]);
 
   const handleAnalyze = async () => {
     if (!business_name?.trim() || !business_description?.trim()) {
@@ -82,6 +94,8 @@ export default function Brief() {
 
       updatePages(sitemapResult.pages_meta);
       updateWebsiteType(sitemapResult.website_type);
+
+      setIsAnalyzed(true);
 
       toast({
         title: 'Analysis complete!',
@@ -145,24 +159,38 @@ export default function Brief() {
                 />
               </div>
 
-              <Button
-                onClick={handleAnalyze}
-                disabled={isLoading || !business_name.trim() || !business_description.trim()}
-                className="w-full text-lg py-6"
-                size="lg"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Analyzing & Creating Structure...
-                  </>
-                ) : (
-                  <>
-                    Analyze & Create Structure
-                    <ChevronRight className="ml-2 h-5 w-5" />
-                  </>
-                )}
-              </Button>
+              {!isAnalyzed ? (
+                <Button
+                  onClick={handleAnalyze}
+                  disabled={isLoading || !business_name?.trim() || !business_description?.trim()}
+                  className="w-full text-lg py-6"
+                  size="lg"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Analyzing & Creating Structure...
+                    </>
+                  ) : (
+                    <>
+                      Analyze & Create Structure
+                      <ChevronRight className="ml-2 h-5 w-5" />
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => {
+                    setCurrentStep(1);
+                    navigate({ to: '/design' });
+                  }}
+                  className="w-full text-lg py-6"
+                  size="lg"
+                >
+                  Next Step
+                  <ChevronRight className="ml-2 h-5 w-5" />
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>

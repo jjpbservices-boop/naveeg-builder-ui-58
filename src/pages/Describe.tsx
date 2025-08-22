@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
 
 const Describe: React.FC = () => {
   const { t } = useTranslation('onboarding');
   const navigate = useNavigate();
   const { state, dispatch } = useApp();
+  const { updateBasicInfo } = useOnboardingStore();
   const [description, setDescription] = useState(state.brief.businessDescription);
 
   useEffect(() => {
@@ -19,13 +21,48 @@ const Describe: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (description.trim()) {
+      // Update AppContext for backward compatibility
       dispatch({
         type: 'UPDATE_BRIEF',
         payload: { businessDescription: description.trim() }
       });
       
+      // Extract business name from description (first line or common patterns)
+      const businessName = extractBusinessName(description.trim());
+      
+      // Update onboarding store for Brief page
+      updateBasicInfo({
+        business_name: businessName,
+        business_description: description.trim()
+      });
+      
       navigate({ to: '/brief' });
     }
+  };
+
+  // Helper function to extract business name from description
+  const extractBusinessName = (desc: string): string => {
+    const lines = desc.split('\n').filter(line => line.trim());
+    const firstLine = lines[0] || '';
+    
+    // Look for company patterns
+    const companyPatterns = [
+      /^(.+?)\s+(?:is|provides|offers|specializes)/i,
+      /^(.+?)\s+(?:company|business|agency|firm|store|shop)/i,
+      /^(.+?)(?:\s-\s|\s–\s|\s—\s)/,
+      /^([^.!?]+)/
+    ];
+    
+    for (const pattern of companyPatterns) {
+      const match = firstLine.match(pattern);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+    }
+    
+    // Fallback to first 3-5 words
+    const words = firstLine.split(' ').slice(0, 4);
+    return words.join(' ') || 'My Business';
   };
 
   const handleBack = () => {
