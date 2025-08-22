@@ -14,7 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      events: {
+        Row: {
+          created_at: string | null
+          data: Json | null
+          id: number
+          label: string
+          site_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data?: Json | null
+          id?: number
+          label: string
+          site_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json | null
+          id?: number
+          label?: string
+          site_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sites: {
+        Row: {
+          admin_url: string | null
+          business_description: string
+          business_name: string
+          business_type: string
+          colors: Json | null
+          created_at: string | null
+          email: string | null
+          fonts: Json | null
+          id: string
+          pages_meta: Json | null
+          payload: Json | null
+          seo_description: string | null
+          seo_keyphrase: string | null
+          seo_title: string | null
+          site_url: string | null
+          status: string | null
+          unique_id: string | null
+          updated_at: string | null
+          website_id: number | null
+          website_type: string | null
+        }
+        Insert: {
+          admin_url?: string | null
+          business_description: string
+          business_name: string
+          business_type: string
+          colors?: Json | null
+          created_at?: string | null
+          email?: string | null
+          fonts?: Json | null
+          id?: string
+          pages_meta?: Json | null
+          payload?: Json | null
+          seo_description?: string | null
+          seo_keyphrase?: string | null
+          seo_title?: string | null
+          site_url?: string | null
+          status?: string | null
+          unique_id?: string | null
+          updated_at?: string | null
+          website_id?: number | null
+          website_type?: string | null
+        }
+        Update: {
+          admin_url?: string | null
+          business_description?: string
+          business_name?: string
+          business_type?: string
+          colors?: Json | null
+          created_at?: string | null
+          email?: string | null
+          fonts?: Json | null
+          id?: string
+          pages_meta?: Json | null
+          payload?: Json | null
+          seo_description?: string | null
+          seo_keyphrase?: string | null
+          seo_title?: string | null
+          site_url?: string | null
+          status?: string | null
+          unique_id?: string | null
+          updated_at?: string | null
+          website_id?: number | null
+          website_type?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
