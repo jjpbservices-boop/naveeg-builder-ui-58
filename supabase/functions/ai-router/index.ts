@@ -77,61 +77,68 @@ const AutologinSchema = z.object({
 
 // --- helpers ---
 const API_BASE = Deno.env.get('TENWEB_API_BASE') || 'https://api.10web.io';
-const API_KEY  = Deno.env.get('TENWEB_API_KEY')!;
+const API_KEY = Deno.env.get('TENWEB_API_KEY')!;
+const H = { 'content-type': 'application/json', 'x-api-key': API_KEY };
 
-const H = { 'content-type':'application/json', 'x-api-key': API_KEY };
-
-function slugify(s: string) {
-  return (s || 'site')
-    .normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
-    .toLowerCase().replace(/[^a-z0-9]+/g,'-')
-    .replace(/^-+|-+$/g,'').slice(0, 45) || 'site';
+function json(code: number, data: any, headers: Record<string,string> = {}) {
+  return new Response(JSON.stringify(data), {
+    status: code,
+    headers: { 'content-type': 'application/json', ...headers }
+  });
 }
 
-async function tw(path: string, init: RequestInit & {timeoutMs?: number} = {}) {
+function corsHeaders(origin?: string) {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
+  };
+}
+
+async function tw(path: string, init: RequestInit & { timeoutMs?: number } = {}) {
   const ctl = new AbortController();
-  const id = setTimeout(() => ctl.abort(), init.timeoutMs ?? 60000);
+  const id = setTimeout(() => ctl.abort(), init.timeoutMs ?? 150000); // 150s default
   try {
     const res = await fetch(`${API_BASE}${path}`, { ...init, signal: ctl.signal });
     const txt = await res.text();
-    const json = txt ? JSON.parse(txt) : null;
-    if (!res.ok) throw Object.assign(new Error(json?.message || res.statusText), { res, json });
-    return json;
+    const body = txt ? JSON.parse(txt) : null;
+    if (!res.ok) throw Object.assign(new Error(body?.message || res.statusText), { res, body, path });
+    return body;
+  } catch (e) {
+    // surface AbortError explicitly
+    if ((e as any).name === 'AbortError') throw Object.assign(new Error('ABORTED'), { aborted: true, path });
+    throw e;
   } finally {
     clearTimeout(id);
   }
 }
 
+function slugify(s = 'site') {
+  return s.normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
+   .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,45) || 'site';
+}
+
+async function listSites() {
+  const r = await tw('/v1/account/websites', { method:'GET', headers: H, timeoutMs: 60000 });
+  return r?.data || [];
+}
+
+async function findBySubdomain(sub: string) {
+  const all = await listSites();
+  return all.find((w: any) => w?.site_url?.includes(`${sub}.`) || w?.admin_url?.includes(`${sub}.`));
+}
+
 async function ensureFreeSubdomain(base: string) {
-  // try base, else ask API to generate until free
   let sub = base;
   for (let i = 0; i < 6; i++) {
-    // check
     try {
-      await tw('/v1/hosting/websites/subdomain/check', {
-        method:'POST', headers:H, body: JSON.stringify({ subdomain: sub })
-      });
-      return sub; // ok
-    } catch (e:any) {
-      // taken → generate
-      try {
-        const g = await tw('/v1/hosting/websites/subdomain/generate', { method:'POST', headers:H });
-        sub = g?.subdomain || `${base}-${crypto.randomUUID().split('-')[0]}`;
-      } catch {
-        sub = `${base}-${Math.random().toString(36).slice(2,6)}`;
-      }
+      await tw('/v1/hosting/websites/subdomain/check', { method:'POST', headers:H, body: JSON.stringify({ subdomain: sub }), timeoutMs: 20000 });
+      return sub;
+    } catch {
+      const g = await tw('/v1/hosting/websites/subdomain/generate', { method:'POST', headers:H, timeoutMs: 20000 });
+      sub = g?.subdomain || `${base}-${crypto.randomUUID().slice(0,8)}`;
     }
   }
   throw new Error('NO_FREE_SUBDOMAIN');
-}
-
-async function findExistingBySub(sub: string) {
-  try {
-    const list = await tw('/v1/account/websites', { method:'GET', headers:H });
-    const hit = (list?.data || []).find((w:any) =>
-      w?.site_url?.includes(`${sub}.`) || w?.admin_url?.includes(`${sub}.`));
-    return hit ? { website_id: hit.id } : null;
-  } catch { return null; }
 }
 
 function generateStrongPassword(): string {
@@ -289,27 +296,12 @@ serve(async (req) => {
         return await handleCheckSubdomain(req, { API_BASE, TENWEB_API_KEY });
       case 'create-website':
         try {
-          const result = await handleCreateWebsite(requestBody, supabase);
-          if (result instanceof Response) return result;
-          return new Response(JSON.stringify(result), {
-            status: 200,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          });
+          const r = await handleCreateWebsite(requestBody, supabase);
+          return json(200, { ok: true, ...r }, corsHeaders());
         } catch (e: any) {
-          const code = e?.json?.error?.code || e?.json?.code;
-          if (code === 'error.subdomain_in_use2') {
-            return new Response(JSON.stringify({ code: 'SUBDOMAIN_IN_USE' }), {
-              status: 409,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            });
-          }
-          return new Response(JSON.stringify({ 
-            code: 'CREATE_FAILED', 
-            detail: e?.json || e?.message 
-          }), {
-            status: 502,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          });
+          if (e?.code === 409) return json(409, { code:'SUBDOMAIN_IN_USE' }, corsHeaders());
+          const detail = e?.body ?? { message: e?.message ?? 'unknown' };
+          return json(502, { code:'CREATE_FAILED', detail }, corsHeaders());
         }
       case 'generate-sitemap':
         return await handleGenerateSitemap(req, { API_BASE, TENWEB_API_KEY, supabase });
@@ -388,32 +380,31 @@ async function handleCheckSubdomain(req: Request, { API_BASE, TENWEB_API_KEY }):
   );
 }
 
-// --- handler: create-website (idempotent + collision-safe) ---
+// --- create-website handler (replace your current one) ---
 async function handleCreateWebsite(body: any, supabase?: any) {
   const businessName = body?.businessName || body?.siteTitle || 'New Site';
   const base = slugify(businessName);
-  
-  // if a previous timed-out attempt actually created the site, reuse
-  const reused = await findExistingBySub(base);
-  if (reused) {
+
+  // If a previous attempt succeeded but timed out, reuse it.
+  const existing = await findBySubdomain(base);
+  if (existing) {
     // Check if this website is already in our database
     if (supabase) {
       const { data: existingSite } = await supabase
         .from('sites')
         .select('*')
-        .eq('website_id', reused.website_id)
+        .eq('website_id', existing.id)
         .single();
       
       if (existingSite) {
         return { 
-          ok: true, 
-          website_id: reused.website_id, 
+          website_id: existing.id, 
           subdomain: base,
           siteId: existingSite.id 
         };
       }
     }
-    return { ok: true, website_id: reused.website_id, subdomain: base };
+    return { website_id: existing.id, subdomain: base };
   }
 
   let sub = await ensureFreeSubdomain(base);
@@ -421,7 +412,7 @@ async function handleCreateWebsite(body: any, supabase?: any) {
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
       const r = await tw('/v1/hosting/website', {
-        method:'POST',
+        method: 'POST',
         headers: H,
         body: JSON.stringify({
           subdomain: sub,
@@ -430,7 +421,7 @@ async function handleCreateWebsite(body: any, supabase?: any) {
           admin_username: 'admin',
           admin_password: crypto.randomUUID().replace(/-/g,'').slice(0,16) + 'Aa1!'
         }),
-        timeoutMs: 60000
+        timeoutMs: 150000 // 150s for slow creates
       });
       
       const website_id = r?.data?.website_id;
@@ -459,26 +450,61 @@ async function handleCreateWebsite(body: any, supabase?: any) {
 
         await logEvent(site.id, 'website_created', { website_id, subdomain: sub }, supabase);
 
-        return { ok: true, website_id, subdomain: sub, siteId: site.id };
+        return { website_id, subdomain: sub, siteId: site.id };
       }
       
-      return { ok: true, website_id, subdomain: sub };
-    } catch (e:any) {
-      const code = e?.json?.error?.code || e?.json?.code;
-      if (code === 'error.subdomain_in_use2') {
-        // race: get a new subdomain and retry
-        try {
-          const g = await tw('/v1/hosting/websites/subdomain/generate', { method:'POST', headers:H });
-          sub = g?.subdomain || `${base}-${Math.random().toString(36).slice(2,6)}`;
-        } catch {
-          sub = `${base}-${Math.random().toString(36).slice(2,6)}`;
+      return { website_id, subdomain: sub };
+    } catch (e: any) {
+      // Abort due to timeout → check if site actually exists, then reuse
+      if (e?.aborted) {
+        const maybe = await findBySubdomain(sub);
+        if (maybe) {
+          // Site was created despite timeout, save to database if needed
+          if (supabase) {
+            const { data: existingSite } = await supabase
+              .from('sites')
+              .select('*')
+              .eq('website_id', maybe.id)
+              .single();
+            
+            if (!existingSite) {
+              const { data: site, error: dbError } = await supabase
+                .from('sites')
+                .insert({
+                  website_id: maybe.id,
+                  business_name: '',
+                  business_type: '',
+                  business_description: '',
+                  status: 'created',
+                })
+                .select()
+                .single();
+
+              if (!dbError) {
+                await logEvent(site.id, 'website_created', { website_id: maybe.id, subdomain: sub }, supabase);
+                return { website_id: maybe.id, subdomain: sub, siteId: site.id };
+              }
+            } else {
+              return { website_id: maybe.id, subdomain: sub, siteId: existingSite.id };
+            }
+          }
+          return { website_id: maybe.id, subdomain: sub };
         }
+        // try a fresh subdomain and retry
+        const g = await tw('/v1/hosting/websites/subdomain/generate', { method:'POST', headers:H, timeoutMs: 20000 });
+        sub = g?.subdomain || `${base}-${Math.random().toString(36).slice(2,6)}`;
+        continue;
+      }
+      const code = e?.body?.error?.code || e?.body?.code;
+      if (code === 'error.subdomain_in_use2') {
+        const g = await tw('/v1/hosting/websites/subdomain/generate', { method:'POST', headers:H, timeoutMs: 20000 });
+        sub = g?.subdomain || `${base}-${Math.random().toString(36).slice(2,6)}`;
         continue;
       }
       throw e;
     }
   }
-  return new Response(JSON.stringify({ error:'SUBDOMAIN_COLLISION' }), { status: 409 });
+  throw Object.assign(new Error('SUBDOMAIN_COLLISION'), { code: 409 });
 }
 
 async function handleGenerateSitemap(req: Request, { API_BASE, TENWEB_API_KEY, supabase }): Promise<Response> {
