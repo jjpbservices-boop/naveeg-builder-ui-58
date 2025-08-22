@@ -75,7 +75,65 @@ const AutologinSchema = z.object({
   admin_url: z.string(),
 });
 
-// Helper functions
+// --- helpers ---
+const API_BASE = Deno.env.get('TENWEB_API_BASE') || 'https://api.10web.io';
+const API_KEY  = Deno.env.get('TENWEB_API_KEY')!;
+
+const H = { 'content-type':'application/json', 'x-api-key': API_KEY };
+
+function slugify(s: string) {
+  return (s || 'site')
+    .normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase().replace(/[^a-z0-9]+/g,'-')
+    .replace(/^-+|-+$/g,'').slice(0, 45) || 'site';
+}
+
+async function tw(path: string, init: RequestInit & {timeoutMs?: number} = {}) {
+  const ctl = new AbortController();
+  const id = setTimeout(() => ctl.abort(), init.timeoutMs ?? 60000);
+  try {
+    const res = await fetch(`${API_BASE}${path}`, { ...init, signal: ctl.signal });
+    const txt = await res.text();
+    const json = txt ? JSON.parse(txt) : null;
+    if (!res.ok) throw Object.assign(new Error(json?.message || res.statusText), { res, json });
+    return json;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
+async function ensureFreeSubdomain(base: string) {
+  // try base, else ask API to generate until free
+  let sub = base;
+  for (let i = 0; i < 6; i++) {
+    // check
+    try {
+      await tw('/v1/hosting/websites/subdomain/check', {
+        method:'POST', headers:H, body: JSON.stringify({ subdomain: sub })
+      });
+      return sub; // ok
+    } catch (e:any) {
+      // taken → generate
+      try {
+        const g = await tw('/v1/hosting/websites/subdomain/generate', { method:'POST', headers:H });
+        sub = g?.subdomain || `${base}-${crypto.randomUUID().split('-')[0]}`;
+      } catch {
+        sub = `${base}-${Math.random().toString(36).slice(2,6)}`;
+      }
+    }
+  }
+  throw new Error('NO_FREE_SUBDOMAIN');
+}
+
+async function findExistingBySub(sub: string) {
+  try {
+    const list = await tw('/v1/account/websites', { method:'GET', headers:H });
+    const hit = (list?.data || []).find((w:any) =>
+      w?.site_url?.includes(`${sub}.`) || w?.admin_url?.includes(`${sub}.`));
+    return hit ? { website_id: hit.id } : null;
+  } catch { return null; }
+}
+
 function generateStrongPassword(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
   let password = '';
@@ -85,36 +143,8 @@ function generateStrongPassword(): string {
   return password;
 }
 
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
 function generateRandomSuffix(): string {
   return Math.random().toString(36).substring(2, 6);
-}
-
-// Generate a unique subdomain using crypto.randomUUID and fallback methods
-function generateUniqueSubdomain(baseSubdomain?: string): string {
-  if (baseSubdomain && baseSubdomain.trim()) {
-    // If user provided a subdomain, use it as-is (validation will happen later)
-    return slugify(baseSubdomain.trim());
-  }
-  
-  // Generate unique subdomain using UUID
-  try {
-    const uuid = crypto.randomUUID();
-    const shortUuid = uuid.split('-')[0]; // Use first segment for shorter subdomain
-    return `site-${shortUuid}`;
-  } catch (e) {
-    // Fallback to timestamp + random string if crypto.randomUUID fails
-    const timestamp = Date.now();
-    const randomStr = Math.random().toString(36).substring(2, 8);
-    return `site-${timestamp}-${randomStr}`;
-  }
 }
 
 // Check if an error response indicates subdomain is in use
@@ -258,7 +288,29 @@ serve(async (req) => {
       case 'check-subdomain':
         return await handleCheckSubdomain(req, { API_BASE, TENWEB_API_KEY });
       case 'create-website':
-        return await handleCreateWebsite(req, { API_BASE, TENWEB_API_KEY, REGION, supabase });
+        try {
+          const result = await handleCreateWebsite(requestBody, supabase);
+          if (result instanceof Response) return result;
+          return new Response(JSON.stringify(result), {
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        } catch (e: any) {
+          const code = e?.json?.error?.code || e?.json?.code;
+          if (code === 'error.subdomain_in_use2') {
+            return new Response(JSON.stringify({ code: 'SUBDOMAIN_IN_USE' }), {
+              status: 409,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+          }
+          return new Response(JSON.stringify({ 
+            code: 'CREATE_FAILED', 
+            detail: e?.json || e?.message 
+          }), {
+            status: 502,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
       case 'generate-sitemap':
         return await handleGenerateSitemap(req, { API_BASE, TENWEB_API_KEY, supabase });
       case 'update-design':
@@ -336,90 +388,62 @@ async function handleCheckSubdomain(req: Request, { API_BASE, TENWEB_API_KEY }):
   );
 }
 
-async function handleCreateWebsite(req: Request, { API_BASE, TENWEB_API_KEY, REGION, supabase }): Promise<Response> {
-  const body = await req.json();
-  const { businessName } = body;
-
-  if (!businessName) {
-    return new Response(
-      JSON.stringify({ error: 'Business name is required' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+// --- handler: create-website (idempotent + collision-safe) ---
+async function handleCreateWebsite(body: any, supabase?: any) {
+  const businessName = body?.businessName || body?.siteTitle || 'New Site';
+  const base = slugify(businessName);
+  
+  // if a previous timed-out attempt actually created the site, reuse
+  const reused = await findExistingBySub(base);
+  if (reused) {
+    // Check if this website is already in our database
+    if (supabase) {
+      const { data: existingSite } = await supabase
+        .from('sites')
+        .select('*')
+        .eq('website_id', reused.website_id)
+        .single();
+      
+      if (existingSite) {
+        return { 
+          ok: true, 
+          website_id: reused.website_id, 
+          subdomain: base,
+          siteId: existingSite.id 
+        };
+      }
+    }
+    return { ok: true, website_id: reused.website_id, subdomain: base };
   }
 
-  const adminPassword = generateStrongPassword();
-  let baseSubdomain = slugify(businessName);
-  let subdomain = baseSubdomain;
-  let lastError = '';
-  
-  // Try up to 5 times with different suffixes if subdomain is taken
-  const maxAttempts = 5;
-  
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    console.log(`Checking subdomain availability: ${subdomain} (attempt ${attempt}/${maxAttempts})`);
-    
-    // First check if subdomain is available
+  let sub = await ensureFreeSubdomain(base);
+
+  for (let attempt = 0; attempt < 5; attempt++) {
     try {
-      const checkResponse = await fetchWithRetry(`${API_BASE}/v1/hosting/websites/subdomain/check`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': TENWEB_API_KEY,
-        },
-        body: JSON.stringify({ subdomain }),
-      });
-
-      if (checkResponse.ok) {
-        const checkData = await checkResponse.json();
-        if (checkData.status !== 'available') {
-          // Subdomain is taken, try with suffix
-          if (attempt < maxAttempts) {
-            subdomain = `${baseSubdomain}-${generateRandomSuffix()}`;
-            console.log(`Subdomain taken, trying: ${subdomain}`);
-            continue;
-          } else {
-            throw new Error('No available subdomain found after maximum attempts');
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Subdomain check failed:', error);
-      // Continue with creation attempt anyway
-    }
-
-    console.log(`Creating website with subdomain: ${subdomain}`);
-
-    try {
-      const createWebsiteResponse = await fetchWithRetry(`${API_BASE}/v1/hosting/website`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': TENWEB_API_KEY,
-        },
+      const r = await tw('/v1/hosting/website', {
+        method:'POST',
+        headers: H,
         body: JSON.stringify({
-          subdomain,
-          region: REGION,
+          subdomain: sub,
+          region: 'europe-west3-b',
           site_title: businessName,
           admin_username: 'admin',
-          admin_password: adminPassword,
+          admin_password: crypto.randomUUID().replace(/-/g,'').slice(0,16) + 'Aa1!'
         }),
-      }, 3, 60000); // 60 second timeout for website creation
+        timeoutMs: 60000
+      });
+      
+      const website_id = r?.data?.website_id;
+      if (!website_id) {
+        throw new Error('Website created but no website_id returned from 10Web API');
+      }
 
-      if (createWebsiteResponse.ok) {
-        // Success case
-        const websiteData = await createWebsiteResponse.json();
-        console.log('Website created successfully:', websiteData);
-
-        // Ensure we have a valid website_id before proceeding
-        if (!websiteData.website_id) {
-          console.error('Website created but no website_id in response:', websiteData);
-          throw new Error('Website created but no website_id returned from 10Web API');
-        }
-
+      // Save to database if supabase client is provided
+      if (supabase) {
         const { data: site, error: dbError } = await supabase
           .from('sites')
           .insert({
-            website_id: websiteData.website_id,
+            website_id,
             business_name: '',
             business_type: '',
             business_description: '',
@@ -433,59 +457,28 @@ async function handleCreateWebsite(req: Request, { API_BASE, TENWEB_API_KEY, REG
           throw new Error(`Failed to save website data: ${dbError.message}`);
         }
 
-        await logEvent(site.id, 'website_created', { website_id: websiteData.website_id, subdomain }, supabase);
+        await logEvent(site.id, 'website_created', { website_id, subdomain: sub }, supabase);
 
-        return new Response(
-          JSON.stringify({
-            siteId: site.id,
-            website_id: websiteData.website_id,
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      } else {
-        // Error case - check if it's a subdomain collision
-        const errorText = await createWebsiteResponse.text();
-        lastError = errorText;
-        console.error(`Create website failed (attempt ${attempt}/${maxAttempts}):`, errorText);
-        
-        if (isSubdomainInUseError(errorText) && attempt < maxAttempts) {
-          // Generate a new subdomain and try again
-          subdomain = `${baseSubdomain}-${generateRandomSuffix()}`;
-          console.log(`Subdomain collision detected, retrying with new subdomain: ${subdomain}`);
-          
-          // Add a small delay before retry
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          continue;
-        } else {
-          // Not a subdomain collision or we've exhausted retries
-          throw new Error(`Failed to create website: ${errorText}`);
+        return { ok: true, website_id, subdomain: sub, siteId: site.id };
+      }
+      
+      return { ok: true, website_id, subdomain: sub };
+    } catch (e:any) {
+      const code = e?.json?.error?.code || e?.json?.code;
+      if (code === 'error.subdomain_in_use2') {
+        // race: get a new subdomain and retry
+        try {
+          const g = await tw('/v1/hosting/websites/subdomain/generate', { method:'POST', headers:H });
+          sub = g?.subdomain || `${base}-${Math.random().toString(36).slice(2,6)}`;
+        } catch {
+          sub = `${base}-${Math.random().toString(36).slice(2,6)}`;
         }
-      }
-    } catch (error) {
-      console.error(`Website creation attempt ${attempt} failed:`, error);
-      lastError = error.message;
-      
-      // Check if it's a subdomain collision error in the exception message
-      if (isSubdomainInUseError(error.message) && attempt < maxAttempts) {
-        subdomain = `${baseSubdomain}-${generateRandomSuffix()}`;
-        console.log(`Subdomain collision in exception, retrying with new subdomain: ${subdomain}`);
-        
-        // Add a small delay before retry
-        await new Promise(resolve => setTimeout(resolve, 1000));
         continue;
-      } else if (attempt === maxAttempts) {
-        // Last attempt failed, throw the error
-        throw error;
       }
-      
-      // For other errors, retry with the same subdomain (in case it was a network issue)
-      console.log(`Non-subdomain error on attempt ${attempt}, retrying...`);
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      throw e;
     }
   }
-  
-  // If we get here, all attempts failed
-  throw new Error(`Failed to create website after ${maxAttempts} attempts. Last error: ${lastError}`);
+  return new Response(JSON.stringify({ error:'SUBDOMAIN_COLLISION' }), { status: 409 });
 }
 
 async function handleGenerateSitemap(req: Request, { API_BASE, TENWEB_API_KEY, supabase }): Promise<Response> {
