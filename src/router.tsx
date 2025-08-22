@@ -13,6 +13,7 @@ import Describe from '@/pages/Describe';
 import Brief from '@/pages/Brief';
 import Design from '@/pages/Design';
 import Generate from '@/pages/Generate';
+import Generating from '@/pages/Generating';
 import Ready from '@/pages/Ready';
 import Preview from '@/pages/Preview';
 import Dashboard from '@/pages/Dashboard';
@@ -91,6 +92,12 @@ const generateRoute = createRoute({
   component: Generate,
 });
 
+const generatingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/generating',
+  component: Generating,
+});
+
 const readyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/ready',
@@ -161,6 +168,7 @@ const routeTree = rootRoute.addChildren([
   briefRoute,
   designRoute,
   generateRoute,
+  generatingRoute,
   readyRoute,
   previewRoute,
   dashboardRoute,

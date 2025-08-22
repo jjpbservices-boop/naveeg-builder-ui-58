@@ -117,91 +117,12 @@ export default function Design() {
     }
 
     if (isLoading) return; // Prevent double-fires
-    setIsLoading(true);
     
-    try {
-      // 1) Kick off server-side generation (server polls 10Web internally)
-      try {
-        await generateFromSitemap(website_id, unique_id, {
-          business_type,
-          business_name,
-          business_description,
-          colors,
-          fonts: {
-            primary_font: fonts.body
-          },
-          pages_meta,
-          website_title: seo_title,
-          website_description: seo_description,
-          website_keyphrase: seo_keyphrase,
-          website_type
-        });
-      } catch (e: any) {
-        // Treat client timeout or known server states as "generation in progress"
-        const okCodes = ['CLIENT_TIMEOUT', 'GENERATE_TIMEOUT', 'GENERATE_FAILED'];
-        if (!okCodes.includes(e?.code ?? '')) {
-          throw e; // Real error, not timeout
-        }
-        console.log('Generation in progress, starting polling...', e.code);
-      }
-
-      // 2) Poll publish endpoint until pages exist and front page is set
-      const deadline = Date.now() + 180000; // 3 minutes
-      let pub: any = null;
-      
-      while (Date.now() < deadline) {
-        try {
-          pub = await publishAndFrontpage(website_id);
-          if (pub?.ok) break; // Success!
-        } catch (e: any) {
-          if (e?.code !== 'NO_PAGES_YET') {
-            throw e; // Real error, not "pages not ready"
-          }
-        }
-        await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
-      }
-      
-      if (!pub?.ok) {
-        throw new Error('Generation still in progress. Try again in a moment.');
-      }
-
-      // Update store with preview URLs
-      updateApiData({
-        preview_url: pub.preview_url,
-        admin_url: pub.admin_url
-      });
-
-      toast({
-        title: 'Website generated!',
-        description: 'Your website has been created and published.',
-      });
-
-      // Navigate to ready page
-      setCurrentStep(2);
-      navigate({ to: '/ready' });
-      
-    } catch (error: any) {
-      console.error('Error generating website:', error);
-      
-      // Better error mapping
-      const getErrorMessage = (err: any) => {
-        switch (err?.code) {
-          case 'CLIENT_TIMEOUT': return 'Request timed out. Generation may still be in progress.';
-          case 'GENERATE_TIMEOUT': return 'Generation is taking longer than expected. Please try again.';
-          case 'NO_PAGES_YET': return 'Website is still being generated. Please wait and try again.';
-          case 'GENERATE_FAILED': return 'Generation failed. Please check your input and try again.';
-          default: return err?.message || 'Failed to generate website. Please try again.';
-        }
-      };
-
-      toast({
-        title: 'Generation Error',
-        description: getErrorMessage(error),
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    // Save current design before generating
+    await handleSave();
+    
+    // Navigate to generating page
+    navigate({ to: '/generating' });
   };
 
   const isValidHex = (color: string) => {

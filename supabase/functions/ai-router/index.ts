@@ -53,7 +53,24 @@ serve(async (req) => {
     }
   }
   
-  const action = url.searchParams.get('action') ?? body.action ?? '';
+  // Robust action resolver
+  let action = (url.searchParams.get('action') || (body as any)?.action || url.pathname.split('/').pop() || '')
+    .toString()
+    .trim()
+    .toLowerCase();
+  
+  const aliases: Record<string, string> = { 
+    generate: 'generate-from-sitemap', 
+    publish: 'publish-and-frontpage', 
+    sitemap: 'generate-sitemap', 
+    update: 'update-design' 
+  };
+  
+  action = aliases[action] || action;
+  
+  if (req.method === 'POST' && !action) {
+    return J(400, { code: 'MISSING_ACTION', hint: 'Add ?action=... or body.action' });
+  }
 
   // Shared helpers
   const tw = async (path: string, init: RequestInit & { timeoutMs?: number } = {}) => {
@@ -464,78 +481,60 @@ serve(async (req) => {
     }
   }
 
-  // 6) POST action=publish-and-frontpage
+  // 6) POST action=publish-and-frontpage - Idempotent, tolerant version
   if (req.method === 'POST' && action === 'publish-and-frontpage') {
     try {
-      const { website_id } = body;
-      
-      if (!website_id) {
-        return J(400, { error: 'Missing website_id' });
+      const { website_id } = body as any;
+      if (!website_id) return J(400, { error: 'Missing website_id' });
+
+      const deadline = Date.now() + 180000; // 3 min
+      while (Date.now() < deadline) {
+        try {
+          // 1) pages ready?
+          const pages = await tw(`/v1/builder/websites/${website_id}/pages`, { method:'GET', timeoutMs:30000 });
+          const list = Array.isArray(pages?.data) ? pages.data : [];
+          if (list.length === 0) { await new Promise(r=>setTimeout(r,3000)); continue; }
+
+          // 2) publish all (tolerate already published)
+          try {
+            await tw(`/v1/builder/websites/${website_id}/pages/publish`, {
+              method:'POST', timeoutMs:60000, body: JSON.stringify({ page_ids: list.map((p:any)=>p.id) })
+            });
+          } catch (e:any) { if (![400,409,422].includes(e?.status??0)) throw e; }
+
+          // 3) set front page (best-effort)
+          const home = (list.find((p:any)=>/home/i.test(p?.title)||p?.slug==='home'||p?.is_front_page)) ?? list[0];
+          if (home) {
+            try {
+              await tw(`/v1/builder/websites/${website_id}/pages/front/set`, {
+                method:'POST', timeoutMs:30000, body: JSON.stringify({ page_id: home.id })
+              });
+            } catch (e:any) { if (![400,409,422].includes(e?.status??0)) throw e; }
+          }
+
+          // 4) resolve URLs with fallbacks
+          let preview_url: string | null = null, admin_url: string | null = null;
+          try {
+            const dn = await tw(`/v1/hosting/websites/${website_id}/domain-name`, { method:'GET', timeoutMs:30000 });
+            preview_url = dn?.data?.default_domain_url || dn?.data?.site_url || null;
+            admin_url   = dn?.data?.admin_url || null;
+          } catch {}
+
+          if (!preview_url || !admin_url) {
+            const acc = await listSites();
+            const hit = acc?.data?.find?.((w:any)=>w?.id===website_id);
+            const sub = hit?.subdomain;
+            preview_url = preview_url || hit?.site_url || (sub ? `https://${sub}.10web.site` : null);
+            admin_url   = admin_url   || hit?.admin_url || (sub ? `https://${sub}.10web.site/wp-admin` : null);
+          }
+          if (preview_url && admin_url) return J(200, { ok:true, preview_url, admin_url });
+        } catch {/* transient */}
+        await new Promise(r=>setTimeout(r,3000));
       }
-
-      // Get pages - robust check
-      const pages = await tw(`/v1/builder/websites/${website_id}/pages`, {
-        method: 'GET',
-        timeoutMs: 30000
-      });
-
-      const list = pages?.data || [];
-      if (!list.length) {
-        console.log('No pages found yet for website', website_id);
-        return J(409, { 
-          code: 'NO_PAGES_YET',
-          hint: 'Pages not ready for publishing yet' 
-        });
-      }
-
-      console.log(`Found ${list.length} pages ready for publishing`);
-
-      const pageIds = list.map((p: any) => p.id);
-
-      // Publish all pages
-      await tw(`/v1/builder/websites/${website_id}/pages/publish`, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'publish', page_ids: pageIds }),
-        timeoutMs: 60000
-      });
-
-      // Set Home page as front page
-      const homePage = list.find((p: any) => 
-        p.title?.toLowerCase().includes('home') || 
-        p.slug === 'home' || 
-        p.is_front_page
-      ) || list[0];
-
-      if (homePage) {
-        await tw(`/v1/builder/websites/${website_id}/pages/front/set`, {
-          method: 'POST',
-          body: JSON.stringify({ page_id: homePage.id }),
-          timeoutMs: 30000
-        });
-      }
-
-      // Get domain info
-      const domain = await tw(`/v1/hosting/websites/${website_id}/domain-name`, {
-        method: 'GET',
-        timeoutMs: 30000
-      });
-
-      const subdomain = domain?.data?.subdomain || 'unknown';
-      const preview_url = `https://${subdomain}.10web.site`;
-      const admin_url = `https://${subdomain}.10web.site/wp-admin`;
-
-      return J(200, { 
-        ok: true, 
-        preview_url,
-        admin_url 
-      });
-      
-    } catch (error: any) {
-      console.error('Publish and frontpage error:', error);
-      return J(502, { 
-        code: 'PUBLISH_AND_FRONTPAGE_FAILED', 
-        detail: error?.json ?? error?.message ?? error 
-      });
+      return J(504, { code:'PUBLISH_RETRY', hint:'Still finalizing after 180s' });
+    } catch (error:any) {
+      console.error('Publish/front error:', error);
+      return J(502, { code:'PUBLISH_AND_FRONTPAGE_FAILED', detail: error?.json ?? error?.message ?? error });
     }
   }
 
