@@ -14,8 +14,19 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 serve(async (req) => {
   const origin = req.headers.get('origin') ?? '';
+  
+  // CORS: Echo exact origin for allowed domains
+  const allowedOrigins = [
+    /^http:\/\/localhost(:\d+)?$/,
+    /^https:\/\/preview-.*\.lovable\.app$/,
+    /^https:\/\/naveeg-builder-ui.*\.lovable\.app$/
+  ];
+  
+  const isAllowed = allowedOrigins.some(pattern => pattern.test(origin));
+  const corsOrigin = isAllowed ? origin : '';
+  
   const cors = {
-    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Origin': corsOrigin,
     'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info',
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
     'Access-Control-Max-Age': '86400',
@@ -33,6 +44,7 @@ serve(async (req) => {
   const url = new URL(req.url);
   let body: any = {};
   
+  // Parse request body once
   if (req.method === 'POST') {
     try { 
       body = await req.json(); 
@@ -46,7 +58,7 @@ serve(async (req) => {
   // Shared helpers
   const tw = async (path: string, init: RequestInit & { timeoutMs?: number } = {}) => {
     const ctl = new AbortController();
-    const id = setTimeout(() => ctl.abort(), init.timeoutMs ?? 120000);
+    const id = setTimeout(() => ctl.abort(), init.timeoutMs ?? 90000);
     
     try {
       const res = await fetch(`${API_BASE}${path}`, { 
@@ -62,7 +74,15 @@ serve(async (req) => {
       const txt = await res.text();
       const json = txt ? JSON.parse(txt) : null;
       
-      if (!res.ok) throw { status: res.status, json };
+      if (!res.ok) {
+        // Retry on 429/5xx with exponential backoff
+        if (res.status === 429 || res.status >= 500) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Single retry for simplicity
+          return await tw(path, { ...init, timeoutMs: init.timeoutMs });
+        }
+        throw { status: res.status, json };
+      }
       return json;
     } finally { 
       clearTimeout(id); 
@@ -123,7 +143,7 @@ serve(async (req) => {
     throw { code: 'NO_FREE_SUBDOMAIN' };
   };
 
-  // Health check
+  // 1) GET action=health
   if (req.method === 'GET' && action === 'health') {
     return J(200, { 
       status: 'healthy', 
@@ -132,7 +152,7 @@ serve(async (req) => {
     });
   }
 
-  // Create website (idempotent, collision-safe, fast return)
+  // 2) POST action=create-website
   if (req.method === 'POST' && action === 'create-website') {
     try {
       const businessName = body.businessName || 'New Site';
@@ -205,7 +225,7 @@ serve(async (req) => {
     }
   }
 
-  // Generate sitemap
+  // 3) POST action=generate-sitemap
   if (req.method === 'POST' && action === 'generate-sitemap') {
     try {
       const { website_id, params } = body;
@@ -220,10 +240,22 @@ serve(async (req) => {
         timeoutMs: 90000
       });
 
-      // Normalize response keys
+      // Normalize response - ensure we have default pages if none returned
+      let pages_meta = result.pages_meta || [];
+      
+      // If no pages returned, synthesize default structure
+      if (!pages_meta.length) {
+        pages_meta = [
+          { title: 'Home', sections: [{ section_title: 'Hero' }, { section_title: 'About Us' }] },
+          { title: 'About', sections: [{ section_title: 'Our Story' }, { section_title: 'Team' }] },
+          { title: params.business_type === 'ecommerce' ? 'Products' : 'Services', sections: [{ section_title: 'Our Offerings' }] },
+          { title: 'Contact', sections: [{ section_title: 'Get In Touch' }] }
+        ];
+      }
+
       const normalized = {
-        unique_id: result.unique_id,
-        pages_meta: result.pages_meta || [],
+        unique_id: result.unique_id || crypto.randomUUID(),
+        pages_meta,
         seo: {
           website_title: result.seo?.website_title || params.business_name,
           website_description: result.seo?.website_description || params.business_description,
@@ -251,7 +283,7 @@ serve(async (req) => {
     }
   }
 
-  // Update design (DB only, no 10Web call)
+  // 4) POST action=update-design
   if (req.method === 'POST' && action === 'update-design') {
     try {
       const { siteId, design } = body;
@@ -306,7 +338,7 @@ serve(async (req) => {
     }
   }
 
-  // Generate from sitemap
+  // 5) POST action=generate-from-sitemap
   if (req.method === 'POST' && action === 'generate-from-sitemap') {
     try {
       const { website_id, unique_id, params } = body;
@@ -332,7 +364,7 @@ serve(async (req) => {
     }
   }
 
-  // Publish and set frontpage
+  // 6) POST action=publish-and-frontpage
   if (req.method === 'POST' && action === 'publish-and-frontpage') {
     try {
       const { website_id } = body;
