@@ -21,7 +21,10 @@ class APIClient {
   private getTimeoutForOperation(operation: string): number {
     // Longer timeouts for operations that can be slow
     const longOperations = ['create-website', 'generate-sitemap', 'generate-site'];
-    return longOperations.includes(operation) ? 90000 : this.defaultTimeout; // 90 seconds vs 30 seconds
+    // Increased to 180 seconds (3 minutes) for create-website due to 10Web API taking ~93.5 seconds
+    return operation === 'create-website' ? 180000 : 
+           longOperations.includes(operation) ? 90000 : 
+           this.defaultTimeout; // 180 seconds vs 90 seconds vs 30 seconds
   }
 
   private async fetchWithTimeout(url: string, options: RequestInit, timeout: number): Promise<Response> {
@@ -114,7 +117,7 @@ class APIClient {
         const operationName = action === 'create-website' ? 'website creation' : 
                              action === 'generate-sitemap' ? 'sitemap generation' :
                              action === 'generate-site' ? 'website generation' : 'operation';
-        apiError.message = `${operationName.charAt(0).toUpperCase() + operationName.slice(1)} timed out. This can happen with slow server responses. Please try again.`;
+        apiError.message = `${operationName.charAt(0).toUpperCase() + operationName.slice(1)} timed out after ${this.getTimeoutForOperation(action) / 1000} seconds. Your website may still be created - please wait a moment and check your dashboard.`;
       } else if (error.message === 'Load failed') {
         apiError.message = 'Network error. Please check your internet connection and try again.';
       } else if (error.message.includes('NetworkError')) {

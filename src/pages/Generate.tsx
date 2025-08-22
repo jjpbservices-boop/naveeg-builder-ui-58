@@ -41,13 +41,13 @@ const Generate: React.FC = () => {
   } = useOnboardingStore();
 
   const steps = [
-    'Updating design preferences',
-    'Generating website content',
-    'Publishing pages', 
-    'Setting up navigation',
-    'Configuring domain',
-    'Preparing admin access',
-    'Website ready!'
+    'Creating website structure',
+    'Generating sitemap and navigation',
+    'Designing pages with your preferences',
+    'Setting up navigation and menus',
+    'Optimizing for all devices',
+    'Boosting website speed and performance',
+    'Finalizing layout and content'
   ];
 
   useEffect(() => {
@@ -326,7 +326,9 @@ const Generate: React.FC = () => {
             {isGenerating && (
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">
-                  Almost done! Just a few more seconds...
+                  {currentStep === 0 ? 'Estimated time: 2-3 minutes remaining...' : 
+                   currentStep < 4 ? 'Almost done! Just a few more seconds...' :
+                   'Finalizing your website...'}
                 </p>
               </div>
             )}
