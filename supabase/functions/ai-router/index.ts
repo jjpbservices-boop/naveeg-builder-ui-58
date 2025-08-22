@@ -421,6 +421,27 @@ serve(async (req) => {
         return J(400, { error: 'Missing website_id, unique_id, or params' });
       }
 
+      // Validate required parameters for 10Web API
+      const requiredFields = ['pages_meta', 'website_title', 'website_description', 'website_keyphrase'];
+      const missing = requiredFields.filter(field => !params[field]);
+      
+      if (missing.length > 0) {
+        console.error('Missing required parameters:', missing, 'Received params:', Object.keys(params));
+        return J(400, { 
+          code: 'MISSING_REQUIRED_PARAMS', 
+          error: `Missing required parameters: ${missing.join(', ')}`,
+          received: Object.keys(params),
+          required: requiredFields
+        });
+      }
+
+      console.log('Generating from sitemap with params:', {
+        website_id,
+        unique_id,
+        paramKeys: Object.keys(params),
+        hasRequiredFields: requiredFields.every(f => params[f])
+      });
+
       // Try to generate the site
       try {
         await tw('/v1/ai/generate_site_from_sitemap', {
@@ -431,6 +452,17 @@ serve(async (req) => {
     } catch (e: any) {
         const msg = JSON.stringify(e?.json || e?.message || e);
         console.log('Generate from sitemap error:', msg);
+        
+        // Handle validation errors specifically
+        if (e?.status === 422 && e?.json?.error?.details) {
+          console.error('10Web API validation error:', e.json.error.details);
+          return J(422, {
+            code: 'VALIDATION_ERROR',
+            error: 'Invalid parameters for website generation',
+            details: e.json.error.details,
+            hint: 'Check that all required fields are provided and valid'
+          });
+        }
         
         if (msg.includes('Template generation is in progress') || msg.includes('417')) {
           console.log('Template generation already in progress, polling for completion...');

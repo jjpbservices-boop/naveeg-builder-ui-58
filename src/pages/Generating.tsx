@@ -80,7 +80,11 @@ export default function Generating() {
       const params = {
         business_name,
         business_description,
-        business_type: 'basic'
+        business_type: 'basic',
+        pages_meta,
+        website_title: seo_title,
+        website_description: seo_description,
+        website_keyphrase: seo_keyphrase
       };
       
       await api.generateFrom(website_id, unique_id, params);
@@ -107,7 +111,17 @@ export default function Generating() {
 
     } catch (e: any) {
       console.error('Generation error:', e);
-      setError(e?.message || 'Website generation failed. Please try again.');
+      
+      // Map specific error codes to user-friendly messages
+      let errorMessage = e?.message || 'Website generation failed. Please try again.';
+      
+      if (e?.code === 'VALIDATION_ERROR' || e?.code === 'MISSING_REQUIRED_PARAMS') {
+        errorMessage = 'There was an issue with your website configuration. Please go back and check your business details.';
+      } else if (e?.code === 'GENERATE_FAILED') {
+        errorMessage = 'Website generation failed. This might be a temporary issue - please try again.';
+      }
+      
+      setError(errorMessage);
     }
   };
 
