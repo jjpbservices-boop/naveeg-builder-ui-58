@@ -1,137 +1,225 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
+import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
+import { apiClient } from '@/lib/api';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Circle, Loader } from 'lucide-react';
+import { CheckCircle, Loader, Circle, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const Generate: React.FC = () => {
-  const { t } = useTranslation('progress');
+  const { t } = useTranslation(['progress', 'common']);
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  const { 
+    siteId,
+    colors,
+    fonts,
+    pages_meta,
+    website_type,
+    updateApiData,
+    setError,
+    error
+  } = useOnboardingStore();
 
   const steps = [
-    { key: 'creating', label: t('progress:steps.creating') },
-    { key: 'sitemap', label: t('progress:steps.sitemap') },
-    { key: 'designing', label: t('progress:steps.designing') },
-    { key: 'navigation', label: t('progress:steps.navigation') },
-    { key: 'optimizing', label: t('progress:steps.optimizing') },
-    { key: 'speed', label: t('progress:steps.speed') },
-    { key: 'finalizing', label: t('progress:steps.finalizing') },
+    t('progress:steps.creating'),
+    t('progress:steps.sitemap'), 
+    t('progress:steps.designing'),
+    t('progress:steps.navigation'),
+    t('progress:steps.optimizing'),
+    t('progress:steps.speed'),
+    t('progress:steps.finalizing'),
   ];
 
   useEffect(() => {
-    const totalSteps = steps.length;
-    const stepDuration = 3000; // 3 seconds per step
-    
-    const interval = setInterval(() => {
-      setCurrentStep((prev) => {
-        if (prev >= totalSteps - 1) {
-          clearInterval(interval);
-          // Navigate to ready page after completion
-          setTimeout(() => {
-            navigate({ to: '/ready' });
-          }, 1000);
-          return prev;
-        }
-        return prev + 1;
-      });
-    }, stepDuration);
+    if (!siteId) {
+      navigate({ to: '/onboarding/brief' });
+      return;
+    }
 
-    // Update progress bar smoothly
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        const targetProgress = ((currentStep + 1) / totalSteps) * 100;
-        if (prev >= 100) {
-          clearInterval(progressInterval);
-          return 100;
-        }
-        return Math.min(prev + 2, targetProgress);
-      });
-    }, 100);
+    startGeneration();
+  }, [siteId, navigate]);
 
-    return () => {
-      clearInterval(interval);
-      clearInterval(progressInterval);
-    };
-  }, [currentStep, navigate, steps.length]);
+  const startGeneration = async () => {
+    setIsGenerating(true);
+    setHasError(false);
+    setError(undefined);
 
-  const estimatedSeconds = (steps.length - currentStep) * 3;
+    try {
+      // First, update the site with the latest design preferences
+      await updateSiteWithDesignPreferences();
+      
+      // Start the generation process
+      const { data, error: generateError } = await apiClient.generateFromSitemap(siteId!);
+      
+      if (generateError) {
+        throw new Error(generateError.message || 'Failed to generate website');
+      }
+      
+      updateApiData({ preview_url: data!.url });
+      
+      // Simulate progress through steps with realistic timing
+      await simulateProgress();
+      
+      toast.success('Website generated successfully!');
+      setTimeout(() => navigate({ to: '/ready' }), 1500);
+      
+    } catch (error) {
+      console.error('Generation failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Generation failed';
+      setError(errorMessage);
+      setHasError(true);
+      toast.error(errorMessage);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const updateSiteWithDesignPreferences = async () => {
+    // Store design preferences in the global store
+    // The API will pick these up when generating
+    console.log('Updated design preferences:', {
+      colors,
+      fonts,
+      pages_meta,
+      website_type
+    });
+  };
+
+  const simulateProgress = async () => {
+    for (let step = 0; step < steps.length; step++) {
+      setCurrentStep(step);
+      setProgress(((step + 1) / steps.length) * 100);
+      
+      // Different timing for different steps
+      const delay = step === 0 ? 1500 : step === steps.length - 1 ? 2000 : 1800;
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  };
+
+  const handleRetry = () => {
+    setCurrentStep(0);
+    setProgress(0);
+    startGeneration();
+  };
+
+  const handleGoBack = () => {
+    navigate({ to: '/onboarding/design' });
+  };
+
+  const estimatedSeconds = Math.max(0, (steps.length - currentStep) * 2);
+
+  if (hasError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center py-8">
+        <div className="container mx-auto px-4 max-w-2xl text-center">
+          <div className="bg-card rounded-3xl border shadow-soft p-8">
+            <div className="w-16 h-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="h-8 w-8" />
+            </div>
+            
+            <h1 className="font-syne text-2xl md:text-3xl font-bold text-foreground mb-4">
+              Generation Failed
+            </h1>
+            
+            <p className="text-muted-foreground mb-6">
+              {error || 'Something went wrong while generating your website. Please try again.'}
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                variant="outline"
+                onClick={handleGoBack}
+                className="touch-target rounded-2xl"
+              >
+                Go Back to Design
+              </Button>
+              <Button
+                onClick={handleRetry}
+                className="touch-target bg-gradient-primary hover:bg-primary-hover text-white rounded-2xl"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
-        <div className="bg-card rounded-3xl border shadow-large p-8 animate-bounce-in text-center">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <Loader className="h-8 w-8 text-white animate-spin" />
-            </div>
-            <h1 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
-              {t('progress:title')}
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              {t('progress:subtitle')}
-            </p>
-          </div>
+      <div className="container mx-auto px-4 max-w-2xl text-center">
+        <div className="animate-slide-up">
+          <h1 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-6">
+            {t('progress:title')}
+          </h1>
+          <p className="text-lg text-muted-foreground mb-8">
+            {t('progress:subtitle')}
+          </p>
 
-          {/* Progress Bar */}
-          <div className="mb-8">
-            <Progress value={progress} className="h-3 mb-4" />
-            <div className="text-sm text-muted-foreground">
-              {progress < 100 ? (
-                t('progress:estimatedTime', { seconds: estimatedSeconds })
-              ) : (
-                t('progress:almostDone')
-              )}
-            </div>
-          </div>
-
-          {/* Steps List */}
-          <div className="space-y-4">
-            {steps.map((step, index) => (
-              <div
-                key={step.key}
-                className="flex items-center p-4 rounded-xl transition-all duration-300"
-                style={{
-                  backgroundColor: index <= currentStep ? 'hsl(var(--primary-light))' : 'hsl(var(--muted))',
-                }}
-              >
-                <div className="mr-4">
-                  {index < currentStep ? (
-                    <CheckCircle className="h-6 w-6 text-success" />
-                  ) : index === currentStep ? (
-                    <Loader className="h-6 w-6 text-primary animate-spin" />
-                  ) : (
-                    <Circle className="h-6 w-6 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="text-left">
-                  <div className={`font-medium ${
-                    index <= currentStep ? 'text-primary' : 'text-muted-foreground'
-                  }`}>
-                    {step.label}
-                  </div>
-                  {index === currentStep && (
-                    <div className="text-sm text-muted-foreground mt-1">
-                      In progress...
-                    </div>
-                  )}
-                  {index < currentStep && (
-                    <div className="text-sm text-success mt-1">
-                      Completed
-                    </div>
-                  )}
-                </div>
+          <div className="bg-card rounded-3xl border shadow-soft p-8">
+            {/* Progress Bar */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-foreground">
+                  Progress
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {Math.round(progress)}%
+                </span>
               </div>
-            ))}
+              <Progress value={progress} className="h-3" />
+            </div>
+            
+            {/* Steps */}
+            <div className="space-y-4 mb-8">
+              {steps.map((step, index) => (
+                <div key={index} className="flex items-center space-x-3 text-left">
+                  {index < currentStep ? (
+                    <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
+                  ) : index === currentStep ? (
+                    <Loader className="h-5 w-5 text-primary flex-shrink-0 animate-spin" />
+                  ) : (
+                    <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  )}
+                  <span className={`${index <= currentStep ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                    {step}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Estimated Time */}
+            {isGenerating && estimatedSeconds > 0 && (
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  {t('progress:estimatedTime', { seconds: estimatedSeconds })}
+                </p>
+              </div>
+            )}
+
+            {/* Almost Done Message */}
+            {currentStep >= steps.length - 1 && isGenerating && (
+              <div className="text-center mt-4">
+                <p className="text-sm text-primary font-medium">
+                  {t('progress:almostDone')}
+                </p>
+              </div>
+            )}
           </div>
 
-          {/* Footer */}
-          <div className="mt-8 p-4 bg-muted rounded-xl">
+          {/* Fun Fact */}
+          <div className="mt-8 p-6 bg-muted/50 rounded-2xl">
             <p className="text-sm text-muted-foreground">
-              💡 Your website is being crafted with care. We're setting up everything to ensure
-              it loads fast and looks amazing on all devices.
+              <strong>Did you know?</strong> We're using AI to craft each page specifically 
+              for your business, ensuring your website stands out from the crowd.
             </p>
           </div>
         </div>

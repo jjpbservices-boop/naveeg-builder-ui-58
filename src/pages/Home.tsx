@@ -4,23 +4,24 @@ import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, Zap, Smartphone, Search, Shield, Palette, LayoutDashboard, Star, Users, Clock, CheckCircle } from 'lucide-react';
-import { useApp } from '@/context/AppContext';
+import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
 
 const Home: React.FC = () => {
   const { t } = useTranslation('home');
   const navigate = useNavigate();
-  const { dispatch } = useApp();
+  const { updateBasicInfo } = useOnboardingStore();
   const [businessInput, setBusinessInput] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (businessInput.trim()) {
-      dispatch({
-        type: 'UPDATE_BRIEF',
-        payload: { businessDescription: businessInput.trim() }
-      });
-      navigate({ to: '/describe' });
+      updateBasicInfo({ business_description: businessInput.trim() });
+      navigate({ to: '/onboarding/brief' });
     }
+  };
+
+  const handleStartOnboarding = () => {
+    navigate({ to: '/onboarding/brief' });
   };
 
   const iconMap = {
@@ -327,7 +328,7 @@ const Home: React.FC = () => {
           <Button 
             size="lg" 
             className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 touch-target"
-            onClick={() => navigate({ to: '/describe' })}
+            onClick={handleStartOnboarding}
           >
             {t('ctaBanner.button')}
           </Button>
