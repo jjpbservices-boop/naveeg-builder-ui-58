@@ -61,27 +61,65 @@ serve(async (req) => {
     const id = setTimeout(() => ctl.abort(), init.timeoutMs ?? 90000);
     
     try {
+      // Prepare request body and calculate Content-Length
+      let body = init.body;
+      let contentLength = '0';
+      
+      if (body && typeof body === 'string') {
+        contentLength = new TextEncoder().encode(body).length.toString();
+      }
+      
+      // Enhanced headers for 10Web API compatibility
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'Supabase-Edge-Function/1.0',
+        'X-API-Key': API_KEY,
+        ...init.headers
+      };
+      
+      // Add Content-Length for POST requests
+      if (init.method === 'POST' && body) {
+        headers['Content-Length'] = contentLength;
+      }
+      
+      // Log the request for debugging
+      console.log(`10Web API Request: ${init.method || 'GET'} ${API_BASE}${path}`, {
+        headers: Object.keys(headers),
+        bodyLength: contentLength,
+        hasBody: !!body
+      });
+      
       const res = await fetch(`${API_BASE}${path}`, { 
         ...init, 
         signal: ctl.signal,
-        headers: {
-          'content-type': 'application/json',
-          'x-api-key': API_KEY,
-          ...init.headers
-        }
+        headers
       });
       
       const txt = await res.text();
+      console.log(`10Web API Response: ${res.status} ${res.statusText}`, {
+        responseLength: txt.length,
+        hasContent: !!txt
+      });
+      
       const json = txt ? JSON.parse(txt) : null;
       
       if (!res.ok) {
+        console.error(`10Web API Error: ${res.status} ${res.statusText}`, {
+          path,
+          requestHeaders: headers,
+          responseBody: json || txt,
+          statusCode: res.status
+        });
+        
         // Retry on 429/5xx with exponential backoff
         if (res.status === 429 || res.status >= 500) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          console.log('Retrying after error...', res.status);
+          await new Promise(resolve => setTimeout(resolve, 2000));
           // Single retry for simplicity
           return await tw(path, { ...init, timeoutMs: init.timeoutMs });
         }
-        throw { status: res.status, json };
+        throw { status: res.status, json, message: `API request failed: ${res.status} ${res.statusText}` };
       }
       return json;
     } finally { 
@@ -234,10 +272,29 @@ serve(async (req) => {
         return J(400, { error: 'Missing website_id or params' });
       }
 
+      // Validate required parameters
+      if (!params.business_name || !params.business_description) {
+        return J(400, { error: 'Missing required params: business_name, business_description' });
+      }
+
+      // Ensure business_type is set
+      if (!params.business_type) {
+        params.business_type = 'informational';
+      }
+
+      console.log('Generating sitemap with params:', {
+        website_id,
+        business_name: params.business_name,
+        business_type: params.business_type,
+        description_length: params.business_description?.length || 0
+      });
+
+      const requestBody = { website_id, params };
+      
       const result = await tw('/v1/ai/generate_sitemap', {
         method: 'POST',
-        body: JSON.stringify({ website_id, params }),
-        timeoutMs: 90000
+        body: JSON.stringify(requestBody),
+        timeoutMs: 120000
       });
 
       // Normalize response - ensure we have default pages if none returned
