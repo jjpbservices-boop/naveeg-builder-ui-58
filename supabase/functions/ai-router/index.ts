@@ -2,11 +2,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
 // Validation schemas
 const CreateWebsiteSchema = z.object({
   subdomain: z.string().optional(),
@@ -87,12 +82,10 @@ function json(code: number, data: any, headers: Record<string,string> = {}) {
   });
 }
 
-function corsHeaders(origin?: string) {
-  return {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
-  };
-}
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 async function tw(path: string, init: RequestInit & { timeoutMs?: number } = {}) {
   const ctl = new AbortController();
@@ -297,11 +290,11 @@ serve(async (req) => {
       case 'create-website':
         try {
           const r = await handleCreateWebsite(requestBody, supabase);
-          return json(200, { ok: true, ...r }, corsHeaders());
+          return json(200, { ok: true, ...r }, corsHeaders);
         } catch (e: any) {
-          if (e?.code === 409) return json(409, { code:'SUBDOMAIN_IN_USE' }, corsHeaders());
+          if (e?.code === 409) return json(409, { code:'SUBDOMAIN_IN_USE' }, corsHeaders);
           const detail = e?.body ?? { message: e?.message ?? 'unknown' };
-          return json(502, { code:'CREATE_FAILED', detail }, corsHeaders());
+          return json(502, { code:'CREATE_FAILED', detail }, corsHeaders);
         }
       case 'generate-sitemap':
         return await handleGenerateSitemap(req, { API_BASE, TENWEB_API_KEY, supabase });
