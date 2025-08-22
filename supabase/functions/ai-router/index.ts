@@ -119,7 +119,7 @@ async function fetchWithRetry(url: string, options: any, maxRetries = 3): Promis
 }
 
 serve(async (req) => {
-  console.log(`Incoming request: ${req.method} ${req.url}`);
+  console.log(`[AI-Router v1.1] Incoming request: ${req.method} ${req.url}`);
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
