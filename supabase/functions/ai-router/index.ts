@@ -7,20 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Environment variables
-const TENWEB_API_KEY = Deno.env.get('TENWEB_API_KEY');
-const API_BASE = 'https://api.10web.io';
-const REGION = 'europe-west3-b';
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-if (!TENWEB_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error('Missing required environment variables');
-}
-
-// Create Supabase client with service role
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
 // Validation schemas
 const CreateWebsiteSchema = z.object({
   subdomain: z.string().optional(),
@@ -90,7 +76,7 @@ function slugify(text: string): string {
     .replace(/^-|-$/g, '');
 }
 
-async function logEvent(siteId: string, label: string, data: any = {}) {
+async function logEvent(siteId: string, label: string, data: any = {}, supabase: any) {
   try {
     await supabase
       .from('events')
@@ -142,6 +128,24 @@ serve(async (req) => {
   }
 
   try {
+    // Get environment variables inside the handler for proper error handling
+    const TENWEB_API_KEY = Deno.env.get('TENWEB_API_KEY');
+    const API_BASE = 'https://api.10web.io';
+    const REGION = 'europe-west3-b';
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!TENWEB_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Missing required environment variables');
+      return new Response(JSON.stringify({ error: 'Server configuration error' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Create Supabase client with service role
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
     // Route requests based on action in request body
     const url = new URL(req.url);
     const path = url.pathname.replace('/functions/v1/ai-router', '');
@@ -150,11 +154,12 @@ serve(async (req) => {
     
     // For non-GET requests, read action from body
     let action = '';
+    let requestBody = null;
     if (req.method === 'POST') {
       try {
         const body = await req.text();
-        const parsedBody = JSON.parse(body);
-        action = parsedBody.action || '';
+        requestBody = JSON.parse(body);
+        action = requestBody.action || '';
         
         // Recreate request with the original body for handlers
         req = new Request(req.url, {
@@ -179,24 +184,32 @@ serve(async (req) => {
     console.log(`Action: ${action}`);
     
     switch (action) {
+      case 'health':
+        return new Response(JSON.stringify({ 
+          status: 'healthy', 
+          timestamp: new Date().toISOString(),
+          available_actions: ['health', 'create-website', 'generate-sitemap', 'update-design', 'generate-from-sitemap', 'attach-site', 'autologin']
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       case 'create-website':
-        return await handleCreateWebsite(req);
+        return await handleCreateWebsite(req, { API_BASE, TENWEB_API_KEY, REGION, supabase });
       case 'generate-sitemap':
-        return await handleGenerateSitemap(req);
+        return await handleGenerateSitemap(req, { API_BASE, TENWEB_API_KEY, supabase });
       case 'update-design':
-        return await handleUpdateDesign(req);
+        return await handleUpdateDesign(req, { supabase });
       case 'generate-from-sitemap':
-        return await handleGenerateFromSitemap(req);
+        return await handleGenerateFromSitemap(req, { API_BASE, TENWEB_API_KEY, supabase });
       case 'attach-site':
-        return await handleAttachSite(req);
+        return await handleAttachSite(req, { supabase });
       case 'autologin':
-        return await handleAutologin(req);
+        return await handleAutologin(req, { API_BASE, TENWEB_API_KEY });
       default:
         console.error(`Unknown action: ${action}`);
         return new Response(
-          JSON.stringify({ error: `Unknown action: ${action}. Available actions: create-website, generate-sitemap, update-design, generate-from-sitemap, attach-site, autologin` }),
+          JSON.stringify({ error: `Unknown action: ${action}. Available actions: health, create-website, generate-sitemap, update-design, generate-from-sitemap, attach-site, autologin` }),
           { 
-            status: 404,
+            status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         );
@@ -215,17 +228,16 @@ serve(async (req) => {
   }
 });
 
-async function handleCreateWebsite(req: Request): Promise<Response> {
+// Handler functions with dependencies passed as parameters
+async function handleCreateWebsite(req: Request, { API_BASE, TENWEB_API_KEY, REGION, supabase }): Promise<Response> {
   const body = await req.json();
   const data = CreateWebsiteSchema.parse(body);
 
-  // Generate admin password and subdomain if not provided
   const adminPassword = generateStrongPassword();
   const subdomain = data.subdomain || `site-${Date.now()}`;
 
   console.log('Creating website with subdomain:', subdomain);
 
-  // Call provider API to create website
   const createWebsiteResponse = await fetchWithRetry(`${API_BASE}/v1/hosting/website`, {
     method: 'POST',
     headers: {
@@ -250,7 +262,6 @@ async function handleCreateWebsite(req: Request): Promise<Response> {
   const websiteData = await createWebsiteResponse.json();
   console.log('Website created:', websiteData);
 
-  // Store in database
   const { data: site, error: dbError } = await supabase
     .from('sites')
     .insert({
@@ -268,7 +279,7 @@ async function handleCreateWebsite(req: Request): Promise<Response> {
     throw new Error(`Failed to save website data: ${dbError.message}`);
   }
 
-  await logEvent(site.id, 'website_created', { website_id: websiteData.website_id, subdomain });
+  await logEvent(site.id, 'website_created', { website_id: websiteData.website_id, subdomain }, supabase);
 
   return new Response(
     JSON.stringify({
@@ -279,11 +290,10 @@ async function handleCreateWebsite(req: Request): Promise<Response> {
   );
 }
 
-async function handleGenerateSitemap(req: Request): Promise<Response> {
+async function handleGenerateSitemap(req: Request, { API_BASE, TENWEB_API_KEY, supabase }): Promise<Response> {
   const body = await req.json();
   const { siteId, business_type, business_name, business_description } = GenerateSitemapSchema.parse(body);
 
-  // Load site data
   const { data: site, error: dbError } = await supabase
     .from('sites')
     .select('*')
@@ -296,7 +306,6 @@ async function handleGenerateSitemap(req: Request): Promise<Response> {
 
   console.log('Generating sitemap for website:', site.website_id);
 
-  // Call provider API to generate sitemap
   const sitemapResponse = await fetchWithRetry(`${API_BASE}/v1/ai/generate_sitemap`, {
     method: 'POST',
     headers: {
@@ -322,13 +331,11 @@ async function handleGenerateSitemap(req: Request): Promise<Response> {
   const sitemapData = await sitemapResponse.json();
   console.log('Sitemap generated:', sitemapData);
 
-  // Auto-fill SEO fields
   const seo_title = sitemapData.website_title || business_name;
   const seo_description = sitemapData.website_description || business_description.substring(0, 160);
   const seo_keyphrase = sitemapData.website_keyphrase || business_name;
   const website_type = sitemapData.website_type || (business_type === 'ecommerce' ? 'ecommerce' : 'basic');
 
-  // Update site with all response data
   const { error: updateError } = await supabase
     .from('sites')
     .update({ 
@@ -351,7 +358,7 @@ async function handleGenerateSitemap(req: Request): Promise<Response> {
     throw new Error(`Failed to update site: ${updateError.message}`);
   }
 
-  await logEvent(siteId, 'sitemap_generated', { unique_id: sitemapData.unique_id });
+  await logEvent(siteId, 'sitemap_generated', { unique_id: sitemapData.unique_id }, supabase);
 
   return new Response(
     JSON.stringify({ 
@@ -368,13 +375,12 @@ async function handleGenerateSitemap(req: Request): Promise<Response> {
   );
 }
 
-async function handleUpdateDesign(req: Request): Promise<Response> {
+async function handleUpdateDesign(req: Request, { supabase }): Promise<Response> {
   const body = await req.json();
   const data = UpdateDesignSchema.parse(body);
 
   console.log('Updating design for site:', data.siteId);
 
-  // Update site with design data
   const { error: updateError } = await supabase
     .from('sites')
     .update({
@@ -393,7 +399,7 @@ async function handleUpdateDesign(req: Request): Promise<Response> {
     throw new Error(`Failed to update design: ${updateError.message}`);
   }
 
-  await logEvent(data.siteId, 'design_updated', data);
+  await logEvent(data.siteId, 'design_updated', data, supabase);
 
   return new Response(
     JSON.stringify({ success: true }),
@@ -401,11 +407,10 @@ async function handleUpdateDesign(req: Request): Promise<Response> {
   );
 }
 
-async function handleGenerateFromSitemap(req: Request): Promise<Response> {
+async function handleGenerateFromSitemap(req: Request, { API_BASE, TENWEB_API_KEY, supabase }): Promise<Response> {
   const body = await req.json();
   const { siteId } = GenerateFromSitemapSchema.parse(body);
 
-  // Load site data
   const { data: site, error: dbError } = await supabase
     .from('sites')
     .select('*')
@@ -418,30 +423,6 @@ async function handleGenerateFromSitemap(req: Request): Promise<Response> {
 
   console.log('Generating site from sitemap for website:', site.website_id);
 
-  const payload = {
-    website_id: site.website_id,
-    unique_id: site.unique_id,
-    params: {
-      business_type: site.business_type,
-      business_name: site.business_name,
-      business_description: site.business_description,
-      colors: site.colors || {
-        background_dark: false,
-        primary_color: '#FF7A00',
-        secondary_color: '#6B7280',
-      },
-      fonts: {
-        primary_font: site.fonts?.body || 'inter',
-      },
-      pages_meta: site.pages_meta || [],
-      website_description: site.seo_description,
-      website_keyphrase: site.seo_keyphrase,
-      website_title: site.seo_title,
-      website_type: site.website_type,
-    },
-  };
-
-  // Transform pages_meta for API
   const transformedPagesMeta = site.pages_meta?.map((p: any) => ({
     title: p.title,
     sections: (p.sections || []).map((s: any) => s.title)
@@ -470,7 +451,6 @@ async function handleGenerateFromSitemap(req: Request): Promise<Response> {
     },
   };
 
-  // Call provider API to generate site from sitemap
   const generateResponse = await fetchWithRetry(`${API_BASE}/v1/ai/generate_site_from_sitemap`, {
     method: 'POST',
     headers: {
@@ -489,7 +469,6 @@ async function handleGenerateFromSitemap(req: Request): Promise<Response> {
   const generateData = await generateResponse.json();
   console.log('Site generated:', generateData);
 
-  // Update site with response data
   const { error: updateError } = await supabase
     .from('sites')
     .update({
@@ -503,7 +482,7 @@ async function handleGenerateFromSitemap(req: Request): Promise<Response> {
     throw new Error(`Failed to update site: ${updateError.message}`);
   }
 
-  await logEvent(siteId, 'site_generated', { url: generateData.url });
+  await logEvent(siteId, 'site_generated', { url: generateData.url }, supabase);
 
   return new Response(
     JSON.stringify({ url: generateData.url }),
@@ -511,10 +490,9 @@ async function handleGenerateFromSitemap(req: Request): Promise<Response> {
   );
 }
 
-async function handleAttachSite(req: Request): Promise<Response> {
+async function handleAttachSite(req: Request, { supabase }): Promise<Response> {
   console.log('handleAttachSite called');
   
-  // Extract JWT token and validate user
   const authHeader = req.headers.get('Authorization');
   console.log('Auth header present:', !!authHeader);
   
@@ -555,7 +533,6 @@ async function handleAttachSite(req: Request): Promise<Response> {
 
     console.log('Attaching site to user:', user.id, 'Site ID:', siteId);
 
-    // Update site with user_id and owner_email
     const { error: updateError } = await supabase
       .from('sites')
       .update({
@@ -572,7 +549,7 @@ async function handleAttachSite(req: Request): Promise<Response> {
       );
     }
 
-    await logEvent(siteId, 'site_attached', { user_id: user.id, owner_email: user.email });
+    await logEvent(siteId, 'site_attached', { user_id: user.id, owner_email: user.email }, supabase);
 
     return new Response(
       JSON.stringify({ success: true }),
@@ -587,7 +564,7 @@ async function handleAttachSite(req: Request): Promise<Response> {
   }
 }
 
-async function handleAutologin(req: Request): Promise<Response> {
+async function handleAutologin(req: Request, { API_BASE, TENWEB_API_KEY }): Promise<Response> {
   try {
     const body = await req.json();
     const { website_id, admin_url } = body;
@@ -611,7 +588,6 @@ async function handleAutologin(req: Request): Promise<Response> {
 
     console.log('Getting autologin URL for website:', validatedWebsiteId);
 
-    // Get autologin URL
     const autologinResponse = await fetchWithRetry(`${API_BASE}/v1/account/websites/${validatedWebsiteId}/single?admin_url=${encodeURIComponent(validatedAdminUrl)}`, {
       method: 'GET',
       headers: {
@@ -627,11 +603,6 @@ async function handleAutologin(req: Request): Promise<Response> {
 
     const autologinData = await autologinResponse.json();
     console.log('Autologin URL generated:', autologinData);
-
-    await logEvent('', 'autologin_generated', { 
-      website_id: validatedWebsiteId, 
-      admin_url: validatedAdminUrl 
-    });
 
     return new Response(
       JSON.stringify({ admin_url: autologinData.admin_url }),

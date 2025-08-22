@@ -1,0 +1,117 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-webhook-secret',
+}
+
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
+  }
+
+  try {
+    // Only accept POST requests
+    if (req.method !== 'POST') {
+      return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+        status: 405,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Get environment variables
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    const WEBHOOK_SECRET = Deno.env.get('TENWEB_WEBHOOK_SECRET') // Optional secret for verification
+
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Missing required environment variables')
+      return new Response(JSON.stringify({ error: 'Server configuration error' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+
+    // Verify webhook secret if configured
+    if (WEBHOOK_SECRET) {
+      const providedSecret = req.headers.get('X-Webhook-Secret')
+      if (providedSecret !== WEBHOOK_SECRET) {
+        console.error('Invalid webhook secret')
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    }
+
+    // Parse webhook payload
+    const payload = await req.json()
+    console.log('Received 10Web webhook:', JSON.stringify(payload, null, 2))
+
+    // Extract relevant information from the payload
+    const { site_id, status, event_type, data } = payload
+
+    if (!site_id) {
+      console.error('Missing site_id in webhook payload')
+      return new Response(JSON.stringify({ error: 'Missing site_id' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Log the event
+    const { error: eventError } = await supabase
+      .from('events')
+      .insert({
+        site_id: site_id,
+        label: event_type || 'tenweb_webhook',
+        data: payload,
+      })
+
+    if (eventError) {
+      console.error('Error logging event:', eventError)
+      // Continue processing even if logging fails
+    }
+
+    // Update site status if provided
+    if (status) {
+      const { error: updateError } = await supabase
+        .from('sites')
+        .update({ 
+          status: status,
+          ...(data?.admin_url && { admin_url: data.admin_url }),
+          ...(data?.site_url && { site_url: data.site_url }),
+        })
+        .eq('id', site_id)
+
+      if (updateError) {
+        console.error('Error updating site:', updateError)
+        return new Response(JSON.stringify({ error: 'Failed to update site' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      console.log(`Updated site ${site_id} with status: ${status}`)
+    }
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      message: 'Webhook processed successfully',
+      site_id: site_id 
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+
+  } catch (error) {
+    console.error('Error in tenweb-webhook:', error)
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+})
