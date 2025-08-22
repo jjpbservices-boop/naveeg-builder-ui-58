@@ -94,7 +94,7 @@ const Brief: React.FC = () => {
       if (!currentSiteId) {
         console.log('Creating website...');
         const { data: websiteData, error: createError } = await apiClient.createWebsite({
-          siteTitle: formData.businessName,
+          businessName: formData.businessName,
         });
 
         if (createError) {
@@ -230,10 +230,10 @@ const Brief: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-8 animate-slide-up">
           <h1 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Describe Your Website
+            Step 1: Describe Your Business
           </h1>
           <p className="text-lg text-muted-foreground">
-            Tell us about your business and we'll create the perfect website for you.
+            Tell us about your business and we'll create the perfect website structure for you.
           </p>
         </div>
 
@@ -318,22 +318,47 @@ const Brief: React.FC = () => {
                 </div>
               )}
 
-              {/* Canvas Preview */}
+              {/* Canvas Preview - Sitemap Structure */}
               {hasAnalyzed && pages_meta && (
                 <div className="bg-muted/50 rounded-2xl p-6 animate-slide-up">
                   <h3 className="text-lg font-semibold mb-4 flex items-center">
                     <Globe className="h-5 w-5 mr-2" />
                     Your Website Structure
                   </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  
+                  {/* SEO Preview */}
+                  <div className="mb-4 p-4 bg-background rounded-lg border">
+                    <h4 className="font-medium text-sm mb-2">SEO Settings</h4>
+                    <div className="space-y-2 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Title:</span> {seo_title}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Description:</span> {seo_description}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Keyphrase:</span> {seo_keyphrase}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Pages Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
                     {pages_meta.map((page) => (
                       <div key={page.id} className="bg-background rounded-lg p-3 text-center border">
                         <div className="text-sm font-medium">{page.title}</div>
                         <div className="text-xs text-muted-foreground">{page.type}</div>
+                        {page.sections && page.sections.length > 0 && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {page.sections.length} sections
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
-                  <div className="mt-4 text-center">
+
+                  {/* Website Type */}
+                  <div className="text-center">
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
                       {website_type === 'basic' ? 'Standard Website' : 'E-commerce Store'}
                     </span>
@@ -363,12 +388,12 @@ const Brief: React.FC = () => {
                     {isAnalyzing ? (
                       <>
                         <Loader className="mr-2 h-4 w-4 animate-spin" />
-                        Analyzing...
+                        Analyzing & Creating Structure...
                       </>
                     ) : (
                       <>
                         <Sparkles className="mr-2 h-4 w-4" />
-                        Analyze
+                        Analyze & Create Structure
                       </>
                     )}
                   </Button>
@@ -378,7 +403,7 @@ const Brief: React.FC = () => {
                     onClick={handleContinue}
                     className="flex-1 touch-target bg-gradient-primary hover:bg-primary-hover text-white rounded-2xl"
                   >
-                    Next Step
+                    Continue to Design & Review
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 )}

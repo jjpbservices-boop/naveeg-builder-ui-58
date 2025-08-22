@@ -20,7 +20,7 @@ class APIClient {
 
   private getTimeoutForOperation(operation: string): number {
     // Longer timeouts for operations that can be slow
-    const longOperations = ['create-website', 'generate-sitemap', 'generate-from-sitemap'];
+    const longOperations = ['create-website', 'generate-sitemap', 'generate-site'];
     return longOperations.includes(operation) ? 90000 : this.defaultTimeout; // 90 seconds vs 30 seconds
   }
 
@@ -113,7 +113,7 @@ class APIClient {
       if (error.name === 'AbortError') {
         const operationName = action === 'create-website' ? 'website creation' : 
                              action === 'generate-sitemap' ? 'sitemap generation' :
-                             action === 'generate-from-sitemap' ? 'website generation' : 'operation';
+                             action === 'generate-site' ? 'website generation' : 'operation';
         apiError.message = `${operationName.charAt(0).toUpperCase() + operationName.slice(1)} timed out. This can happen with slow server responses. Please try again.`;
       } else if (error.message === 'Load failed') {
         apiError.message = 'Network error. Please check your internet connection and try again.';
@@ -135,9 +135,18 @@ class APIClient {
     });
   }
 
+  async checkSubdomain(subdomain: string): Promise<APIResponse<{
+    status: string;
+    message?: string;
+  }>> {
+    return this.request('check-subdomain', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'check-subdomain', subdomain }),
+    });
+  }
+
   async createWebsite(payload: {
-    subdomain?: string;
-    siteTitle?: string;
+    businessName: string;
   }): Promise<APIResponse<{
     siteId: string;
     website_id: number;
@@ -169,12 +178,45 @@ class APIClient {
     });
   }
 
-  async generateFromSitemap(siteId: string): Promise<APIResponse<{
+  async generateSite(siteId: string): Promise<APIResponse<{
     url: string;
+    website_id: number;
   }>> {
-    return this.request('generate-from-sitemap', {
+    return this.request('generate-site', {
       method: 'POST',
-      body: JSON.stringify({ action: 'generate-from-sitemap', siteId }),
+      body: JSON.stringify({ action: 'generate-site', siteId }),
+    });
+  }
+
+  async publishPages(website_id: string): Promise<APIResponse<{
+    success: boolean;
+    pages: any[];
+    published_count: number;
+  }>> {
+    return this.request('publish-pages', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'publish-pages', website_id }),
+    });
+  }
+
+  async setFrontPage(website_id: string, page_id: string): Promise<APIResponse<{
+    success: boolean;
+    front_page_id: string;
+  }>> {
+    return this.request('set-front-page', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'set-front-page', website_id, page_id }),
+    });
+  }
+
+  async getDomains(website_id: string): Promise<APIResponse<{
+    domains: any[];
+    default_domain: any;
+    admin_url: string;
+  }>> {
+    return this.request('get-domains', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'get-domains', website_id }),
     });
   }
 

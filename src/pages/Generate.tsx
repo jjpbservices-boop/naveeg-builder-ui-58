@@ -43,10 +43,10 @@ const Generate: React.FC = () => {
   const steps = [
     'Updating design preferences',
     'Generating website content',
-    'Optimizing layout',
+    'Publishing pages', 
     'Setting up navigation',
-    'Finalizing pages',
-    'Preparing launch',
+    'Configuring domain',
+    'Preparing admin access',
     'Website ready!'
   ];
 
@@ -83,20 +83,57 @@ const Generate: React.FC = () => {
       setCurrentStep(1);
       setProgress(25);
       
-      // Step 2: Generate from sitemap
-      const { data, error: generateError } = await apiClient.generateFromSitemap(siteId!);
+      // Step 2: Generate site
+      const { data: generateData, error: generateError } = await apiClient.generateSite(siteId!);
       
       if (generateError) {
         throw new Error(generateError.message || 'Failed to generate website');
       }
       
-      updateApiData({ preview_url: data!.url });
+      updateApiData({ 
+        preview_url: generateData!.url,
+        site_url: generateData!.url,
+        website_id: generateData!.website_id 
+      });
       setCurrentStep(2);
-      setProgress(50);
+      setProgress(40);
+
+      // Step 3: Publish pages
+      const { error: publishError } = await apiClient.publishPages(generateData!.website_id.toString());
+      if (publishError) {
+        console.error('Failed to publish pages:', publishError);
+        // Continue anyway as this is not critical
+      }
+      setCurrentStep(3);
+      setProgress(60);
+
+      // Step 4: Set front page (use first page or "Home")
+      const homePage = pages_meta.find(p => p.title.toLowerCase() === 'home') || pages_meta[0];
+      if (homePage) {
+        const { error: frontPageError } = await apiClient.setFrontPage(
+          generateData!.website_id.toString(), 
+          homePage.id
+        );
+        if (frontPageError) {
+          console.error('Failed to set front page:', frontPageError);
+          // Continue anyway
+        }
+      }
+      setCurrentStep(4);
+      setProgress(70);
+
+      // Step 5: Get admin URL for later autologin
+      const { data: domainsData, error: domainsError } = await apiClient.getDomains(generateData!.website_id.toString());
+      if (domainsData && !domainsError) {
+        updateApiData({ admin_url: domainsData.admin_url });
+      }
+      setCurrentStep(5);
+      setProgress(85);
       
-      // Step 3: Show auth modal and attach site
+      // Step 6: Show auth modal for sign up
       setShowAuthModal(true);
-      await simulateRemainingProgress();
+      setCurrentStep(6);
+      setProgress(95);
       
     } catch (error) {
       console.error('Generation failed:', error);

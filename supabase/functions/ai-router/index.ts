@@ -49,6 +49,23 @@ const GenerateFromSitemapSchema = z.object({
   siteId: z.string().uuid(),
 });
 
+const GenerateSiteSchema = z.object({
+  siteId: z.string().uuid(),
+});
+
+const PublishPagesSchema = z.object({
+  website_id: z.string(),
+});
+
+const SetFrontPageSchema = z.object({
+  website_id: z.string(),
+  page_id: z.string(),
+});
+
+const GetDomainsSchema = z.object({
+  website_id: z.string(),
+});
+
 const AttachSiteSchema = z.object({
   siteId: z.string().uuid(),
 });
@@ -74,6 +91,10 @@ function slugify(text: string): string {
     .replace(/[^a-z0-9]/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
+}
+
+function generateRandomSuffix(): string {
+  return Math.random().toString(36).substring(2, 6);
 }
 
 // Generate a unique subdomain using crypto.randomUUID and fallback methods
@@ -230,26 +251,34 @@ serve(async (req) => {
         return new Response(JSON.stringify({ 
           status: 'healthy', 
           timestamp: new Date().toISOString(),
-          available_actions: ['health', 'create-website', 'generate-sitemap', 'update-design', 'generate-from-sitemap', 'attach-site', 'autologin']
+          available_actions: ['health', 'check-subdomain', 'create-website', 'generate-sitemap', 'update-design', 'generate-site', 'publish-pages', 'set-front-page', 'get-domains', 'autologin', 'attach-site']
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
+      case 'check-subdomain':
+        return await handleCheckSubdomain(req, { API_BASE, TENWEB_API_KEY });
       case 'create-website':
         return await handleCreateWebsite(req, { API_BASE, TENWEB_API_KEY, REGION, supabase });
       case 'generate-sitemap':
         return await handleGenerateSitemap(req, { API_BASE, TENWEB_API_KEY, supabase });
       case 'update-design':
         return await handleUpdateDesign(req, { supabase });
-      case 'generate-from-sitemap':
-        return await handleGenerateFromSitemap(req, { API_BASE, TENWEB_API_KEY, supabase });
-      case 'attach-site':
-        return await handleAttachSite(req, { supabase });
+      case 'generate-site':
+        return await handleGenerateSite(req, { API_BASE, TENWEB_API_KEY, supabase });
+      case 'publish-pages':
+        return await handlePublishPages(req, { API_BASE, TENWEB_API_KEY, supabase });
+      case 'set-front-page':
+        return await handleSetFrontPage(req, { API_BASE, TENWEB_API_KEY });
+      case 'get-domains':
+        return await handleGetDomains(req, { API_BASE, TENWEB_API_KEY });
       case 'autologin':
         return await handleAutologin(req, { API_BASE, TENWEB_API_KEY });
+      case 'attach-site':
+        return await handleAttachSite(req, { supabase });
       default:
         console.error(`Unknown action: ${action}`);
         return new Response(
-          JSON.stringify({ error: `Unknown action: ${action}. Available actions: health, create-website, generate-sitemap, update-design, generate-from-sitemap, attach-site, autologin` }),
+          JSON.stringify({ error: `Unknown action: ${action}. Available actions: health, check-subdomain, create-website, generate-sitemap, update-design, generate-site, publish-pages, set-front-page, get-domains, autologin, attach-site` }),
           { 
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -271,19 +300,94 @@ serve(async (req) => {
 });
 
 // Handler functions with dependencies passed as parameters
+async function handleCheckSubdomain(req: Request, { API_BASE, TENWEB_API_KEY }): Promise<Response> {
+  const body = await req.json();
+  const subdomain = body.subdomain;
+  
+  if (!subdomain) {
+    return new Response(
+      JSON.stringify({ error: 'Subdomain is required' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  console.log('Checking subdomain availability:', subdomain);
+
+  const checkResponse = await fetchWithRetry(`${API_BASE}/v1/hosting/websites/subdomain/check`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': TENWEB_API_KEY,
+    },
+    body: JSON.stringify({ subdomain }),
+  });
+
+  if (!checkResponse.ok) {
+    const error = await checkResponse.text();
+    console.error('Subdomain check failed:', error);
+    throw new Error(`Failed to check subdomain: ${error}`);
+  }
+
+  const checkData = await checkResponse.json();
+  
+  return new Response(
+    JSON.stringify(checkData),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
 async function handleCreateWebsite(req: Request, { API_BASE, TENWEB_API_KEY, REGION, supabase }): Promise<Response> {
   const body = await req.json();
-  const data = CreateWebsiteSchema.parse(body);
+  const { businessName } = body;
+
+  if (!businessName) {
+    return new Response(
+      JSON.stringify({ error: 'Business name is required' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
 
   const adminPassword = generateStrongPassword();
-  let subdomain = generateUniqueSubdomain(data.subdomain);
+  let baseSubdomain = slugify(businessName);
+  let subdomain = baseSubdomain;
   let lastError = '';
   
-  // Retry up to 3 times with different subdomains if we get collision errors
-  const maxAttempts = 3;
+  // Try up to 5 times with different suffixes if subdomain is taken
+  const maxAttempts = 5;
   
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    console.log(`Creating website attempt ${attempt}/${maxAttempts} with subdomain:`, subdomain);
+    console.log(`Checking subdomain availability: ${subdomain} (attempt ${attempt}/${maxAttempts})`);
+    
+    // First check if subdomain is available
+    try {
+      const checkResponse = await fetchWithRetry(`${API_BASE}/v1/hosting/websites/subdomain/check`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': TENWEB_API_KEY,
+        },
+        body: JSON.stringify({ subdomain }),
+      });
+
+      if (checkResponse.ok) {
+        const checkData = await checkResponse.json();
+        if (checkData.status !== 'available') {
+          // Subdomain is taken, try with suffix
+          if (attempt < maxAttempts) {
+            subdomain = `${baseSubdomain}-${generateRandomSuffix()}`;
+            console.log(`Subdomain taken, trying: ${subdomain}`);
+            continue;
+          } else {
+            throw new Error('No available subdomain found after maximum attempts');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Subdomain check failed:', error);
+      // Continue with creation attempt anyway
+    }
+
+    console.log(`Creating website with subdomain: ${subdomain}`);
 
     try {
       const createWebsiteResponse = await fetchWithRetry(`${API_BASE}/v1/hosting/website`, {
@@ -295,7 +399,7 @@ async function handleCreateWebsite(req: Request, { API_BASE, TENWEB_API_KEY, REG
         body: JSON.stringify({
           subdomain,
           region: REGION,
-          site_title: data.siteTitle || 'New Site',
+          site_title: businessName,
           admin_username: 'admin',
           admin_password: adminPassword,
         }),
@@ -346,7 +450,7 @@ async function handleCreateWebsite(req: Request, { API_BASE, TENWEB_API_KEY, REG
         
         if (isSubdomainInUseError(errorText) && attempt < maxAttempts) {
           // Generate a new subdomain and try again
-          subdomain = generateUniqueSubdomain();
+          subdomain = `${baseSubdomain}-${generateRandomSuffix()}`;
           console.log(`Subdomain collision detected, retrying with new subdomain: ${subdomain}`);
           
           // Add a small delay before retry
@@ -363,7 +467,7 @@ async function handleCreateWebsite(req: Request, { API_BASE, TENWEB_API_KEY, REG
       
       // Check if it's a subdomain collision error in the exception message
       if (isSubdomainInUseError(error.message) && attempt < maxAttempts) {
-        subdomain = generateUniqueSubdomain();
+        subdomain = `${baseSubdomain}-${generateRandomSuffix()}`;
         console.log(`Subdomain collision in exception, retrying with new subdomain: ${subdomain}`);
         
         // Add a small delay before retry
@@ -709,4 +813,213 @@ async function handleAutologin(req: Request, { API_BASE, TENWEB_API_KEY }): Prom
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
+}
+
+async function handleGenerateSite(req: Request, { API_BASE, TENWEB_API_KEY, supabase }): Promise<Response> {
+  const body = await req.json();
+  const { siteId } = GenerateSiteSchema.parse(body);
+
+  const { data: site, error: dbError } = await supabase
+    .from('sites')
+    .select('*')
+    .eq('id', siteId)
+    .single();
+
+  if (dbError || !site) {
+    throw new Error('Site not found');
+  }
+
+  console.log('Generating site for website:', site.website_id);
+
+  // Transform pages_meta to the format expected by the 10Web API
+  const transformedPagesMeta = site.pages_meta?.map((page: any) => ({
+    title: page.title,
+    description: page.description || '',
+    sections: (page.sections || []).map((section: any) => ({
+      section_title: section.section_title || section.title,
+      section_description: section.section_description || section.description || ''
+    }))
+  })) || [];
+
+  const apiPayload = {
+    website_id: site.website_id,
+    business_type: site.business_type,
+    business_name: site.business_name,
+    business_description: site.business_description,
+    colors: {
+      background_dark: site.colors?.background_dark || '#000000',
+      primary_color: site.colors?.primary_color || '#FF4A1C', 
+      secondary_color: site.colors?.secondary_color || '#6B7280',
+    },
+    fonts: {
+      primary_font: site.fonts?.body || 'Inter',
+    },
+    pages_meta: transformedPagesMeta,
+  };
+
+  console.log('API payload for site generation:', JSON.stringify(apiPayload, null, 2));
+
+  const generateResponse = await fetchWithRetry(`${API_BASE}/v1/ai/generate_site`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': TENWEB_API_KEY,
+    },
+    body: JSON.stringify(apiPayload),
+  }, 3, 90000); // 90 second timeout for site generation
+
+  if (!generateResponse.ok) {
+    const error = await generateResponse.text();
+    console.error('Generate site failed:', error);
+    throw new Error(`Failed to generate site: ${error}`);
+  }
+
+  const generateData = await generateResponse.json();
+  console.log('Site generated successfully:', generateData);
+
+  const { error: updateError } = await supabase
+    .from('sites')
+    .update({
+      payload: apiPayload,
+      status: 'generated',
+      site_url: generateData.url,
+    })
+    .eq('id', siteId);
+
+  if (updateError) {
+    console.error('Failed to update site:', updateError);
+    throw new Error(`Failed to update site: ${updateError.message}`);
+  }
+
+  await logEvent(siteId, 'site_generated', { url: generateData.url }, supabase);
+
+  return new Response(
+    JSON.stringify({ 
+      url: generateData.url,
+      website_id: site.website_id,
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
+async function handlePublishPages(req: Request, { API_BASE, TENWEB_API_KEY, supabase }): Promise<Response> {
+  const body = await req.json();
+  const { website_id } = PublishPagesSchema.parse(body);
+
+  console.log('Publishing pages for website:', website_id);
+
+  // First get list of pages
+  const pagesResponse = await fetchWithRetry(`${API_BASE}/v1/builder/websites/${website_id}/pages`, {
+    method: 'GET',
+    headers: {
+      'x-api-key': TENWEB_API_KEY,
+    },
+  });
+
+  if (!pagesResponse.ok) {
+    const error = await pagesResponse.text();
+    console.error('Get pages failed:', error);
+    throw new Error(`Failed to get pages: ${error}`);
+  }
+
+  const pagesData = await pagesResponse.json();
+  console.log('Pages data:', pagesData);
+  
+  const pageIds = pagesData.map((page: any) => page.id);
+
+  // Publish all pages
+  const publishResponse = await fetchWithRetry(`${API_BASE}/v1/builder/websites/${website_id}/pages/publish`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': TENWEB_API_KEY,
+    },
+    body: JSON.stringify({
+      action: 'publish',
+      page_ids: pageIds,
+    }),
+  });
+
+  if (!publishResponse.ok) {
+    const error = await publishResponse.text();
+    console.error('Publish pages failed:', error);
+    throw new Error(`Failed to publish pages: ${error}`);
+  }
+
+  const publishData = await publishResponse.json();
+  console.log('Pages published successfully:', publishData);
+
+  return new Response(
+    JSON.stringify({ 
+      success: true, 
+      pages: pagesData,
+      published_count: pageIds.length 
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
+async function handleSetFrontPage(req: Request, { API_BASE, TENWEB_API_KEY }): Promise<Response> {
+  const body = await req.json();
+  const { website_id, page_id } = SetFrontPageSchema.parse(body);
+
+  console.log('Setting front page for website:', website_id, 'page:', page_id);
+
+  const frontPageResponse = await fetchWithRetry(`${API_BASE}/v1/builder/websites/${website_id}/pages/front/set`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': TENWEB_API_KEY,
+    },
+    body: JSON.stringify({ page_id }),
+  });
+
+  if (!frontPageResponse.ok) {
+    const error = await frontPageResponse.text();
+    console.error('Set front page failed:', error);
+    throw new Error(`Failed to set front page: ${error}`);
+  }
+
+  const frontPageData = await frontPageResponse.json();
+  console.log('Front page set successfully:', frontPageData);
+
+  return new Response(
+    JSON.stringify({ success: true, front_page_id: page_id }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
+async function handleGetDomains(req: Request, { API_BASE, TENWEB_API_KEY }): Promise<Response> {
+  const body = await req.json();
+  const { website_id } = GetDomainsSchema.parse(body);
+
+  console.log('Getting domains for website:', website_id);
+
+  const domainsResponse = await fetchWithRetry(`${API_BASE}/v1/hosting/websites/${website_id}/domain-name`, {
+    method: 'GET',
+    headers: {
+      'x-api-key': TENWEB_API_KEY,
+    },
+  });
+
+  if (!domainsResponse.ok) {
+    const error = await domainsResponse.text();
+    console.error('Get domains failed:', error);
+    throw new Error(`Failed to get domains: ${error}`);
+  }
+
+  const domainsData = await domainsResponse.json();
+  console.log('Domains data:', domainsData);
+
+  // Find the default domain
+  const defaultDomain = domainsData.find((domain: any) => domain.default === 1);
+  
+  return new Response(
+    JSON.stringify({ 
+      domains: domainsData,
+      default_domain: defaultDomain,
+      admin_url: defaultDomain?.admin_url,
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
 }

@@ -28,8 +28,8 @@ const Ready: React.FC = () => {
   } = useOnboardingStore();
 
   useEffect(() => {
-    if (!siteId || !preview_url) {
-      navigate({ to: '/onboarding/brief' });
+    if (!siteId) {
+      navigate({ to: '/' });
       return;
     }
 
@@ -62,11 +62,16 @@ const Ready: React.FC = () => {
     }, 250);
 
     return () => clearInterval(interval);
-  }, [siteId, preview_url, navigate]);
+  }, [siteId, navigate]);
 
   const handleGoToAdmin = async () => {
-    if (!website_id || !admin_url || !email) {
-      toast.error('Missing required information for admin access');
+    if (!website_id) {
+      toast.error('Missing website information for admin access');
+      return;
+    }
+
+    if (!admin_url) {
+      toast.error('Admin URL not available');
       return;
     }
 
@@ -78,7 +83,11 @@ const Ready: React.FC = () => {
       );
 
       if (error) {
-        throw new Error(error.message || 'Failed to get admin access');
+        // If autologin fails, still open the regular admin URL
+        console.error('Autologin failed:', error);
+        window.open(admin_url, '_blank');
+        toast.success('Admin panel opened! You may need to log in manually.');
+        return;
       }
 
       // Open admin URL in new tab
@@ -87,7 +96,13 @@ const Ready: React.FC = () => {
       
     } catch (error) {
       console.error('Failed to get admin access:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to access admin panel');
+      // Fallback to regular admin URL
+      if (admin_url) {
+        window.open(admin_url, '_blank');
+        toast.success('Admin panel opened! You may need to log in manually.');
+      } else {
+        toast.error('Admin panel not available');
+      }
     } finally {
       setIsGettingAdminUrl(false);
     }
