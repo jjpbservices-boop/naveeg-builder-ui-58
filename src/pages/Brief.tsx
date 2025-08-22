@@ -69,6 +69,17 @@ const Brief: React.FC = () => {
     try {
       console.log('Starting analysis with form data:', formData);
       
+      // Test health check first
+      console.log('Testing API health check...');
+      const { data: healthData, error: healthError } = await apiClient.healthCheck();
+      
+      if (healthError) {
+        console.error('Health check failed:', healthError);
+        throw new Error(`API health check failed: ${healthError.message}`);
+      }
+      
+      console.log('Health check passed:', healthData);
+      
       // Update store with form data
       updateBasicInfo({
         business_name: formData.businessName,

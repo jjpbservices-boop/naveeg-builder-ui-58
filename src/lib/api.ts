@@ -28,6 +28,8 @@ class APIClient {
         signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpbHBhemVnanJjcndncHVqcW5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NzYxNjksImV4cCI6MjA3MDE1MjE2OX0.LV5FvbQQGf0Kv-O1uA0tsS-Yam6rB1x937BgqFsJoX4',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpbHBhemVnanJjcndncHVqcW5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NzYxNjksImV4cCI6MjA3MDE1MjE2OX0.LV5FvbQQGf0Kv-O1uA0tsS-Yam6rB1x937BgqFsJoX4',
           ...options.headers,
         },
       });
@@ -48,7 +50,13 @@ class APIClient {
     options: RequestInit = {}
   ): Promise<APIResponse<T>> {
     try {
-      const url = this.baseUrl;
+      let url = this.baseUrl;
+      
+      // For GET requests, append action as query parameter
+      if (options.method === 'GET') {
+        url += `?action=${encodeURIComponent(action)}`;
+      }
+      
       console.log(`API Request: ${options.method || 'GET'} ${url} - Action: ${action}`);
       console.log('Request headers:', options.headers);
       console.log('Request body:', options.body);
@@ -105,6 +113,16 @@ class APIClient {
       
       return { error: apiError };
     }
+  }
+
+  async healthCheck(): Promise<APIResponse<{
+    status: string;
+    timestamp: string;
+    available_actions: string[];
+  }>> {
+    return this.request('health', {
+      method: 'GET',
+    });
   }
 
   async createWebsite(payload: {
