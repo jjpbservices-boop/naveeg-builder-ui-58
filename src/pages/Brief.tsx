@@ -57,6 +57,11 @@ export default function Brief() {
   const handleAnalyze = async () => {
     console.log('handleAnalyze called with:', { business_name, business_description });
     
+    if (isLoading) {
+      console.log('Already loading, ignoring click');
+      return; // Prevent double-clicks
+    }
+    
     if (!business_name?.trim() || !business_description?.trim()) {
       console.log('Validation failed - missing fields');
       toast({
@@ -88,8 +93,13 @@ export default function Brief() {
       const businessType = isEcommerce ? 'ecommerce' : 'basic';
       console.log('Detected business type:', businessType);
 
-      // Step 2: Generate sitemap
+      // Step 2: Generate sitemap with progress updates
       console.log('Step 2: Generating sitemap...');
+      toast({
+        title: 'Generating sitemap...',
+        description: 'This may take up to 2 minutes. Please wait.',
+      });
+
       const sitemapResult = await generateSitemap(createResult.website_id, {
         business_type: businessType,
         business_name,
@@ -139,11 +149,30 @@ export default function Brief() {
         navigate({ to: '/design' });
       }, 100);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error during analyze:', error);
+      
+      let title = 'Analysis failed';
+      let description = 'Please try again later.';
+      
+      // Handle specific error types
+      if (error.code === 'TIMEOUT') {
+        title = 'Request timeout';
+        description = 'The analysis is taking longer than expected. Please try again with a shorter business description.';
+      } else if (error.code === 'SITEMAP_FAILED') {
+        title = 'Sitemap generation failed';
+        description = 'Please adjust your business description and try again.';
+      } else if (error.message?.includes('Template generation is in progress')) {
+        title = 'Generation in progress';
+        description = 'Your website is being generated. Please wait a moment and try again.';
+      } else if (error.status === 504) {
+        title = 'Server timeout';
+        description = 'The server is taking longer than expected. Please try again in a moment.';
+      }
+      
       toast({
-        title: 'Analysis failed',
-        description: error.message || 'Please try again later.',
+        title,
+        description: error.message || description,
         variant: 'destructive',
       });
     } finally {

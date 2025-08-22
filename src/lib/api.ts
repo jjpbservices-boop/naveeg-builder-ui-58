@@ -3,11 +3,16 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const apiRequest = async (
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  timeoutMs: number = 60000 // Default 60 second timeout
 ): Promise<any> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
     const response = await fetch(`${SUPABASE_URL}/functions/v1/${endpoint}`, {
       ...options,
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
@@ -16,14 +21,27 @@ const apiRequest = async (
       },
     });
 
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail?.message || errorData.code || `HTTP error! status: ${response.status}`);
+      const error = new Error(errorData.detail?.message || errorData.code || `HTTP error! status: ${response.status}`);
+      (error as any).code = errorData.code;
+      (error as any).status = response.status;
+      throw error;
     }
 
     return await response.json();
   } catch (error) {
+    clearTimeout(timeoutId);
     console.error('API request failed:', error);
+    
+    if (error.name === 'AbortError') {
+      const timeoutError = new Error(`Request timeout after ${timeoutMs/1000} seconds`);
+      (timeoutError as any).code = 'TIMEOUT';
+      throw timeoutError;
+    }
+    
     throw error;
   }
 };
@@ -59,7 +77,7 @@ export const generateSitemap = async (
       website_id: websiteId,
       params,
     }),
-  });
+  }, 120000); // 2 minute timeout for sitemap generation
 };
 
 export const updateDesign = async (

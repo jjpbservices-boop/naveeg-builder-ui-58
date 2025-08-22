@@ -409,13 +409,18 @@ serve(async (req) => {
         await tw('/v1/ai/generate_site_from_sitemap', {
           method: 'POST',
           body: JSON.stringify({ website_id, unique_id, params }),
-          timeoutMs: 120000
+          timeoutMs: 60000 // Reduced to 60s to fail faster
         });
-      } catch (e: any) {
+    } catch (e: any) {
         const msg = JSON.stringify(e?.json || e?.message || e);
-        if (msg.includes('Template generation is in progress')) {
+        console.log('Generate from sitemap error:', msg);
+        
+        if (msg.includes('Template generation is in progress') || msg.includes('417')) {
           console.log('Template generation already in progress, polling for completion...');
           // Fall through to poll below
+        } else if (msg.includes('timeout') || msg.includes('504')) {
+          console.log('Initial request timed out, but starting poll anyway...');
+          // Fall through to poll - the generation might still be happening
         } else {
           console.error('Generate from sitemap failed:', e);
           return J(502, { 
