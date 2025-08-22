@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -64,7 +64,7 @@ export default function Ready() {
 
   const handleStartOver = () => {
     reset();
-    navigate('/brief');
+    navigate({ to: '/brief' });
   };
 
   const handleSignUp = () => {

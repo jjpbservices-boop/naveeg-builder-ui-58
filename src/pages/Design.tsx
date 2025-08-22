@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -151,7 +151,7 @@ export default function Design() {
 
       // Navigate to ready page
       setCurrentStep(2);
-      navigate('/ready');
+      navigate({ to: '/ready' });
       
     } catch (error) {
       console.error('Error generating website:', error);
