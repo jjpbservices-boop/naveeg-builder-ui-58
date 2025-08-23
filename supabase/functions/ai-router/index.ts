@@ -3,6 +3,8 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
 
+const VERSION = "shortpoll-2025-08-23";
+
 // ENV
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -10,7 +12,7 @@ const API_BASE = Deno.env.get("TENWEB_API_BASE") ?? "https://api.10web.io";
 const API_KEY = Deno.env.get("TENWEB_API_KEY") ?? "";
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-// CORS (always present; frontend uses credentials: 'omit')
+// CORS
 const corsHeaders = () => ({
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -24,7 +26,7 @@ const J = (code: number, data: unknown) =>
     headers: { "content-type": "application/json", ...corsHeaders() },
   });
 
-// 10Web fetch
+// 10Web helper
 type TwInit = RequestInit & { timeoutMs?: number };
 const tw = async (path: string, init: TwInit = {}) => {
   const ctl = new AbortController();
@@ -225,6 +227,7 @@ const handleUpdateDesign = async (body: any) => {
   return J(200,{ ok:true });
 };
 
+// SHORT-POLL generate
 const handleGenerateFromSitemap = async (body: any) => {
   const { website_id } = body || {};
   const unique_id = body?.unique_id || body?.sitemap_unique_id;
@@ -249,39 +252,39 @@ const handleGenerateFromSitemap = async (body: any) => {
     ...(norm.fonts  ? { fonts:  norm.fonts  } : {}),
   };
 
-  // strict validation
-  if (!Array.isArray(params.pages_meta) || params.pages_meta.length === 0)
+  const required = ["business_name","business_description","business_type","website_title","website_description","website_keyphrase"];
+  for (const k of required) if (!(params as any)[k]) return J(400,{ code:"MISSING_REQUIRED_PARAMS", error:`${k} is required` });
+  if (!Array.isArray(params.pages_meta) || !params.pages_meta.length)
     return J(400,{ code:"MISSING_REQUIRED_PARAMS", error:"pages_meta is empty" });
-  for (const k of ["business_name","business_description","business_type","website_title","website_description","website_keyphrase"]) {
-    // @ts-ignore
-    if (!params[k]) return J(400,{ code:"MISSING_REQUIRED_PARAMS", error:`${k} is required` });
-  }
 
+  // Kickoff: ≤25s
   try {
-    await tw("/v1/ai/generate_site_from_sitemap",{
-      method:"POST", body:JSON.stringify({ website_id, unique_id, params }), timeoutMs:120_000
+    await tw("/v1/ai/generate_site_from_sitemap", {
+      method: "POST",
+      body: JSON.stringify({ website_id, unique_id, params }),
+      timeoutMs: 25_000,
     });
   } catch (e: any) {
+    const msg = JSON.stringify(e?.json || e?.raw || e?.message || "");
     if (e?.status === 422 && e?.json?.error?.details)
       return J(422,{ code:"VALIDATION_ERROR", details:e.json.error.details, hint:"Fix params schema" });
-    if (![417,504].includes(e?.status ?? 0) && e?.name !== "AbortError")
+    if (![417,504].includes(e?.status ?? 0) && e?.name !== "AbortError" && !/in progress/i.test(msg))
       return J(502,{ code:"GENERATE_FAILED", detail:e?.json || e?.message || String(e) });
-    // else fall through to poll
   }
 
-  // poll for pages
-  const deadline = Date.now() + 300_000;
-  let wait = 3000;
+  // Short poll: ≤30s
+  const deadline = Date.now() + 30_000;
+  let wait = 2000;
   while (Date.now() < deadline) {
     try {
-      const pages = await tw(`/v1/builder/websites/${website_id}/pages`,{ method:"GET", timeoutMs:30_000 });
+      const pages = await tw(`/v1/builder/websites/${website_id}/pages`, { method: "GET", timeoutMs: 10_000 });
       const list = Array.isArray(pages?.data) ? pages.data : [];
       if (list.length > 0) return J(200,{ ok:true, pages_count:list.length });
     } catch {}
-    await new Promise(r=>setTimeout(r,wait));
-    wait = Math.min(Math.round(wait * 1.5), 10_000);
+    await new Promise(r => setTimeout(r, wait));
+    wait = Math.min(wait + 1000, 6000);
   }
-  return J(504,{ code:"GENERATE_TIMEOUT", hint:"Still processing. Try publish step later." });
+  return J(200, { ok:false, in_progress:true });
 };
 
 const handlePublishAndFrontpage = async (body: any) => {
@@ -350,7 +353,7 @@ serve(async (req) => {
 
   try {
     if (req.method === "GET" && action === "health")
-      return J(200,{ status:"healthy", ts:new Date().toISOString(), actions:[
+      return J(200,{ status:"healthy", version: VERSION, ts:new Date().toISOString(), actions:[
         "create-website","generate-sitemap","generate-from-sitemap","publish-and-frontpage","update-design"
       ]});
     if (req.method === "POST" && !action) return J(400,{ code:"MISSING_ACTION" });
