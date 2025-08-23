@@ -3,16 +3,16 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
 
-// ---- env
+// ───────────────── env
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const API_BASE = Deno.env.get("TENWEB_API_BASE") || "https://api.10web.io";
 const API_KEY = Deno.env.get("TENWEB_API_KEY") || "";
 
-// ---- clients
+// ───────────────── clients
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-// ---- CORS
+// ───────────────── CORS
 const corsHeaders = (origin: string | null) => ({
   "Access-Control-Allow-Origin":
     origin && (
@@ -29,7 +29,7 @@ const corsHeaders = (origin: string | null) => ({
 const J = (code: number, data: unknown, origin: string | null) =>
   new Response(JSON.stringify(data), { status: code, headers: { "content-type": "application/json", ...corsHeaders(origin) } });
 
-// ---- 10Web fetch
+// ───────────────── 10Web fetch
 type TwInit = RequestInit & { timeoutMs?: number };
 const tw = async (path: string, init: TwInit = {}) => {
   const ctl = new AbortController();
@@ -65,7 +65,7 @@ const tw = async (path: string, init: TwInit = {}) => {
   } finally { clearTimeout(id); }
 };
 
-// ---- utils
+// ───────────────── utils
 const slugify = (t?: string) =>
   (t || "site").toLowerCase().trim().normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 45) || "site";
@@ -79,7 +79,7 @@ const listSites = async () => {
 };
 const findBySub = async (sub: string) => {
   const s = await listSites();
-  return s.data?.find((w: any) => w?.site_url?.includes(`${sub}.`) || w?.admin_url?.includes(`${sub}.`));
+  return s.data?.find?.((w: any) => w?.site_url?.includes(`${sub}.`) || w?.admin_url?.includes(`${sub}.`));
 };
 const ensureFreeSub = async (base: string) => {
   try {
@@ -96,62 +96,62 @@ const ensureFreeSub = async (base: string) => {
   return subCandidate(base, Date.now().toString(36));
 };
 
-const minimalPagesMeta = (pages_meta: any): { title: string; sections: { section_title: string }[] }[] => {
-  if (!Array.isArray(pages_meta) || pages_meta.length === 0) {
-    return [
-      { title: "Home",    sections: [{ section_title: "Hero" }, { section_title: "About Us" }] },
-      { title: "Contact", sections: [{ section_title: "Get In Touch" }] },
-    ];
-  }
-  return pages_meta.map((p: any) => ({
-    title: String(p?.title || "Page"),
-    sections: Array.isArray(p?.sections) && p.sections.length
-      ? p.sections.map((s: any) => ({ section_title: String(s?.section_title || s?.title || "Section") }))
-      : [{ section_title: "Section" }],
-  }));
-};
-
-// ---- coercers: strip unsupported keys and conform types
+const hexOk = (v?: string) => typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v);
 const coerceColors = (c: any | undefined) => {
   if (!c || typeof c !== "object") return undefined;
   const out: any = {};
-  const hex = /^#[0-9a-f]{6}$/i;
-  if (c.primary_color && hex.test(c.primary_color)) out.primary_color = c.primary_color;
-  if (c.secondary_color && hex.test(c.secondary_color)) out.secondary_color = c.secondary_color;
-  if (c.background_dark && hex.test(c.background_dark)) out.background_dark = c.background_dark;
+  if (hexOk(c.primary_color)) out.primary_color = c.primary_color;
+  if (hexOk(c.secondary_color)) out.secondary_color = c.secondary_color;
+  if (hexOk(c.background_dark)) out.background_dark = c.background_dark;
   return Object.keys(out).length ? out : undefined;
 };
-
 const coerceFonts = (f: any, root?: any) => {
-  // Accept only { primary_font: string }
-  const pick =
-    f?.primary_font ||
-    f?.heading ||
-    f?.body ||
-    root?.primary_font ||
-    root?.heading ||
-    root?.body;
-  const name = typeof pick === "string" ? pick : undefined;
-  return name ? { primary_font: name } : undefined;
+  const pick = f?.primary_font || f?.heading || f?.body || root?.primary_font || root?.heading || root?.body;
+  return typeof pick === "string" ? { primary_font: pick } : undefined;
 };
 
+// pages_meta with required description fields per spec
+type PageSection = { section_title: string; section_description: string };
+type PageMeta = { title: string; description: string; sections: PageSection[] };
+const minimalPagesMeta = (pages_meta: any): PageMeta[] => {
+  const toPage = (p: any): PageMeta => {
+    const title = String(p?.title || "Page");
+    const description = typeof p?.description === "string" ? p.description : "";
+    const src = Array.isArray(p?.sections) && p.sections.length ? p.sections : [{ section_title: "Section" }];
+    const sections = src.map((s: any) => ({
+      section_title: String(s?.section_title || s?.title || "Section"),
+      section_description: typeof s?.section_description === "string" ? s.section_description : "",
+    }));
+    return { title, description, sections };
+  };
+  if (!Array.isArray(pages_meta) || !pages_meta.length) {
+    return [
+      { title: "Home", description: "", sections: [
+        { section_title: "Hero", section_description: "" },
+        { section_title: "About Us", section_description: "" },
+      ]},
+      { title: "Contact", description: "", sections: [
+        { section_title: "Get In Touch", section_description: "" },
+      ]},
+    ];
+  }
+  return pages_meta.map(toPage);
+};
+
+// ───────────────── param normalizers
 const normalizeSitemapParams = (raw: any) => {
   const p = { ...(raw || {}) };
-
   const business_name = String(p.business_name || p.businessName || p.site_title || p.brand || "Business");
   const business_description = String(p.business_description || p.businessDescription || p.description || "");
   const business_type = String(p.business_type || p.businessType || "informational");
-
   const colors = coerceColors(p.colors || p.style?.colors);
   const fonts  = coerceFonts(p.fonts || p.style?.fonts, p);
-
   return {
     business_name,
     business_description,
     business_type,
     ...(colors ? { colors } : {}),
     ...(fonts  ? { fonts }  : {}),
-    // optional hints kept but not forwarded if undefined
     ...(p.locale ? { locale: p.locale } : {}),
     ...(p.tone ? { tone: p.tone } : {}),
     ...(p.niche || p.category ? { niche: p.niche || p.category } : {}),
@@ -163,25 +163,29 @@ const normalizeGenerationParams = (raw: any, carry: any = {}) => {
 
   const business_name = String(p.business_name || carry.business_name || carry.site_title || "Business");
   const business_description = String(p.business_description || carry.business_description || "");
-  const business_type = String(p.business_type || carry.business_type || "informational");
+
+  // business_type: never "basic". prefer niche/category. fallback "business".
+  let bt = String(p.business_type || carry.business_type || "").toLowerCase().trim();
+  const niche = String(p.niche || p.category || carry.niche || "").trim();
+  if (!bt || bt === "basic") bt = niche || "business";
+
+  // website_type: "ecommerce" only if requested, else "basic"
+  const website_type: "basic" | "ecommerce" =
+    (p.website_type === "ecommerce" || bt === "ecommerce" || carry.website_type === "ecommerce") ? "ecommerce" : "basic";
 
   const website_title = String(p.website_title || p.seo?.website_title || business_name);
   const website_description = String(p.website_description || p.seo?.website_description || business_description);
-  const website_keyphrase = String(p.website_keyphrase || p.seo?.website_keyphrase || website_title);
-
-  // website_type must align with business_type
-  const website_type = business_type === "ecommerce" ? "ecommerce" : "basic";
+  const website_keyphrase_raw = String(p.website_keyphrase || p.seo?.website_keyphrase || "");
+  const website_keyphrase = website_keyphrase_raw.trim() ? website_keyphrase_raw.trim() : `${business_name} ${bt}`.trim();
 
   const pages_meta = minimalPagesMeta(p.pages_meta);
-
   const colors = coerceColors(p.colors);
   const fonts  = coerceFonts(p.fonts, p);
 
-  // whitelist only allowed keys
   return {
     business_name,
     business_description,
-    business_type,
+    business_type: bt,
     website_title,
     website_description,
     website_keyphrase,
@@ -192,7 +196,7 @@ const normalizeGenerationParams = (raw: any, carry: any = {}) => {
   };
 };
 
-// ---- handlers
+// ───────────────── handlers
 const handleCreateWebsite = async (body: any, origin: string | null) => {
   const businessName = (body.businessName || body.business_name || "New Site").toString().trim();
   const base = slugify(businessName);
@@ -261,7 +265,7 @@ const handleGenerateSitemap = async (body: any, origin: string | null) => {
   const seo = {
     website_title: data?.website_title || data?.seo?.website_title || params.business_name,
     website_description: data?.website_description || data?.seo?.website_description || params.business_description,
-    website_keyphrase: data?.website_keyphrase || data?.seo?.website_keyphrase || params.business_name,
+    website_keyphrase: data?.website_keyphrase || data?.seo?.website_keyphrase || `${params.business_name} ${params.business_type}`,
   };
   const colors = coerceColors(data?.colors) || {
     primary_color: "#FF7A00",
@@ -312,24 +316,40 @@ const handleGenerateFromSitemap = async (body: any, origin: string | null) => {
     business_name: body?.business_name,
     business_description: body?.business_description,
     business_type: body?.business_type,
+    website_type: body?.website_type,
   });
 
-  // final strict whitelist
+  // strict whitelist to match 10Web spec
   params = {
+    business_type: norm.business_type,
     business_name: norm.business_name,
     business_description: norm.business_description,
-    business_type: norm.business_type,
-    website_title: norm.website_title,
+    colors: norm.colors,
+    fonts: norm.fonts,
+    pages_meta: minimalPagesMeta(norm.pages_meta),
     website_description: norm.website_description,
     website_keyphrase: norm.website_keyphrase,
+    website_title: norm.website_title,
     website_type: norm.website_type,
-    pages_meta: norm.pages_meta,
-    ...(norm.colors ? { colors: norm.colors } : {}),
-    ...(norm.fonts  ? { fonts:  norm.fonts  } : {}),
   };
 
+  // remove undefined blocks
+  if (!params.colors) delete (params as any).colors;
+  if (!params.fonts) delete (params as any).fonts;
+
+  // final guards
+  if (!params.business_type || /^basic$/i.test(params.business_type)) params.business_type = "business";
+  if (!params.website_keyphrase || !params.website_keyphrase.trim()) {
+    params.website_keyphrase = `${params.business_name} ${params.business_type}`.trim();
+  }
+
+  // required keys check
   const required = ["business_name","business_description","business_type","website_title","website_description","website_keyphrase","pages_meta"];
-  const missing = required.filter((k) => !(k in params) || (k === "pages_meta" ? !Array.isArray((params as any)[k]) || !(params as any)[k].length : !(params as any)[k]));
+  const missing = required.filter((k) =>
+    k === "pages_meta"
+      ? !Array.isArray((params as any)[k]) || !(params as any)[k].length
+      : !(params as any)[k] || (typeof (params as any)[k] === "string" && !(params as any)[k].trim())
+  );
   if (missing.length) return J(422, { code: "MISSING_REQUIRED_PARAMS", missing }, origin);
 
   try {
@@ -353,7 +373,6 @@ const handleGenerateFromSitemap = async (body: any, origin: string | null) => {
   // short server-side poll; client keeps polling
   const deadline = Date.now() + 90_000;
   let interval = 3000;
-  let polls = 0;
   while (Date.now() < deadline) {
     try {
       const pages = await tw(`/v1/builder/websites/${website_id}/pages`, { method: "GET", timeoutMs: 30_000 });
@@ -362,9 +381,8 @@ const handleGenerateFromSitemap = async (body: any, origin: string | null) => {
     } catch {}
     await new Promise(r => setTimeout(r, interval));
     interval = Math.min(Math.round(interval * 1.5), 10_000);
-    polls++;
   }
-  return J(504, { code: "GENERATE_TIMEOUT", hint: "Still processing. Continue polling client-side.", polls_completed: polls }, origin);
+  return J(504, { code: "GENERATE_TIMEOUT", hint: "Still processing. Continue polling client-side." }, origin);
 };
 
 const handlePublishAndFrontpage = async (body: any, origin: string | null) => {
@@ -378,6 +396,7 @@ const handlePublishAndFrontpage = async (body: any, origin: string | null) => {
       const list: any[] = Array.isArray(pages?.data) ? pages.data : [];
       if (list.length === 0) { await new Promise(r => setTimeout(r, 3000)); continue; }
 
+      // publish all
       try {
         await tw(`/v1/builder/websites/${website_id}/pages/publish`, {
           method: "POST",
@@ -394,6 +413,7 @@ const handlePublishAndFrontpage = async (body: any, origin: string | null) => {
         }
       }
 
+      // set front page
       const home = list.find((p: any) => /home|accueil/i.test(p?.title) || p?.slug === "home" || p?.is_front_page) ?? list[0];
       if (home) {
         try {
@@ -401,6 +421,7 @@ const handlePublishAndFrontpage = async (body: any, origin: string | null) => {
         } catch (e: any) { if (![400,409,422].includes(e?.status ?? 0)) throw e; }
       }
 
+      // derive URLs
       let preview_url: string | null = null;
       let admin_url: string | null = null;
       try {
@@ -429,7 +450,7 @@ const handlePublishAndFrontpage = async (body: any, origin: string | null) => {
   return J(504, { code: "PUBLISH_RETRY", hint: "Still finalizing. Continue polling client-side." }, origin);
 };
 
-// ---- server
+// ───────────────── server
 serve(async (req) => {
   const origin = req.headers.get("origin");
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders(origin) });
@@ -454,7 +475,13 @@ serve(async (req) => {
       return J(200, {
         status: "healthy",
         timestamp: new Date().toISOString(),
-        available_actions: ["create-website","generate-sitemap","generate-from-sitemap","publish-and-frontpage","update-design"],
+        available_actions: [
+          "create-website",
+          "generate-sitemap",
+          "generate-from-sitemap",
+          "publish-and-frontpage",
+          "update-design",
+        ],
       }, origin);
     }
     if (req.method === "POST" && !action) return J(400, { code: "MISSING_ACTION" }, origin);
