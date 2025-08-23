@@ -29,20 +29,21 @@ function minimalPagesMeta(pages_meta: any): PagesMeta {
 }
 
 function normalizeGenerateParams(raw: any) {
-  const p = JSON.parse(JSON.stringify(raw || {})); // de-proxy, remove getters/undefined
-  const business_name =
-    p.business_name || p.website_title || 'Business';
-  const business_description =
-    p.business_description || p.website_description || 'Generated with Naveeg.';
-  const business_type =
-    p.business_type || (p.website_type === 'ecommerce' ? 'ecommerce' : 'informational');
+  const p = JSON.parse(JSON.stringify(raw || {}));
 
-  const website_title =
-    p.website_title || p.seo?.website_title || business_name;
-  const website_description =
-    p.website_description || p.seo?.website_description || business_description;
-  const website_keyphrase =
-    p.website_keyphrase || p.seo?.website_keyphrase || website_title;
+  // coerce business_type
+  const allowed = new Set([
+    'informational', 'ecommerce', 'agency', 'restaurant', 'service', 'portfolio', 'blog', 'saas',
+  ]);
+  const btRaw = p.business_type || (p.website_type === 'ecommerce' ? 'ecommerce' : undefined);
+  const business_type = allowed.has(String(btRaw)) ? btRaw : 'informational';
+
+  const business_name = p.business_name || p.website_title || 'Business';
+  const business_description = p.business_description || p.website_description || 'Generated with Naveeg.';
+
+  const website_title = p.website_title || p.seo?.website_title || business_name;
+  const website_description = p.website_description || p.seo?.website_description || business_description;
+  const website_keyphrase = p.website_keyphrase || p.seo?.website_keyphrase || website_title;
 
   const website_type = p.website_type === 'ecommerce' ? 'ecommerce' : 'basic';
   const pages_meta = minimalPagesMeta(p.pages_meta);
@@ -56,11 +57,11 @@ function normalizeGenerateParams(raw: any) {
   return {
     business_name,
     business_description,
-    business_type,
+    business_type,          // valid 10Web type
     website_title,
     website_description,
     website_keyphrase,
-    website_type,
+    website_type,           // 'basic' | 'ecommerce'
     pages_meta,
     ...(colors ? { colors } : {}),
     ...(fonts ? { fonts } : {}),
@@ -85,11 +86,6 @@ async function req(
               ? { action, ...payload, params: normalizeGenerateParams(payload.params) }
               : { action, ...payload }
           );
-
-    // Debug once: see exactly what we send
-    if (action === 'generate-from-sitemap') {
-      try { console.debug('GEN REQ →', JSON.parse(body as string)); } catch {}
-    }
 
     const res = await fetch(url, {
       method,
