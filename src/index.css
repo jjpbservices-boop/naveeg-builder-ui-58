@@ -5,12 +5,19 @@
 @tailwind utilities;
 
 /* Naveeg Website Builder Design System
-   Primary: #FF4A1C (12 100% 56%)
+   Primary: #FF4A1C  → H 12.1586 S 100% L 55.49%
    Mobile-first, rounded-2xl cards, soft shadows, 44px touch targets
 */
 
 @layer base {
   :root {
+    /* Exact brand HSL triple to reproduce #FF4A1C precisely */
+    --brand-h: 12.1586;
+    --brand-s: 100%;
+    --brand-l: 55.49%;
+    --brand: var(--brand-h) var(--brand-s) var(--brand-l);
+    --brand-hex: #FF4A1C;
+
     --background: 0 0% 100%;
     --foreground: 221 39% 11%;
 
@@ -20,10 +27,11 @@
     --popover: 0 0% 100%;
     --popover-foreground: 221 39% 11%;
 
-    --primary: 12 100% 56%;
+    /* Primary locked to brand */
+    --primary: var(--brand);
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 12 100% 51%;
-    --primary-light: 12 100% 95%;
+    --primary-hover: var(--brand-h) var(--brand-s) 50%;
+    --primary-light: var(--brand-h) var(--brand-s) 95%;
 
     --secondary: 210 40% 96%;
     --secondary-foreground: 221 39% 11%;
@@ -31,8 +39,8 @@
     --muted: 220 14% 96%;
     --muted-foreground: 220 9% 46%;
 
-    --accent: 12 100% 95%;
-    --accent-foreground: 12 100% 20%;
+    --accent: var(--brand-h) var(--brand-s) 95%;
+    --accent-foreground: var(--brand-h) 100% 20%;
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
@@ -45,25 +53,22 @@
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 12 100% 56%;
+    --ring: var(--brand);
 
     --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* DaisyUI compatibility */
+    --p: var(--brand);
+    --pc: 0 0% 100%;
   }
 
   .dark {
@@ -76,10 +81,11 @@
     --popover: 221 39% 11%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 12 100% 60%;
+    /* Keep the same exact brand in dark mode */
+    --primary: var(--brand);
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 12 100% 65%;
-    --primary-light: 12 100% 15%;
+    --primary-hover: var(--brand-h) var(--brand-s) 62%;
+    --primary-light: var(--brand-h) var(--brand-s) 20%;
 
     --secondary: 221 30% 18%;
     --secondary-foreground: 0 0% 100%;
@@ -87,8 +93,8 @@
     --muted: 221 30% 18%;
     --muted-foreground: 217 10% 65%;
 
-    --accent: 12 100% 15%;
-    --accent-foreground: 12 100% 80%;
+    --accent: var(--brand-h) var(--brand-s) 20%;
+    --accent-foreground: var(--brand-h) 100% 85%;
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
@@ -101,92 +107,80 @@
 
     --border: 221 30% 18%;
     --input: 221 30% 18%;
-    --ring: 12 100% 60%;
+    --ring: var(--brand);
+
+    /* DaisyUI compatibility */
+    --p: var(--brand);
+    --pc: 0 0% 100%;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
 
-  body {
-    @apply bg-background text-foreground font-inter;
-  }
+  body { @apply bg-background text-foreground font-inter; }
 
   /* Touch targets for mobile */
-  .touch-target {
-    @apply min-h-[44px] min-w-[44px];
-  }
+  .touch-target { @apply min-h-[44px] min-w-[44px]; }
 
-  /* Beautiful animations */
-  .animate-in {
-    animation: fade-in 0.5s ease-out;
-  }
-
-  .animate-slide-up {
-    animation: slide-up 0.3s ease-out;
-  }
-
-  .animate-bounce-in {
-    animation: bounce-in 0.6s ease-out;
-  }
+  /* Animations */
+  .animate-in { animation: fade-in 0.5s ease-out; }
+  .animate-slide-up { animation: slide-up 0.3s ease-out; }
+  .animate-bounce-in { animation: bounce-in 0.6s ease-out; }
 }
 
+/* Hard overrides to prevent any stray oranges from utilities or UI libs */
+.text-primary { color: hsl(var(--primary)) !important; }
+.bg-primary { background-color: hsl(var(--primary)) !important; }
+.border-primary { border-color: hsl(var(--primary)) !important; }
+.ring-primary { --tw-ring-color: hsl(var(--primary)) !important; }
+
+a { color: hsl(var(--primary)); }
+a:hover { color: hsl(var(--primary-hover)); }
+
+.btn-primary,
+.button-primary,
+[data-variant="primary"] {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+.btn-primary:hover,
+.button-primary:hover,
+[data-variant="primary"]:hover {
+  background-color: hsl(var(--primary-hover)) !important;
+}
+
+/* Cards and gradients */
 @layer components {
-  /* Card shadows */
   .shadow-soft {
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   }
-
   .shadow-medium {
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   }
-
   .shadow-large {
     box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
 
-  /* Gradient backgrounds */
   .bg-gradient-primary {
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-hover)));
   }
-
   .bg-gradient-soft {
     background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--muted)));
   }
 }
 
+/* Keyframes */
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; } to { opacity: 1; }
 }
-
 @keyframes slide-up {
-  from { 
-    opacity: 0; 
-    transform: translateY(20px); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes bounce-in {
-  0% { 
-    opacity: 0; 
-    transform: scale(0.3); 
-  }
-  50% { 
-    opacity: 1; 
-    transform: scale(1.05); 
-  }
-  70% { 
-    transform: scale(0.9); 
-  }
-  100% { 
-    opacity: 1; 
-    transform: scale(1); 
-  }
+  0% { opacity: 0; transform: scale(0.3); }
+  50% { opacity: 1; transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
 }
