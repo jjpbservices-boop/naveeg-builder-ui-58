@@ -10,7 +10,7 @@ const HEADERS: Record<string, string> = {
   Authorization: `Bearer ${ANON}`,
 };
 
-// exact-schema builder
+// EXACT schema for 10Web generate_site_from_sitemap
 export function buildStrictParams(input: {
   business_type: string;
   business_name: string;
@@ -23,8 +23,8 @@ export function buildStrictParams(input: {
   website_title: string;
   website_type?: string;
 }) {
-  const required = ["business_type","business_name","business_description","website_description","website_keyphrase","website_title"] as const;
-  for (const k of required) if (!(input as any)[k]) throw new Error(`Missing required param: ${k}`);
+  const reqKeys = ["business_type","business_name","business_description","website_description","website_keyphrase","website_title"] as const;
+  for (const k of reqKeys) if (!(input as any)[k]) throw new Error(`Missing required param: ${k}`);
   if (!Array.isArray(input.pages_meta) || input.pages_meta.length === 0) throw new Error("Missing required param: pages_meta");
 
   const out: any = {
@@ -75,15 +75,22 @@ async function req(action: string, payload: Record<string, any>, timeout = 65_00
 }
 
 export const api = {
+  // used by Analyze flow
+  createWebsite: (businessName: string) =>
+    req("create-website", { businessName }, 90_000),
+
+  generateSitemap: (website_id: number, params: { business_name: string; business_description: string; business_type?: string }) =>
+    req("generate-sitemap", { website_id, params }, 120_000),
+
   // design save
   updateDesign: (siteId: number, design: any) =>
     req("update-design", { siteId, design }, 30_000),
 
-  // one-shot generate
+  // one-shot generate with STRICT params
   generateFromOnce: (website_id: number, unique_id: string, params: any) =>
     req("generate-from-sitemap", { website_id, unique_id, params }, 65_000),
 
-  // polling loop
+  // polling loop until pages exist or timeout (~5 min)
   generateFromWithPolling: async (website_id: number, unique_id: string, params: any) => {
     const loops = 50;
     for (let i = 0; i < loops; i++) {
@@ -112,5 +119,7 @@ export const api = {
   },
 };
 
-// named export for existing imports
+// named re-exports for existing imports
+export const createWebsite = api.createWebsite;
+export const generateSitemap = api.generateSitemap;
 export const updateDesign = api.updateDesign;
