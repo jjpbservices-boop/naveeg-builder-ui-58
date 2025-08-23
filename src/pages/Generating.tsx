@@ -8,25 +8,34 @@ import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
 import { api } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 
-// Enhanced finalization with better error handling and polling
+const steps = ['Create website','Generate sitemap','Apply design','Generate pages','Publish pages','Set front page','Get preview link'];
+const pctOf = (i: number) => Math.round((i / (steps.length - 1)) * 100);
+
+const coerceBusinessType = (business_type?: string, website_type?: string) => {
+  const allowed = new Set(['informational','ecommerce','agency','restaurant','service','portfolio','blog','saas']);
+  const bt = business_type || (website_type === 'ecommerce' ? 'ecommerce' : 'informational');
+  return allowed.has(String(bt)) ? String(bt) : 'informational';
+};
+const buildParams = (s: any) => ({
+  business_name: s.business_name || s.seo_title || 'Business',
+  business_description: s.business_description || s.seo_description || 'Generated with Naveeg.',
+  business_type: coerceBusinessType(s.business_type, s.website_type),
+  website_title: s.seo_title || s.business_name || 'Website',
+  website_description: s.seo_description || s.business_description || 'Description',
+  website_keyphrase: s.seo_keyphrase || s.business_name || 'Website',
+  website_type: s.website_type === 'ecommerce' ? 'ecommerce' : 'basic',
+  pages_meta: Array.isArray(s.pages_meta) && s.pages_meta.length
+    ? s.pages_meta
+    : [
+        { title: 'Home', sections: [{ section_title: 'Hero' }] },
+        { title: 'Contact', sections: [{ section_title: 'Get In Touch' }] },
+      ],
+  ...(s.colors ? { colors: s.colors } : {}),
+  fonts: { primary_font: s.fonts?.primary_font || s.fonts?.body || 'Inter' },
+});
+
 async function finalizeSite(website_id: number) {
-  try {
-    console.log('Starting finalization for website:', website_id);
-    return await api.publishAndFrontWithPolling(website_id);
-  } catch (error: any) {
-    console.error('Finalization error:', error);
-    
-    // Handle specific error types
-    if (error.code === 'CLIENT_TIMEOUT') {
-      throw new Error('Publishing is taking longer than expected. The process is still running - please try again in a few minutes.');
-    }
-    
-    if (error.message?.includes('timeout after maximum attempts')) {
-      throw new Error('Publishing timeout. Your website may still be processing. Please check back in a few minutes.');
-    }
-    
-    throw error;
-  }
+  return api.publishAndFrontWithPolling(website_id);
 }
 
 export default function Generating() {
@@ -34,125 +43,50 @@ export default function Generating() {
   const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
-  
-  const { 
-    website_id, 
-    unique_id, 
-    colors, 
-    fonts, 
-    pages_meta, 
-    seo_title, 
-    seo_description, 
-    seo_keyphrase,
-    business_name,
-    business_description 
-  } = useOnboardingStore();
 
-  const steps = [
-    'Create website',
-    'Generate sitemap', 
-    'Apply design',
-    'Generate pages',
-    'Publish pages',
-    'Set front page',
-    'Get preview link'
-  ];
-  
-  const pct = Math.round((step / (steps.length - 1)) * 100);
+  const {
+    website_id, unique_id, colors, fonts, pages_meta,
+    seo_title, seo_description, seo_keyphrase,
+    business_name, business_description, business_type, website_type,
+  } = useOnboardingStore();
 
   const generateWebsite = async () => {
     try {
       setError(null);
-      setStep(0);
+      setStep(2); // create + sitemap assumed done
 
-      console.log('Starting website generation with data:', {
-        website_id,
-        unique_id,
-        business_name,
-        business_description,
-        seo_title,
-        seo_description,
-        seo_keyphrase,
-        pages_meta
+      // Save design to DB
+      await api.updateDesign(website_id, {
+        colors, fonts, pages_meta,
+        seo: { title: seo_title, description: seo_description, keyphrase: seo_keyphrase },
+        website_type,
       });
-
-      // Skip create and sitemap - already done
-      setStep(2);
-      
-      // Apply design
-      const design = {
-        colors,
-        fonts,
-        pages_meta,
-        seo: {
-          title: seo_title,
-          description: seo_description,
-          keyphrase: seo_keyphrase
-        }
-      };
-      
-      await api.updateDesign(website_id, design);
       setStep(3);
 
-      // Generate from sitemap with enhanced parameters
-      const params = {
-        // Required parameters for 10Web API
-        pages_meta,
-        website_title: seo_title,
-        website_description: seo_description,
-        website_keyphrase: seo_keyphrase,
-        
-        // Additional context parameters
-        business_name,
-        business_description,
-        business_type: 'basic'
-      };
-      
-      console.log('Calling generateFromWithPolling with params:', params);
-      
+      // Generate pages
+      const params = buildParams({
+        business_name, business_description, business_type,
+        seo_title, seo_description, seo_keyphrase,
+        pages_meta, colors, fonts, website_type,
+      });
       await api.generateFromWithPolling(website_id, unique_id, params);
       setStep(4);
 
-      // Finalize (publish + front page + URLs)
+      // Publish + front page + URLs
       setStep(5);
       const { preview_url, admin_url } = await finalizeSite(website_id);
       setStep(6);
 
-      // Navigate to ready page with URLs
-      toast({
-        title: 'Website generated successfully!',
-        description: 'Your website is ready to view.',
-      });
-
-      // Store URLs in the onboarding store and navigate to ready
-      useOnboardingStore.setState({ 
-        preview_url, 
-        admin_url 
-      });
-      
+      toast({ title: 'Website generated successfully!', description: 'Your website is ready to view.' });
+      useOnboardingStore.setState({ preview_url, admin_url });
       navigate({ to: '/ready' });
-
     } catch (e: any) {
       console.error('Generation error:', e);
-      
-      // Enhanced error handling with specific messages
-      let errorMessage = e?.message || 'Website generation failed. Please try again.';
-      
-      if (e?.code === 'CLIENT_TIMEOUT') {
-        errorMessage = 'Generation is taking longer than expected but is still processing. Please try again in a few minutes.';
-      } else if (e?.code === 'VALIDATION_ERROR' || e?.code === 'MISSING_REQUIRED_PARAMS') {
-        errorMessage = 'There was an issue with your website configuration. Please go back and check your business details.';
-      } else if (e?.code === 'GENERATE_FAILED') {
-        errorMessage = 'Website generation failed. This might be a temporary issue - please try again.';
-      } else if (e?.code === 'GENERATE_TIMEOUT') {
-        errorMessage = 'Generation is taking longer than expected. Your website may still be processing - please try again in a few minutes.';
-      } else if (e?.status === 502) {
-        errorMessage = 'Server error during generation. Please try again.';
-      } else if (e?.status === 504) {
-        errorMessage = 'Generation timeout. Your website may still be processing - please check back in a few minutes.';
-      }
-      
-      setError(errorMessage);
+      const msg =
+        e?.message ||
+        e?.detail?.message ||
+        'Website generation failed. Please try again.';
+      setError(msg);
     }
   };
 
@@ -162,6 +96,7 @@ export default function Generating() {
       return;
     }
     generateWebsite();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleRetry = async () => {
@@ -169,10 +104,7 @@ export default function Generating() {
     await generateWebsite();
     setIsRetrying(false);
   };
-
-  const handleGoBack = () => {
-    navigate({ to: '/design' });
-  };
+  const handleGoBack = () => navigate({ to: '/design' });
 
   if (error) {
     return (
@@ -180,35 +112,15 @@ export default function Generating() {
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-2xl mx-auto">
             <Card>
-              <CardHeader>
-                <CardTitle className="text-destructive">Generation Failed</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="text-destructive">Generation Failed</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground">{error}</p>
-                
                 <div className="flex gap-4">
-                  <Button 
-                    onClick={handleRetry}
-                    disabled={isRetrying}
-                    className="flex-1"
-                  >
-                    {isRetrying ? (
-                      <>
-                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                        Retrying...
-                      </>
-                    ) : (
-                      'Try Again'
-                    )}
+                  <Button onClick={handleRetry} disabled={isRetrying} className="flex-1">
+                    {isRetrying ? (<><RefreshCw className="mr-2 h-4 w-4 animate-spin" />Retrying…</>) : 'Try Again'}
                   </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    onClick={handleGoBack}
-                    disabled={isRetrying}
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Design
+                  <Button variant="outline" onClick={handleGoBack} disabled={isRetrying}>
+                    <ArrowLeft className="mr-2 h-4 w-4" />Back to Design
                   </Button>
                 </div>
               </CardContent>
@@ -219,6 +131,8 @@ export default function Generating() {
     );
   }
 
+  const pct = pctOf(step);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -226,47 +140,28 @@ export default function Generating() {
           <Card>
             <CardHeader>
               <CardTitle>Generating your website</CardTitle>
-              <p className="text-muted-foreground">
-                This process may take a few minutes. Please don't close this page.
-              </p>
+              <p className="text-muted-foreground">This may take a few minutes. Please do not close this page.</p>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-muted-foreground">
-                    Step {step + 1} of {steps.length}
-                  </span>
+                  <span className="text-sm text-muted-foreground">Step {step + 1} of {steps.length}</span>
                   <span className="text-sm font-medium">{pct}%</span>
                 </div>
                 <Progress value={pct} className="h-2" />
-                <p className="text-sm mt-2 font-medium">
-                  {steps[step]}
-                </p>
+                <p className="text-sm mt-2 font-medium">{steps[step]}</p>
               </div>
-
               <div className="space-y-2">
-                {steps.map((stepName, i) => (
-                  <div 
-                    key={stepName} 
-                    className={`flex items-center text-sm ${
-                      i < step ? 'text-foreground' : 
-                      i === step ? 'text-primary font-medium' : 
-                      'text-muted-foreground'
-                    }`}
-                  >
-                    <span className="mr-3 w-6">
-                      {i < step ? '✓' : i === step ? '•' : '○'}
-                    </span>
-                    {stepName}
+                {steps.map((name, i) => (
+                  <div key={name} className={`flex items-center text-sm ${i < step ? 'text-foreground' : i === step ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                    <span className="mr-3 w-6">{i < step ? '✓' : i === step ? '•' : '○'}</span>
+                    {name}
                   </div>
                 ))}
               </div>
-
               <div className="p-4 bg-muted rounded-lg">
                 <p className="text-sm text-muted-foreground">
-                  <strong>Did you know?</strong> Your website is being generated using AI that analyzes 
-                  your business description to create custom content, layout, and design that matches 
-                  your brand perfectly.
+                  We coerce `business_type` to a valid 10Web value and ensure all six required fields are present.
                 </p>
               </div>
             </CardContent>
