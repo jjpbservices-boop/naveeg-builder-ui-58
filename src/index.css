@@ -51,23 +51,17 @@
     --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-  .dark {
+  /* dark selector widened to match DaisyUI too */
+  html.dark, .dark, [data-theme="dark"] {
     --background: 221 39% 11%;
     --foreground: 0 0% 100%;
 
@@ -89,8 +83,8 @@
     --muted: 221 30% 18%;
     --muted-foreground: 217 10% 65%;
 
-    --accent: 12.1586 100% 95%;
-    --accent-foreground: 12.1586 100% 20%;
+    --accent: 12.1586 100% 20%;
+    --accent-foreground: 12.1586 100% 85%;
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
@@ -108,87 +102,40 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
 
-  body {
-    @apply bg-background text-foreground font-inter;
-  }
+  body { @apply bg-background text-foreground font-inter; }
 
   /* Touch targets for mobile */
-  .touch-target {
-    @apply min-h-[44px] min-w-[44px];
-  }
+  .touch-target { @apply min-h-[44px] min-w-[44px]; }
 
   /* Beautiful animations */
-  .animate-in {
-    animation: fade-in 0.5s ease-out;
-  }
-
-  .animate-slide-up {
-    animation: slide-up 0.3s ease-out;
-  }
-
-  .animate-bounce-in {
-    animation: bounce-in 0.6s ease-out;
-  }
+  .animate-in { animation: fade-in 0.5s ease-out; }
+  .animate-slide-up { animation: slide-up 0.3s ease-out; }
+  .animate-bounce-in { animation: bounce-in 0.6s ease-out; }
 }
 
 @layer components {
   /* Card shadows */
-  .shadow-soft {
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  }
-
-  .shadow-medium {
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  }
-
-  .shadow-large {
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  }
+  .shadow-soft { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); }
+  .shadow-medium { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+  .shadow-large { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
 
   /* Gradient backgrounds */
-  .bg-gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-hover)));
-  }
-
-  .bg-gradient-soft {
-    background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--muted)));
-  }
+  .bg-gradient-primary { background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-hover))); }
+  .bg-gradient-soft { background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--muted))); }
 }
 
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 
 @keyframes slide-up {
-  from { 
-    opacity: 0; 
-    transform: translateY(20px); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes bounce-in {
-  0% { 
-    opacity: 0; 
-    transform: scale(0.3); 
-  }
-  50% { 
-    opacity: 1; 
-    transform: scale(1.05); 
-  }
-  70% { 
-    transform: scale(0.9); 
-  }
-  100% { 
-    opacity: 1; 
-    transform: scale(1); 
-  }
+  0% { opacity: 0; transform: scale(0.3); }
+  50% { opacity: 1; transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
 }
