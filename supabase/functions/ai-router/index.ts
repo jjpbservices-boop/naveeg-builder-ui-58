@@ -10,7 +10,7 @@ const API_BASE = Deno.env.get("TENWEB_API_BASE") ?? "https://api.10web.io";
 const API_KEY = Deno.env.get("TENWEB_API_KEY") ?? "";
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-// CORS (always present)
+// CORS (always present; frontend uses credentials: 'omit')
 const corsHeaders = () => ({
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -52,6 +52,7 @@ const slugify = (t?: string) =>
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 45) || "site";
 const subCandidate = (base: string, salt: string) =>
   (base + "-" + salt).toLowerCase().replace(/[^a-z0-9-]+/g, "").slice(0, 45);
+
 const listSites = async () => { try { return await tw("/v1/account/websites",{method:"GET",timeoutMs:30_000}); } catch { return {data:[]}; } };
 const findBySub = async (sub: string) => {
   const s = await listSites();
@@ -91,13 +92,15 @@ const normalizeSitemapParams = (raw: any) => {
   const p = { ...(raw || {}) };
   p.business_name = p.business_name || p.businessName || p.site_title || p.brand || "Business";
   p.business_description = p.business_description || p.businessDescription || p.description || "";
-  p.business_type = p.business_type || p.businessType || "informational";
+  let business_type = p.business_type || p.businessType || (p.website_type === "ecommerce" ? "ecommerce" : "");
+  const allowed = new Set(["informational","ecommerce","agency","restaurant","service","portfolio","blog","saas"]);
+  if (!allowed.has(String(business_type))) business_type = "informational";
   if (p.style?.colors && !p.colors) p.colors = p.style.colors;
   if (p.style?.fonts && !p.fonts) p.fonts = p.style.fonts;
   return {
     business_name: String(p.business_name),
     business_description: String(p.business_description),
-    business_type: String(p.business_type),
+    business_type,
     colors: p.colors || undefined,
     fonts: p.fonts || undefined,
     locale: p.locale || p.language || undefined,
@@ -105,20 +108,23 @@ const normalizeSitemapParams = (raw: any) => {
 };
 const normalizeGenerationParams = (raw: any, carry: any = {}) => {
   const p = { ...(raw || {}) };
+  const allowed = new Set(["informational","ecommerce","agency","restaurant","service","portfolio","blog","saas"]);
+
   const business_name = p.business_name || carry.business_name || "Business";
-  const business_description = p.business_description || carry.business_description || "Website generated with Naveeg.";
-  const business_type = p.business_type || carry.business_type || "informational";
+  const business_description = p.business_description || carry.business_description || "Generated with Naveeg.";
+  let business_type = p.business_type || carry.business_type || (p.website_type === "ecommerce" ? "ecommerce" : "");
+  if (!allowed.has(String(business_type))) business_type = "informational";
+
   const website_title = p.website_title || p.seo?.website_title || business_name;
   const website_description = p.website_description || p.seo?.website_description || business_description;
   const website_keyphrase = p.website_keyphrase || p.seo?.website_keyphrase || website_title;
+
   const pages_meta = minimalPagesMeta(p.pages_meta);
-  const website_type = p.website_type || "basic";
+  const website_type = p.website_type === "ecommerce" ? "ecommerce" : "basic";
   const colors = p.colors || undefined;
-  const fonts = p.fonts || undefined;
-  // return flat schema 10Web expects
-  return { business_name, business_description, business_type,
-           website_title, website_description, website_keyphrase,
-           website_type, pages_meta, colors, fonts };
+  const fonts = p.fonts && p.fonts.primary_font ? p.fonts : { primary_font: "Inter" };
+
+  return { business_name, business_description, business_type, website_title, website_description, website_keyphrase, website_type, pages_meta, colors, fonts };
 };
 
 // handlers
@@ -170,7 +176,6 @@ const handleGenerateSitemap = async (body: any) => {
   params = normalizeSitemapParams(params);
   if (!params.business_name || !params.business_description)
     return J(400,{ error:"Missing required params: business_name, business_description" });
-  if (!params.business_type) params.business_type = "informational";
 
   const result = await tw("/v1/ai/generate_sitemap",{
     method:"POST", body:JSON.stringify({ website_id, params }), timeoutMs:120_000
@@ -226,7 +231,6 @@ const handleGenerateFromSitemap = async (body: any) => {
   let params = body?.params;
   if (!website_id || !unique_id || !params) return J(400,{ error:"Missing website_id, unique_id, or params" });
 
-  // Build a valid flat params object even if frontend only sent pages_meta
   const norm = normalizeGenerationParams(params, {
     business_name: body?.business_name,
     business_description: body?.business_description,
