@@ -1,178 +1,134 @@
 // src/lib/api.ts
-const BASE = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
-const ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const BASE = (import.meta.env.VITE_SUPABASE_URL || "").replace(/\/$/, "");
+const ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 const FN = `${BASE}/functions/v1/ai-router`;
 
 const HEADERS: Record<string, string> = {
-  accept: 'application/json',
-  'content-type': 'application/json',
+  accept: "application/json",
+  "content-type": "application/json",
   apikey: ANON,
   Authorization: `Bearer ${ANON}`,
 };
 
-type PagesMeta = { title: string; sections: { section_title: string }[] }[];
-
-function minimalPagesMeta(pages_meta: any): PagesMeta {
-  if (!Array.isArray(pages_meta) || pages_meta.length === 0) {
-    return [
-      { title: 'Home', sections: [{ section_title: 'Hero' }] },
-      { title: 'Contact', sections: [{ section_title: 'Get In Touch' }] },
-    ];
+// strict builder: EXACT keys only
+export function buildStrictParams(input: {
+  business_type: string;
+  business_name: string;
+  business_description: string;
+  colors?: { background_dark?: string; primary_color?: string; secondary_color?: string };
+  fonts?: { primary_font?: string };
+  pages_meta: Array<{
+    title: string;
+    description?: string;
+    sections?: Array<{ section_title: string; section_description?: string }>;
+  }>;
+  website_description: string;
+  website_keyphrase: string;
+  website_title: string;
+  website_type?: string; // "basic" | "ecommerce"
+}) {
+  // validate required
+  const required = ["business_type","business_name","business_description","website_description","website_keyphrase","website_title"] as const;
+  for (const k of required) {
+    // @ts-ignore
+    if (!input[k]) throw new Error(`Missing required param: ${k}`);
   }
-  return pages_meta.map((p: any) => ({
-    title: String(p?.title || 'Page'),
-    sections:
-      Array.isArray(p?.sections) && p.sections.length
-        ? p.sections.map((s: any) => ({ section_title: String(s?.section_title || s?.title || 'Section') }))
-        : [{ section_title: 'Section' }],
-  }));
-}
+  if (!Array.isArray(input.pages_meta) || input.pages_meta.length === 0) {
+    throw new Error("Missing required param: pages_meta");
+  }
 
-function normalizeGenerateParams(raw: any) {
-  const p = JSON.parse(JSON.stringify(raw || {}));
-  const allowed = new Set(['informational','ecommerce','agency','restaurant','service','portfolio','blog','saas']);
-  const btRaw = p.business_type || (p.website_type === 'ecommerce' ? 'ecommerce' : undefined);
-  const business_type = allowed.has(String(btRaw)) ? String(btRaw) : 'informational';
-
-  const business_name = p.business_name || p.website_title || 'Business';
-  const business_description = p.business_description || p.website_description || 'Generated with Naveeg.';
-  const website_title = p.website_title || p.seo?.website_title || business_name;
-  const website_description = p.website_description || p.seo?.website_description || business_description;
-  const website_keyphrase = p.website_keyphrase || p.seo?.website_keyphrase || website_title;
-  const website_type = p.website_type === 'ecommerce' ? 'ecommerce' : 'basic';
-  const pages_meta = minimalPagesMeta(p.pages_meta);
-  const colors = p.colors && typeof p.colors === 'object' ? p.colors : undefined;
-  const fonts = p.fonts && typeof p.fonts === 'object' && p.fonts.primary_font
-    ? p.fonts
-    : { primary_font: (p.fonts?.body as string) || 'Inter' };
-
-  return {
-    business_name,
-    business_description,
-    business_type,
-    website_title,
-    website_description,
-    website_keyphrase,
-    website_type,
-    pages_meta,
-    ...(colors ? { colors } : {}),
-    ...(fonts ? { fonts } : {}),
+  // whitelist, no extras
+  const out: any = {
+    business_type: input.business_type,
+    business_name: input.business_name,
+    business_description: input.business_description,
+    pages_meta: input.pages_meta.map(p => ({
+      title: p.title,
+      ...(p.description ? { description: p.description } : {}),
+      ...(Array.isArray(p.sections) && p.sections.length
+        ? { sections: p.sections.map(s => ({
+            section_title: s.section_title,
+            ...(s.section_description ? { section_description: s.section_description } : {}),
+          })) }
+        : {}),
+    })),
+    website_description: input.website_description,
+    website_keyphrase: input.website_keyphrase,
+    website_title: input.website_title,
   };
+  if (input.colors) out.colors = input.colors;
+  if (input.fonts?.primary_font) out.fonts = { primary_font: input.fonts.primary_font };
+  if (input.website_type) out.website_type = input.website_type;
+  return out;
 }
 
 async function req(
   action: string,
-  payload: Record<string, any> = {},
-  timeout = 120_000,
-  method: 'GET' | 'POST' = 'POST'
+  payload: Record<string, any>,
+  timeout = 65_000
 ) {
   const ctl = new AbortController();
   const t = setTimeout(() => ctl.abort(), timeout);
   try {
-    const url = method === 'GET' ? `${FN}?action=${encodeURIComponent(action)}` : FN;
-    const body =
-      method === 'GET'
-        ? undefined
-        : JSON.stringify(
-            action === 'generate-from-sitemap' && payload?.params
-              ? { action, ...payload, params: normalizeGenerateParams(payload.params) }
-              : { action, ...payload }
-          );
-
-    const res = await fetch(url, {
-      method,
-      mode: 'cors',
-      credentials: 'omit',
+    const res = await fetch(FN + `?action=${encodeURIComponent(action)}`, {
+      method: "POST",
       headers: HEADERS,
-      body,
+      body: JSON.stringify({ action, ...payload }),
       signal: ctl.signal,
     });
-
     const text = await res.text();
     const json = text ? JSON.parse(text) : null;
-
     if (!res.ok) {
-      const err: any = new Error(json?.code || res.statusText || 'Request failed');
+      const err: any = new Error(json?.code || res.statusText || "Request failed");
       err.status = res.status;
       err.code = json?.code;
       err.detail = json;
       throw err;
     }
     return json;
-  } catch (error: any) {
-    if (error.name === 'AbortError') {
-      const timeoutErr: any = new Error('CLIENT_TIMEOUT');
-      timeoutErr.code = 'CLIENT_TIMEOUT';
-      timeoutErr.status = 408;
-      timeoutErr.originalError = error;
-      throw timeoutErr;
+  } catch (e: any) {
+    if (e.name === "AbortError") {
+      const err: any = new Error("CLIENT_TIMEOUT");
+      err.code = "CLIENT_TIMEOUT";
+      err.status = 408;
+      throw err;
     }
-    throw error;
+    throw e;
   } finally {
     clearTimeout(t);
   }
 }
 
 export const api = {
-  health: () => req('health', {}, 30_000, 'GET'),
+  // one-shot call (used by polling helper)
+  generateFromOnce: (website_id: number, unique_id: string, params: any) =>
+    req("generate-from-sitemap", { website_id, unique_id, params }, 65_000),
 
-  createWebsite: (businessName: string) =>
-    req('create-website', { businessName }, 90_000),
-
-  generateSitemap: (website_id: number, params: any) =>
-    req('generate-sitemap', { website_id, params }, 180_000),
-
-  updateDesign: (siteId: number, design: any) =>
-    req('update-design', { siteId, design }, 30_000),
-
-  generateFrom: (website_id: number, unique_id: string, params: any) =>
-    req('generate-from-sitemap', { website_id, unique_id, params }, 65_000),
-
-  publishAndFront: (website_id: number) =>
-    req('publish-and-frontpage', { website_id }, 180_000),
-
-  // Short-poll loop: each server call returns in ≤~55s
+  // polling loop until pages exist or timeout (~5 min)
   generateFromWithPolling: async (website_id: number, unique_id: string, params: any) => {
-    const loops = 50;       // ~5 min
-    const perCall = 65_000; // server caps ~55s
+    const loops = 50; // ~5 min
     for (let i = 0; i < loops; i++) {
       try {
-        const res = await req('generate-from-sitemap', { website_id, unique_id, params }, perCall);
-        if (res?.ok === true && res?.pages_count > 0) return res;
+        const res = await api.generateFromOnce(website_id, unique_id, params);
+        if (res?.ok && res?.pages_count > 0) return res;
         await new Promise(r => setTimeout(r, 2500));
-      } catch (error: any) {
-        if (error.code === 'CLIENT_TIMEOUT') {
-          await new Promise(r => setTimeout(r, 2500));
-          continue;
-        }
-        throw error;
+      } catch (e: any) {
+        if (e.code === "CLIENT_TIMEOUT") { await new Promise(r => setTimeout(r, 2500)); continue; }
+        throw e;
       }
     }
-    throw new Error('Generation timeout after polling');
+    throw new Error("Generation timeout after polling");
   },
 
   publishAndFrontWithPolling: async (website_id: number) => {
-    const maxAttempts = 6;
-    const attemptTimeout = 180_000;
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        return await req('publish-and-frontpage', { website_id }, attemptTimeout);
-      } catch (error: any) {
-        if (error.code === 'CLIENT_TIMEOUT' && attempt < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          continue;
-        }
-        throw error;
+    const attempts = 6, perAttempt = 180_000;
+    for (let i = 0; i < attempts; i++) {
+      try { return await req("publish-and-frontpage", { website_id }, perAttempt); }
+      catch (e: any) {
+        if (e.code === "CLIENT_TIMEOUT" && i < attempts - 1) { await new Promise(r => setTimeout(r, 5000)); continue; }
+        throw e;
       }
     }
-    throw new Error('Publishing timeout after maximum attempts');
+    throw new Error("Publishing timeout");
   },
 };
-
-// Legacy named exports
-export const createWebsite = api.createWebsite;
-export const generateSitemap = api.generateSitemap;
-export const generateFromSitemap = (websiteId: number, uniqueId: string, params: any) =>
-  api.generateFrom(websiteId, uniqueId, params);
-export const publishAndFrontpage = api.publishAndFront;
-export const updateDesign = api.updateDesign;
