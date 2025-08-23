@@ -13,6 +13,55 @@ const HEADERS: Record<string, string> = {
 
 type HttpMethod = "GET" | "POST";
 
+function hexOk(v?: string) {
+  return typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v);
+}
+
+function sanitizeColors(c?: any) {
+  if (!c || typeof c !== "object") return undefined;
+  const out: any = {};
+  if (hexOk(c.primary_color)) out.primary_color = c.primary_color;
+  if (hexOk(c.secondary_color)) out.secondary_color = c.secondary_color;
+  if (hexOk(c.background_dark)) out.background_dark = c.background_dark;
+  return Object.keys(out).length ? out : undefined;
+}
+
+function sanitizeFonts(f?: any) {
+  if (!f || typeof f !== "object") return undefined;
+  const name = f.primary_font || f.heading || f.body;
+  return typeof name === "string" ? { primary_font: name } : undefined;
+}
+
+function sanitizeGenerateParams(p: any) {
+  const src = { ...(p || {}) };
+
+  // enforce fonts schema
+  const fonts = sanitizeFonts(src.fonts);
+  if (fonts) src.fonts = fonts; else delete src.fonts;
+
+  // enforce colors schema
+  const colors = sanitizeColors(src.colors);
+  if (colors) src.colors = colors; else delete src.colors;
+
+  // align website_type with business_type
+  src.website_type = src.business_type === "ecommerce" ? "ecommerce" : "basic";
+
+  // whitelist only allowed fields
+  const out: any = {
+    business_name: String(src.business_name || ""),
+    business_description: String(src.business_description || ""),
+    business_type: String(src.business_type || "informational"),
+    website_title: String(src.website_title || src.seo?.website_title || src.business_name || "Website"),
+    website_description: String(src.website_description || src.seo?.website_description || src.business_description || ""),
+    website_keyphrase: String(src.website_keyphrase || src.seo?.website_keyphrase || src.website_title || ""),
+    website_type: src.website_type,
+    pages_meta: Array.isArray(src.pages_meta) ? src.pages_meta : [],
+  };
+  if (colors) out.colors = colors;
+  if (fonts) out.fonts = fonts;
+  return out;
+}
+
 async function req(
   action: string,
   payload: Record<string, any> = {},
@@ -23,10 +72,7 @@ async function req(
   const t = setTimeout(() => ctl.abort(), timeout);
 
   try {
-    const url =
-      method === "GET"
-        ? `${FN}?action=${encodeURIComponent(action)}`
-        : FN;
+    const url = method === "GET" ? `${FN}?action=${encodeURIComponent(action)}` : FN;
 
     const res = await fetch(url, {
       method,
@@ -49,45 +95,30 @@ async function req(
     }
     return json;
   } catch (error: any) {
-    // Normalize AbortError
     if (error?.name === "AbortError") {
       const e: any = new Error("CLIENT_TIMEOUT");
-      e.code = "CLIENT_TIMEOUT";
-      e.status = 408;
-      e.originalError = error;
+      e.code = "CLIENT_TIMEOUT"; e.status = 408; e.originalError = error;
       throw e;
     }
-    // Normalize network errors
     const msg = String(error?.message || "");
     if (!error?.status && (error?.name === "TypeError" || /NetworkError|Failed to fetch|Load failed/i.test(msg))) {
       const e: any = new Error("TRANSIENT_NETWORK_ERROR");
-      e.code = "TRANSIENT_NETWORK_ERROR";
-      e.status = 503;
-      e.originalError = error;
+      e.code = "TRANSIENT_NETWORK_ERROR"; e.status = 503; e.originalError = error;
       throw e;
     }
     throw error;
-  } finally {
-    clearTimeout(t);
-  }
+  } finally { clearTimeout(t); }
 }
 
 function shouldRetry(err: any) {
-  const code = err?.code;
-  const status = err?.status;
-  return (
-    code === "CLIENT_TIMEOUT" ||
-    code === "GENERATE_TIMEOUT" ||
-    code === "PUBLISH_RETRY" ||
-    code === "TRANSIENT_NETWORK_ERROR" ||
-    status === 504 || // upstream gateway timeout
-    status === 503    // transient
-  );
+  const code = err?.code, status = err?.status;
+  return code === "CLIENT_TIMEOUT" || code === "GENERATE_TIMEOUT" || code === "PUBLISH_RETRY" ||
+         code === "TRANSIENT_NETWORK_ERROR" || status === 504 || status === 503;
 }
 
 async function backoffWait(attempt: number, baseMs = 2000, maxMs = 10_000) {
   const ms = Math.min(Math.round(baseMs * Math.pow(1.5, attempt - 1)), maxMs);
-  await new Promise((r) => setTimeout(r, ms));
+  await new Promise(r => setTimeout(r, ms));
 }
 
 export const api = {
@@ -103,24 +134,18 @@ export const api = {
     req("update-design", { siteId, design }, 45_000),
 
   generateFrom: (website_id: number, unique_id: string, params: any) =>
-    req("generate-from-sitemap", { website_id, unique_id, params }, 240_000),
+    req("generate-from-sitemap", { website_id, unique_id, params: sanitizeGenerateParams(params) }, 240_000),
 
   publishAndFront: (website_id: number) =>
     req("publish-and-frontpage", { website_id }, 180_000),
 
-  // Robust polling with retry on server 504s and transient failures
   generateFromWithPolling: async (website_id: number, unique_id: string, params: any) => {
-    const maxAttempts = 10;
-    const attemptTimeout = 240_000;
-
+    const maxAttempts = 10; const attemptTimeout = 240_000;
+    const clean = sanitizeGenerateParams(params);
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        return await req("generate-from-sitemap", { website_id, unique_id, params }, attemptTimeout);
-      } catch (error: any) {
-        if (attempt < maxAttempts && shouldRetry(error)) {
-          await backoffWait(attempt, 3000, 12_000);
-          continue;
-        }
+      try { return await req("generate-from-sitemap", { website_id, unique_id, params: clean }, attemptTimeout); }
+      catch (error: any) {
+        if (attempt < maxAttempts && shouldRetry(error)) { await backoffWait(attempt, 3000, 12_000); continue; }
         throw error;
       }
     }
@@ -128,17 +153,11 @@ export const api = {
   },
 
   publishAndFrontWithPolling: async (website_id: number) => {
-    const maxAttempts = 8;
-    const attemptTimeout = 180_000;
-
+    const maxAttempts = 8; const attemptTimeout = 180_000;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        return await req("publish-and-frontpage", { website_id }, attemptTimeout);
-      } catch (error: any) {
-        if (attempt < maxAttempts && shouldRetry(error)) {
-          await backoffWait(attempt, 3000, 12_000);
-          continue;
-        }
+      try { return await req("publish-and-frontpage", { website_id }, attemptTimeout); }
+      catch (error: any) {
+        if (attempt < maxAttempts && shouldRetry(error)) { await backoffWait(attempt, 3000, 12_000); continue; }
         throw error;
       }
     }
@@ -146,7 +165,7 @@ export const api = {
   },
 };
 
-// Legacy named exports
+// Legacy exports
 export const createWebsite = api.createWebsite;
 export const generateSitemap = api.generateSitemap;
 export const generateFromSitemap = (websiteId: number, uniqueId: string, params: any) =>
