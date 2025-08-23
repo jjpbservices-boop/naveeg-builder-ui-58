@@ -11,29 +11,6 @@ import { toast } from '@/hooks/use-toast';
 const steps = ['Create website','Generate sitemap','Apply design','Generate pages','Publish pages','Set front page','Get preview link'];
 const pctOf = (i: number) => Math.round((i / (steps.length - 1)) * 100);
 
-const coerceBusinessType = (business_type?: string, website_type?: string) => {
-  const allowed = new Set(['informational','ecommerce','agency','restaurant','service','portfolio','blog','saas']);
-  const bt = business_type || (website_type === 'ecommerce' ? 'ecommerce' : 'informational');
-  return allowed.has(String(bt)) ? String(bt) : 'informational';
-};
-const buildParams = (s: any) => ({
-  business_name: s.business_name || s.seo_title || 'Business',
-  business_description: s.business_description || s.seo_description || 'Generated with Naveeg.',
-  business_type: coerceBusinessType(s.business_type, s.website_type),
-  website_title: s.seo_title || s.business_name || 'Website',
-  website_description: s.seo_description || s.business_description || 'Description',
-  website_keyphrase: s.seo_keyphrase || s.business_name || 'Website',
-  website_type: s.website_type === 'ecommerce' ? 'ecommerce' : 'basic',
-  pages_meta: Array.isArray(s.pages_meta) && s.pages_meta.length
-    ? s.pages_meta
-    : [
-        { title: 'Home', sections: [{ section_title: 'Hero' }] },
-        { title: 'Contact', sections: [{ section_title: 'Get In Touch' }] },
-      ],
-  ...(s.colors ? { colors: s.colors } : {}),
-  fonts: { primary_font: s.fonts?.primary_font || s.fonts?.body || 'Inter' },
-});
-
 async function finalizeSite(website_id: number) {
   return api.publishAndFrontWithPolling(website_id);
 }
@@ -63,13 +40,13 @@ export default function Generating() {
       });
       setStep(3);
 
-      // Generate pages
-      const params = buildParams({
+      // Generate pages with complete onboarding data
+      const onboardingData = {
         business_name, business_description, business_type,
         seo_title, seo_description, seo_keyphrase,
         pages_meta, colors, fonts, website_type,
-      });
-      await api.generateFromWithPolling(website_id, unique_id, params);
+      };
+      await api.generateFromWithPolling(website_id, unique_id, onboardingData);
       setStep(4);
 
       // Publish + front page + URLs

@@ -57,6 +57,7 @@ export type Database = {
           email: string | null
           fonts: Json | null
           id: string
+          is_generating: boolean | null
           owner_email: string | null
           pages_meta: Json | null
           payload: Json | null
@@ -81,6 +82,7 @@ export type Database = {
           email?: string | null
           fonts?: Json | null
           id?: string
+          is_generating?: boolean | null
           owner_email?: string | null
           pages_meta?: Json | null
           payload?: Json | null
@@ -105,6 +107,7 @@ export type Database = {
           email?: string | null
           fonts?: Json | null
           id?: string
+          is_generating?: boolean | null
           owner_email?: string | null
           pages_meta?: Json | null
           payload?: Json | null

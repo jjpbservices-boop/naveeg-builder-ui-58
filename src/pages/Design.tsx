@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Palette, Type, Save, Rocket } from 'lucide-react';
 import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
-import { updateDesign, generateFromSitemap, publishAndFrontpage } from '@/lib/api';
+import { updateDesign } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 
 const HEADING_FONTS = [

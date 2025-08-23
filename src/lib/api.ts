@@ -1,6 +1,6 @@
 // src/lib/api.ts
-const BASE = (import.meta.env.VITE_SUPABASE_URL || "").replace(/\/$/, "");
-const ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+const BASE = "https://eilpazegjrcrwgpujqni.supabase.co";
+const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpbHBhemVnanJjcndncHVqcW5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NzYxNjksImV4cCI6MjA3MDE1MjE2OX0.LV5FvbQQGf0Kv-O1uA0tsS-Yam6rB1x937BgqFsJoX4";
 const FN = `${BASE}/functions/v1/ai-router`;
 
 const HEADERS: Record<string, string> = {
@@ -10,46 +10,30 @@ const HEADERS: Record<string, string> = {
   Authorization: `Bearer ${ANON}`,
 };
 
-// EXACT schema for 10Web generate_site_from_sitemap
-export function buildStrictParams(input: {
-  business_type: string;
-  business_name: string;
-  business_description: string;
-  colors?: { background_dark?: string; primary_color?: string; secondary_color?: string };
-  fonts?: { primary_font?: string };
-  pages_meta: Array<{ title: string; description?: string; sections?: Array<{ section_title: string; section_description?: string }> }>;
-  website_description: string;
-  website_keyphrase: string;
-  website_title: string;
-  website_type?: string;
-}) {
-  const reqKeys = ["business_type","business_name","business_description","website_description","website_keyphrase","website_title"] as const;
-  for (const k of reqKeys) if (!(input as any)[k]) throw new Error(`Missing required param: ${k}`);
-  if (!Array.isArray(input.pages_meta) || input.pages_meta.length === 0) throw new Error("Missing required param: pages_meta");
-
-  const out: any = {
-    business_type: input.business_type,
-    business_name: input.business_name,
-    business_description: input.business_description,
-    pages_meta: input.pages_meta.map(p => ({
-      title: p.title,
-      ...(p.description ? { description: p.description } : {}),
-      ...(Array.isArray(p.sections) && p.sections.length
-        ? { sections: p.sections.map(s => ({
-            section_title: s.section_title,
-            ...(s.section_description ? { section_description: s.section_description } : {}),
-          })) }
-        : {}),
-    })),
-    website_description: input.website_description,
-    website_keyphrase: input.website_keyphrase,
-    website_title: input.website_title,
+// Build 10Web-compliant parameters
+const buildParams = (input: any) => {
+  const allowed = new Set(['informational','ecommerce','agency','restaurant','service','portfolio','blog','saas']);
+  const business_type = input.business_type || (input.website_type === 'ecommerce' ? 'ecommerce' : 'informational');
+  const normalized_type = allowed.has(business_type) ? business_type : 'informational';
+  
+  return {
+    business_name: input.business_name || input.seo_title || 'Business',
+    business_description: input.business_description || input.seo_description || 'Description',
+    business_type: normalized_type,
+    website_title: input.seo_title || input.business_name || 'Website',
+    website_description: input.seo_description || input.business_description || 'Description',
+    website_keyphrase: input.seo_keyphrase || input.business_name || 'Website',
+    website_type: input.website_type === 'ecommerce' ? 'ecommerce' : 'basic',
+    pages_meta: Array.isArray(input.pages_meta) && input.pages_meta.length
+      ? input.pages_meta
+      : [
+          { title: 'Home', sections: [{ section_title: 'Hero' }] },
+          { title: 'Contact', sections: [{ section_title: 'Get In Touch' }] },
+        ],
+    ...(input.colors ? { colors: input.colors } : {}),
+    fonts: { primary_font: input.fonts?.primary_font || input.fonts?.body || 'Inter' },
   };
-  if (input.colors) out.colors = input.colors;
-  if (input.fonts?.primary_font) out.fonts = { primary_font: input.fonts.primary_font };
-  if (input.website_type) out.website_type = input.website_type;
-  return out;
-}
+};
 
 async function req(action: string, payload: Record<string, any>, timeout = 65_000) {
   const ctl = new AbortController();
@@ -75,31 +59,29 @@ async function req(action: string, payload: Record<string, any>, timeout = 65_00
 }
 
 export const api = {
-  // used by Analyze flow
   createWebsite: (businessName: string) =>
     req("create-website", { businessName }, 90_000),
 
   generateSitemap: (website_id: number, params: { business_name: string; business_description: string; business_type?: string }) =>
     req("generate-sitemap", { website_id, params }, 120_000),
 
-  // design save
   updateDesign: (siteId: number, design: any) =>
     req("update-design", { siteId, design }, 30_000),
 
-  // one-shot generate with STRICT params
-  generateFromOnce: (website_id: number, unique_id: string, params: any) =>
-    req("generate-from-sitemap", { website_id, unique_id, params }, 65_000),
-
-  // polling loop until pages exist or timeout (~5 min)
-  generateFromWithPolling: async (website_id: number, unique_id: string, params: any) => {
-    const loops = 50;
-    for (let i = 0; i < loops; i++) {
+  generateFromWithPolling: async (website_id: number, unique_id: string, onboardingData: any) => {
+    const params = buildParams(onboardingData);
+    const maxAttempts = 30;
+    
+    for (let i = 0; i < maxAttempts; i++) {
       try {
-        const res = await api.generateFromOnce(website_id, unique_id, params);
+        const res = await req("generate-from-sitemap", { website_id, unique_id, params }, 65_000);
         if (res?.ok && res?.pages_count > 0) return res;
-        await new Promise(r => setTimeout(r, 2500));
+        await new Promise(r => setTimeout(r, 3000));
       } catch (e: any) {
-        if (e.code === "CLIENT_TIMEOUT") { await new Promise(r => setTimeout(r, 2500)); continue; }
+        if (e.code === "CLIENT_TIMEOUT") { 
+          await new Promise(r => setTimeout(r, 3000)); 
+          continue; 
+        }
         throw e;
       }
     }
@@ -107,11 +89,15 @@ export const api = {
   },
 
   publishAndFrontWithPolling: async (website_id: number) => {
-    const attempts = 6, perAttempt = 180_000;
-    for (let i = 0; i < attempts; i++) {
-      try { return await req("publish-and-frontpage", { website_id }, perAttempt); }
-      catch (e: any) {
-        if (e.code === "CLIENT_TIMEOUT" && i < attempts - 1) { await new Promise(r => setTimeout(r, 5000)); continue; }
+    const maxAttempts = 6;
+    for (let i = 0; i < maxAttempts; i++) {
+      try { 
+        return await req("publish-and-frontpage", { website_id }, 180_000); 
+      } catch (e: any) {
+        if (e.code === "CLIENT_TIMEOUT" && i < maxAttempts - 1) { 
+          await new Promise(r => setTimeout(r, 5000)); 
+          continue; 
+        }
         throw e;
       }
     }
