@@ -4,21 +4,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Naveeg Design System — Load this AFTER DaisyUI if used.
-   Brand color locked to #FF4A1C across light and dark.
+/* Naveeg Website Builder Design System
+   Primary: #FF4A1C (12.1586 100% 55.49%)
+   Mobile-first, rounded-2xl cards, soft shadows, 44px touch targets
 */
 
 @layer base {
-  :root,
-  [data-theme] {
-    /* Exact brand -> #FF4A1C */
-    --brand-h: 12.1586;
-    --brand-s: 100%;
-    --brand-l: 55.49%;
-    --brand: var(--brand-h) var(--brand-s) var(--brand-l);
-    --brand-hex: #FF4A1C;
-
-    /* Light tokens */
+  :root {
     --background: 0 0% 100%;
     --foreground: 221 39% 11%;
 
@@ -28,10 +20,11 @@
     --popover: 0 0% 100%;
     --popover-foreground: 221 39% 11%;
 
-    --primary: var(--brand);
+    /* Brand locked */
+    --primary: 12.1586 100% 55.49%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: var(--brand-h) var(--brand-s) 50%;
-    --primary-light: var(--brand-h) var(--brand-s) 95%;
+    --primary-hover: 12.1586 100% 51%;
+    --primary-light: 12.1586 100% 95%;
 
     --secondary: 210 40% 96%;
     --secondary-foreground: 221 39% 11%;
@@ -39,8 +32,8 @@
     --muted: 220 14% 96%;
     --muted-foreground: 220 9% 46%;
 
-    --accent: var(--brand-h) var(--brand-s) 95%;
-    --accent-foreground: var(--brand-h) 100% 20%;
+    --accent: 12.1586 100% 95%;
+    --accent-foreground: 12.1586 100% 20%;
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
@@ -53,27 +46,28 @@
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: var(--brand);
+    --ring: 12.1586 100% 55.49%;
 
     --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* DaisyUI primary tokens */
-    --p: var(--brand);
-    --pc: 0 0% 100%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-  html.dark,
-  :root.dark,
-  [data-theme="dark"] {
+  .dark {
     --background: 221 39% 11%;
     --foreground: 0 0% 100%;
 
@@ -83,11 +77,11 @@
     --popover: 221 39% 11%;
     --popover-foreground: 0 0% 100%;
 
-    /* Brand stays identical in dark */
-    --primary: var(--brand);
+    /* Brand locked, identical to light */
+    --primary: 12.1586 100% 55.49%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: var(--brand-h) var(--brand-s) 62%;
-    --primary-light: var(--brand-h) var(--brand-s) 20%;
+    --primary-hover: 12.1586 100% 51%;
+    --primary-light: 12.1586 100% 95%;
 
     --secondary: 221 30% 18%;
     --secondary-foreground: 0 0% 100%;
@@ -95,8 +89,8 @@
     --muted: 221 30% 18%;
     --muted-foreground: 217 10% 65%;
 
-    --accent: var(--brand-h) var(--brand-s) 20%;
-    --accent-foreground: var(--brand-h) 100% 85%;
+    --accent: 12.1586 100% 95%;
+    --accent-foreground: 12.1586 100% 20%;
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
@@ -109,102 +103,92 @@
 
     --border: 221 30% 18%;
     --input: 221 30% 18%;
-    --ring: var(--brand);
-
-    /* DaisyUI dark tokens */
-    --p: var(--brand);
-    --pc: 0 0% 100%;
+    --ring: 12.1586 100% 55.49%;
   }
 }
 
 @layer base {
-  * { @apply border-border; }
-  body { @apply bg-background text-foreground font-inter; }
+  * {
+    @apply border-border;
+  }
 
-  /* Minimum touch targets */
-  .touch-target { @apply min-h-[44px] min-w-[44px]; }
+  body {
+    @apply bg-background text-foreground font-inter;
+  }
 
-  /* Micro-animations */
-  .animate-in { animation: fade-in 0.5s ease-out; }
-  .animate-slide-up { animation: slide-up 0.3s ease-out; }
-  .animate-bounce-in { animation: bounce-in 0.6s ease-out; }
+  /* Touch targets for mobile */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Beautiful animations */
+  .animate-in {
+    animation: fade-in 0.5s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out;
+  }
+
+  .animate-bounce-in {
+    animation: bounce-in 0.6s ease-out;
+  }
 }
 
-/* Hard overrides to defeat any stray oranges from utilities or UI libs */
-.text-primary { color: hsl(var(--primary)) !important; }
-.bg-primary { background-color: hsl(var(--primary)) !important; }
-.border-primary { border-color: hsl(var(--primary)) !important; }
-.ring-primary { --tw-ring-color: hsl(var(--primary)) !important; }
-
-a { color: hsl(var(--primary)); }
-a:hover { color: hsl(var(--primary-hover)); }
-
-/* Buttons and variants (works in light and dark, DaisyUI-compatible) */
-.btn-primary,
-.button-primary,
-[data-variant="primary"] {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
-}
-.btn-primary:hover,
-.button-primary:hover,
-[data-variant="primary"]:hover {
-  background-color: hsl(var(--primary-hover)) !important;
-}
-
-/* Ensure dark theme selectors also resolve to brand */
-html.dark .btn-primary,
-:root.dark .btn-primary,
-[data-theme="dark"] .btn-primary { background-color: hsl(var(--primary)) !important; }
-html.dark .btn-primary:hover,
-:root.dark .btn-primary:hover,
-[data-theme="dark"] .btn-primary:hover { background-color: hsl(var(--primary-hover)) !important; }
-
-html.dark .text-primary,
-:root.dark .text-primary,
-[data-theme="dark"] .text-primary { color: hsl(var(--primary)) !important; }
-html.dark .bg-primary,
-:root.dark .bg-primary,
-[data-theme="dark"] .bg-primary { background-color: hsl(var(--primary)) !important; }
-html.dark .border-primary,
-:root.dark .border-primary,
-[data-theme="dark"] .border-primary { border-color: hsl(var(--primary)) !important; }
-html.dark .ring-primary,
-:root.dark .ring-primary,
-[data-theme="dark"] .ring-primary { --tw-ring-color: hsl(var(--primary)) !important; }
-
-/* Card shadows */
 @layer components {
+  /* Card shadows */
   .shadow-soft {
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   }
+
   .shadow-medium {
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   }
+
   .shadow-large {
     box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
 
-  /* Gradients */
+  /* Gradient backgrounds */
   .bg-gradient-primary {
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-hover)));
   }
+
   .bg-gradient-soft {
     background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--muted)));
   }
 }
 
-/* Keyframes */
 @keyframes fade-in {
-  from { opacity: 0; } to { opacity: 1; }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
+
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
 }
+
 @keyframes bounce-in {
-  0% { opacity: 0; transform: scale(0.3); }
-  50% { opacity: 1; transform: scale(1.05); }
-  70% { transform: scale(0.9); }
-  100% { opacity: 1; transform: scale(1); }
+  0% { 
+    opacity: 0; 
+    transform: scale(0.3); 
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.05); 
+  }
+  70% { 
+    transform: scale(0.9); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
 }
