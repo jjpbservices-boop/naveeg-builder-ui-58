@@ -12,11 +12,16 @@ const HEADERS: Record<string, string> = {
 
 // Build 10Web-compliant parameters
 const buildParams = (input: any) => {
+  console.log('🔍 buildParams input:', JSON.stringify(input, null, 2));
+  
   const allowed = new Set(['informational','ecommerce','agency','restaurant','service','portfolio','blog','saas']);
   const business_type = input.business_type || (input.website_type === 'ecommerce' ? 'ecommerce' : 'informational');
   const normalized_type = allowed.has(business_type) ? business_type : 'informational';
   
-  return {
+  // Fix font mapping - onboarding store has fonts.heading and fonts.body, not fonts.primary_font
+  const primary_font = input.fonts?.primary_font || input.fonts?.heading || input.fonts?.body || 'Inter';
+  
+  const result = {
     business_name: input.business_name || input.seo_title || 'Business',
     business_description: input.business_description || input.seo_description || 'Description',
     business_type: normalized_type,
@@ -31,8 +36,11 @@ const buildParams = (input: any) => {
           { title: 'Contact', sections: [{ section_title: 'Get In Touch' }] },
         ],
     ...(input.colors ? { colors: input.colors } : {}),
-    fonts: { primary_font: input.fonts?.primary_font || input.fonts?.body || 'Inter' },
+    fonts: { primary_font },
   };
+  
+  console.log('✅ buildParams result:', JSON.stringify(result, null, 2));
+  return result;
 };
 
 async function req(action: string, payload: Record<string, any>, timeout = 65_000) {

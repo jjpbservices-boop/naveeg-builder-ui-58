@@ -143,6 +143,11 @@ const handleGenerateFromSitemap = async (body: any) => {
   const website_id = body?.website_id;
   const unique_id = body?.unique_id || body?.sitemap_unique_id;
   const params = body?.params ?? {};
+  
+  console.log('🔍 generate-from-sitemap request:', JSON.stringify({
+    website_id, unique_id, params_keys: Object.keys(params), params
+  }, null, 2));
+  
   if (!website_id || !unique_id) return J(400, { code: "BAD_REQUEST", error: "Missing website_id or unique_id" });
 
   const allowed = [
@@ -150,6 +155,8 @@ const handleGenerateFromSitemap = async (body: any) => {
     "website_description","website_keyphrase","website_title","website_type",
   ];
   const clean = pick(params, allowed);
+  
+  console.log('✅ Cleaned params for 10Web:', JSON.stringify(clean, null, 2));
 
   const required = ["business_type","business_name","business_description","pages_meta","website_description","website_keyphrase","website_title"];
   for (const k of required) {
@@ -158,13 +165,25 @@ const handleGenerateFromSitemap = async (body: any) => {
   if (!Array.isArray(clean.pages_meta) || clean.pages_meta.length === 0)
     return J(422, { code: "VALIDATION_ERROR", details: [{ message: `"params.pages_meta" must be a non-empty array`, path: ["params","pages_meta"] }] });
 
+  const apiPayload = { website_id, unique_id, params: clean };
+  console.log('🚀 Sending to 10Web API:', JSON.stringify(apiPayload, null, 2));
+  
   try {
-    await tw("/v1/ai/generate_site_from_sitemap", {
+    const result = await tw("/v1/ai/generate_site_from_sitemap", {
       method: "POST",
-      body: JSON.stringify({ website_id, unique_id, params: clean }),
+      body: JSON.stringify(apiPayload),
       timeoutMs: 25_000,
     });
+    console.log('✅ 10Web API success:', JSON.stringify(result, null, 2));
   } catch (e: any) {
+    console.error('❌ 10Web API error:', {
+      status: e?.status,
+      json: e?.json,
+      raw: e?.raw,
+      message: e?.message,
+      name: e?.name
+    });
+    
     const msg = JSON.stringify(e?.json || e?.raw || "");
     if (e?.status === 422 && e?.json?.error?.details) return J(422, { code: "VALIDATION_ERROR", details: e.json.error.details });
     if (![417,504].includes(e?.status ?? 0) && e?.name !== "AbortError" && !/in progress/i.test(msg))
