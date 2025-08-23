@@ -30,38 +30,30 @@ function minimalPagesMeta(pages_meta: any): PagesMeta {
 
 function normalizeGenerateParams(raw: any) {
   const p = JSON.parse(JSON.stringify(raw || {}));
-
-  // coerce business_type
-  const allowed = new Set([
-    'informational', 'ecommerce', 'agency', 'restaurant', 'service', 'portfolio', 'blog', 'saas',
-  ]);
+  const allowed = new Set(['informational','ecommerce','agency','restaurant','service','portfolio','blog','saas']);
   const btRaw = p.business_type || (p.website_type === 'ecommerce' ? 'ecommerce' : undefined);
-  const business_type = allowed.has(String(btRaw)) ? btRaw : 'informational';
+  const business_type = allowed.has(String(btRaw)) ? String(btRaw) : 'informational';
 
   const business_name = p.business_name || p.website_title || 'Business';
   const business_description = p.business_description || p.website_description || 'Generated with Naveeg.';
-
   const website_title = p.website_title || p.seo?.website_title || business_name;
   const website_description = p.website_description || p.seo?.website_description || business_description;
   const website_keyphrase = p.website_keyphrase || p.seo?.website_keyphrase || website_title;
-
   const website_type = p.website_type === 'ecommerce' ? 'ecommerce' : 'basic';
   const pages_meta = minimalPagesMeta(p.pages_meta);
-
   const colors = p.colors && typeof p.colors === 'object' ? p.colors : undefined;
-  const fonts =
-    p.fonts && typeof p.fonts === 'object' && p.fonts.primary_font
-      ? p.fonts
-      : { primary_font: 'Inter' };
+  const fonts = p.fonts && typeof p.fonts === 'object' && p.fonts.primary_font
+    ? p.fonts
+    : { primary_font: (p.fonts?.body as string) || 'Inter' };
 
   return {
     business_name,
     business_description,
-    business_type,          // valid 10Web type
+    business_type,
     website_title,
     website_description,
     website_keyphrase,
-    website_type,           // 'basic' | 'ecommerce'
+    website_type,
     pages_meta,
     ...(colors ? { colors } : {}),
     ...(fonts ? { fonts } : {}),
@@ -134,26 +126,29 @@ export const api = {
     req('update-design', { siteId, design }, 30_000),
 
   generateFrom: (website_id: number, unique_id: string, params: any) =>
-    req('generate-from-sitemap', { website_id, unique_id, params }, 240_000),
+    req('generate-from-sitemap', { website_id, unique_id, params }, 65_000),
 
   publishAndFront: (website_id: number) =>
     req('publish-and-frontpage', { website_id }, 180_000),
 
+  // Short-poll loop: each server call returns in ≤~55s
   generateFromWithPolling: async (website_id: number, unique_id: string, params: any) => {
-    const maxAttempts = 8;
-    const attemptTimeout = 240_000;
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const loops = 50;       // ~5 min
+    const perCall = 65_000; // server caps ~55s
+    for (let i = 0; i < loops; i++) {
       try {
-        return await req('generate-from-sitemap', { website_id, unique_id, params }, attemptTimeout);
+        const res = await req('generate-from-sitemap', { website_id, unique_id, params }, perCall);
+        if (res?.ok === true && res?.pages_count > 0) return res;
+        await new Promise(r => setTimeout(r, 2500));
       } catch (error: any) {
-        if (error.code === 'CLIENT_TIMEOUT' && attempt < maxAttempts) {
-          await new Promise(r => setTimeout(r, 5000));
+        if (error.code === 'CLIENT_TIMEOUT') {
+          await new Promise(r => setTimeout(r, 2500));
           continue;
         }
         throw error;
       }
     }
-    throw new Error('Generation timeout after maximum attempts');
+    throw new Error('Generation timeout after polling');
   },
 
   publishAndFrontWithPolling: async (website_id: number) => {
@@ -164,7 +159,7 @@ export const api = {
         return await req('publish-and-frontpage', { website_id }, attemptTimeout);
       } catch (error: any) {
         if (error.code === 'CLIENT_TIMEOUT' && attempt < maxAttempts) {
-          await new Promise(r => setTimeout(r, 5000));
+          await new Promise(resolve => setTimeout(resolve, 5000));
           continue;
         }
         throw error;
