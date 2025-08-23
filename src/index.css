@@ -4,20 +4,21 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Naveeg Website Builder Design System
-   Primary: #FF4A1C  → H 12.1586 S 100% L 55.49%
-   Mobile-first, rounded-2xl cards, soft shadows, 44px touch targets
+/* Naveeg Design System — Load this AFTER DaisyUI if used.
+   Brand color locked to #FF4A1C across light and dark.
 */
 
 @layer base {
-  :root {
-    /* Exact brand HSL triple to reproduce #FF4A1C precisely */
+  :root,
+  [data-theme] {
+    /* Exact brand -> #FF4A1C */
     --brand-h: 12.1586;
     --brand-s: 100%;
     --brand-l: 55.49%;
     --brand: var(--brand-h) var(--brand-s) var(--brand-l);
     --brand-hex: #FF4A1C;
 
+    /* Light tokens */
     --background: 0 0% 100%;
     --foreground: 221 39% 11%;
 
@@ -27,7 +28,6 @@
     --popover: 0 0% 100%;
     --popover-foreground: 221 39% 11%;
 
-    /* Primary locked to brand */
     --primary: var(--brand);
     --primary-foreground: 0 0% 100%;
     --primary-hover: var(--brand-h) var(--brand-s) 50%;
@@ -66,12 +66,14 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* DaisyUI compatibility */
+    /* DaisyUI primary tokens */
     --p: var(--brand);
     --pc: 0 0% 100%;
   }
 
-  .dark {
+  html.dark,
+  :root.dark,
+  [data-theme="dark"] {
     --background: 221 39% 11%;
     --foreground: 0 0% 100%;
 
@@ -81,7 +83,7 @@
     --popover: 221 39% 11%;
     --popover-foreground: 0 0% 100%;
 
-    /* Keep the same exact brand in dark mode */
+    /* Brand stays identical in dark */
     --primary: var(--brand);
     --primary-foreground: 0 0% 100%;
     --primary-hover: var(--brand-h) var(--brand-s) 62%;
@@ -109,7 +111,7 @@
     --input: 221 30% 18%;
     --ring: var(--brand);
 
-    /* DaisyUI compatibility */
+    /* DaisyUI dark tokens */
     --p: var(--brand);
     --pc: 0 0% 100%;
   }
@@ -117,19 +119,18 @@
 
 @layer base {
   * { @apply border-border; }
-
   body { @apply bg-background text-foreground font-inter; }
 
-  /* Touch targets for mobile */
+  /* Minimum touch targets */
   .touch-target { @apply min-h-[44px] min-w-[44px]; }
 
-  /* Animations */
+  /* Micro-animations */
   .animate-in { animation: fade-in 0.5s ease-out; }
   .animate-slide-up { animation: slide-up 0.3s ease-out; }
   .animate-bounce-in { animation: bounce-in 0.6s ease-out; }
 }
 
-/* Hard overrides to prevent any stray oranges from utilities or UI libs */
+/* Hard overrides to defeat any stray oranges from utilities or UI libs */
 .text-primary { color: hsl(var(--primary)) !important; }
 .bg-primary { background-color: hsl(var(--primary)) !important; }
 .border-primary { border-color: hsl(var(--primary)) !important; }
@@ -138,6 +139,7 @@
 a { color: hsl(var(--primary)); }
 a:hover { color: hsl(var(--primary-hover)); }
 
+/* Buttons and variants (works in light and dark, DaisyUI-compatible) */
 .btn-primary,
 .button-primary,
 [data-variant="primary"] {
@@ -150,7 +152,28 @@ a:hover { color: hsl(var(--primary-hover)); }
   background-color: hsl(var(--primary-hover)) !important;
 }
 
-/* Cards and gradients */
+/* Ensure dark theme selectors also resolve to brand */
+html.dark .btn-primary,
+:root.dark .btn-primary,
+[data-theme="dark"] .btn-primary { background-color: hsl(var(--primary)) !important; }
+html.dark .btn-primary:hover,
+:root.dark .btn-primary:hover,
+[data-theme="dark"] .btn-primary:hover { background-color: hsl(var(--primary-hover)) !important; }
+
+html.dark .text-primary,
+:root.dark .text-primary,
+[data-theme="dark"] .text-primary { color: hsl(var(--primary)) !important; }
+html.dark .bg-primary,
+:root.dark .bg-primary,
+[data-theme="dark"] .bg-primary { background-color: hsl(var(--primary)) !important; }
+html.dark .border-primary,
+:root.dark .border-primary,
+[data-theme="dark"] .border-primary { border-color: hsl(var(--primary)) !important; }
+html.dark .ring-primary,
+:root.dark .ring-primary,
+[data-theme="dark"] .ring-primary { --tw-ring-color: hsl(var(--primary)) !important; }
+
+/* Card shadows */
 @layer components {
   .shadow-soft {
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
@@ -162,6 +185,7 @@ a:hover { color: hsl(var(--primary-hover)); }
     box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
 
+  /* Gradients */
   .bg-gradient-primary {
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-hover)));
   }
