@@ -1,4 +1,13 @@
 {
   "title": "Espace de travail",
-  "subtitle": "Gérez tous vos sites web et collaborez avec votre équipe."
+  "subtitle": "Gérez vos sites et collaborez avec votre équipe.",
+  "header": {
+    "workspaceName": "Mon espace de travail",
+    "addCollaborator": "Ajouter un collaborateur"
+  },
+  "websites": {
+    "title": "Vos sites",
+    "empty": "Pas encore de sites",
+    "create": "Créer un site"
+  }
 }
