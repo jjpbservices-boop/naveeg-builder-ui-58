@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
-import { api } from '@/lib/api';
+import { api, updateDesign } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 
 const steps = ['Create website','Generate sitemap','Apply design','Generate pages','Publish pages','Set front page','Get preview link'];
@@ -33,7 +33,7 @@ export default function Generating() {
       setStep(2); // create + sitemap assumed done
 
       // Save design to DB
-      await api.updateDesign(website_id, {
+      await updateDesign(website_id, {
         colors, fonts, pages_meta,
         seo: { title: seo_title, description: seo_description, keyphrase: seo_keyphrase },
         website_type,

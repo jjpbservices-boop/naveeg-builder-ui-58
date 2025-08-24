@@ -19,6 +19,7 @@ import Preview from '@/pages/Preview';
 import Dashboard from '@/pages/Dashboard';
 import Workspace from '@/pages/Workspace';
 import Settings from '@/pages/Settings';
+import Auth from '@/pages/Auth';
 import NotFound from '@/pages/NotFound';
 
 // Root route
@@ -147,6 +148,12 @@ const settingsRoute = createRoute({
   component: Settings,
 });
 
+const authRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/auth',
+  component: Auth,
+});
+
 const notFoundRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/$',
@@ -174,6 +181,7 @@ const routeTree = rootRoute.addChildren([
   dashboardRoute,
   workspaceRoute,
   settingsRoute,
+  authRoute,
   notFoundRoute,
 ]);
 

@@ -124,12 +124,12 @@ export default function Brief() {
         colors: sitemapResult.colors,
         fonts: {
           heading: 'Poppins',
-          body: sitemapResult.fonts.primary_font
+          body: (sitemapResult.fonts.primary_font as any) || 'Inter'
         }
       });
 
       updatePages(sitemapResult.pages_meta);
-      updateWebsiteType(sitemapResult.website_type);
+      updateWebsiteType((sitemapResult.website_type as any) || 'basic');
 
       console.log('Store updated, setting isAnalyzed to true');
       setIsAnalyzed(true);

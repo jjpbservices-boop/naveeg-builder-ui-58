@@ -12,16 +12,18 @@ import {
   Globe,
   ArrowLeft,
   Share2,
-  UserPlus
+  UserPlus,
+  LayoutDashboard,
+  RefreshCw
 } from 'lucide-react';
 import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
 export default function Ready() {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-  const [showSignUpModal, setShowSignUpModal] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   const {
     business_name,
@@ -31,49 +33,48 @@ export default function Ready() {
     fonts,
     pages_meta,
     seo_title,
-    reset
+    reset: resetStore
   } = useOnboardingStore();
 
   useEffect(() => {
-    // Show sign-up modal after a brief delay
-    const timer = setTimeout(() => {
-      setShowSignUpModal(true);
-    }, 2000);
-    
-    return () => clearTimeout(timer);
+    // Check auth state
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
-    // Reset copied state after 2 seconds
-    if (copied) {
-      const timer = setTimeout(() => setCopied(false), 2000);
-      return () => clearTimeout(timer);
-    }
+    const timer = setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
   }, [copied]);
 
   const handleCopyUrl = async () => {
     if (preview_url) {
       await navigator.clipboard.writeText(preview_url);
       setCopied(true);
-      toast({
-        title: 'URL copied!',
-        description: 'Website URL has been copied to clipboard.',
-      });
     }
   };
 
   const handleStartOver = () => {
-    reset();
+    resetStore();
     navigate({ to: '/brief' });
   };
 
   const handleSignUp = () => {
-    // TODO: Implement sign-up flow
-    setShowSignUpModal(false);
-    toast({
-      title: 'Sign up coming soon!',
-      description: 'Registration will be available soon.',
-    });
+    navigate({ to: '/auth' });
+  };
+
+  const handleDashboard = () => {
+    navigate({ to: '/dashboard' });
   };
 
   return (
@@ -226,38 +227,38 @@ export default function Ready() {
 
           {/* Actions */}
           <div className="flex justify-center gap-4">
-            <Button variant="outline" onClick={handleStartOver}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
+            {!user ? (
+              <Button 
+                onClick={handleSignUp}
+                size="lg"
+                className="w-full max-w-sm"
+              >
+                <UserPlus className="h-5 w-5 mr-2" />
+                Sign Up to Save & Manage
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleDashboard}
+                size="lg"
+                className="w-full max-w-sm"
+              >
+                <LayoutDashboard className="h-5 w-5 mr-2" />
+                Go to Dashboard
+              </Button>
+            )}
+            
+            <Button 
+              onClick={handleStartOver}
+              variant="outline" 
+              size="lg"
+              className="w-full max-w-sm"
+            >
+              <RefreshCw className="h-5 w-5 mr-2" />
               Create Another Site
             </Button>
           </div>
         </div>
       </div>
-
-      {/* Sign-up Modal */}
-      <Dialog open={showSignUpModal} onOpenChange={setShowSignUpModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5" />
-              Save Your Website
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">
-              Sign up to save your website settings, manage your sites, and get access to advanced features.
-            </p>
-            <div className="flex gap-2">
-              <Button onClick={handleSignUp} className="flex-1">
-                Sign Up Now
-              </Button>
-              <Button variant="outline" onClick={() => setShowSignUpModal(false)}>
-                Maybe Later
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
