@@ -97,10 +97,18 @@ export default function Generating() {
         if (publishResponse?.preview_url) updateData.site_url = publishResponse.preview_url;
         if (publishResponse?.admin_url) updateData.admin_url = publishResponse.admin_url;
         
-        await supabase
+        console.log('Updating site with URLs:', updateData);
+        
+        const { error: updateError } = await supabase
           .from('sites')
           .update(updateData)
           .eq('website_id', website_id);
+          
+        if (updateError) {
+          console.error('Failed to update site URLs:', updateError);
+        } else {
+          console.log('Successfully updated site URLs');
+        }
       }
 
       toast({
@@ -131,10 +139,18 @@ export default function Generating() {
           if (preview_url) updateData.site_url = preview_url;
           if (admin_url) updateData.admin_url = admin_url;
           
-          await supabase
+          console.log('Updating site URLs after auth:', updateData);
+          
+          const { error: updateError } = await supabase
             .from('sites')
             .update(updateData)
             .eq('website_id', website_id);
+            
+          if (updateError) {
+            console.error('Failed to update site URLs after auth:', updateError);
+          } else {
+            console.log('Successfully updated site URLs after auth');
+          }
         }
         
         // Continue to dashboard after auth
