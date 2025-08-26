@@ -30,6 +30,7 @@ export default function Generating() {
     website_id, unique_id, colors, fonts, pages_meta,
     seo_title, seo_description, seo_keyphrase,
     business_name, business_description, business_type, website_type,
+    updateApiData,
   } = useOnboardingStore();
 
   const generateWebsite = async () => {
@@ -68,12 +69,21 @@ export default function Generating() {
         website_type,
       };
       
-      await api.generateFromWithPolling(website_id, unique_id, onboardingData);
-      await api.publishAndFrontWithPolling(website_id);
+      const generateResponse = await api.generateFromWithPolling(website_id, unique_id, onboardingData);
+      const publishResponse = await api.publishAndFrontWithPolling(website_id);
 
       clearInterval(stepInterval);
       setProgress(100);
-      
+      setIsGenerating(false);
+
+      // Store API response URLs
+      const apiData: any = {};
+      if (publishResponse?.preview_url) apiData.preview_url = publishResponse.preview_url;
+      if (publishResponse?.admin_url) apiData.admin_url = publishResponse.admin_url;
+      if (Object.keys(apiData).length > 0) {
+        updateApiData(apiData);
+      }
+
       // Check auth before proceeding to ready page
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
@@ -81,11 +91,15 @@ export default function Generating() {
         return;
       }
 
-      // Associate website with user if authenticated
+      // Associate website with user and update URLs if authenticated
       if (website_id && session.user) {
+        const updateData: any = { user_id: session.user.id };
+        if (publishResponse?.preview_url) updateData.site_url = publishResponse.preview_url;
+        if (publishResponse?.admin_url) updateData.admin_url = publishResponse.admin_url;
+        
         await supabase
           .from('sites')
-          .update({ user_id: session.user.id })
+          .update(updateData)
           .eq('website_id', website_id);
       }
 
@@ -105,10 +119,24 @@ export default function Generating() {
 
   useEffect(() => {
     // Check auth state
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user || null);
       if (event === 'SIGNED_IN' && showAuthModal) {
         setShowAuthModal(false);
+        
+        // Associate website with user after authentication
+        if (website_id && session?.user) {
+          const { preview_url, admin_url } = useOnboardingStore.getState();
+          const updateData: any = { user_id: session.user.id };
+          if (preview_url) updateData.site_url = preview_url;
+          if (admin_url) updateData.admin_url = admin_url;
+          
+          await supabase
+            .from('sites')
+            .update(updateData)
+            .eq('website_id', website_id);
+        }
+        
         // Continue to ready page after auth
         setTimeout(() => navigate({ to: '/ready' }), 1000);
       }
