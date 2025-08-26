@@ -98,6 +98,17 @@ export default function Dashboard() {
     }
   };
 
+  // Auto-refresh websites every 30 seconds to catch URL updates
+  useEffect(() => {
+    if (user?.id) {
+      const interval = setInterval(() => {
+        loadUserWebsites(user.id);
+      }, 30000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [user?.id]);
+
   if (isLoading) {
     return (
       <ErrorBoundary>
