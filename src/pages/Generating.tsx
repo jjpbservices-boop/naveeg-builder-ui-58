@@ -13,6 +13,7 @@ const generationSteps = [
   { name: 'Creating website structure', description: 'Building the foundation of your website' },
   { name: 'Applying your design', description: 'Implementing your chosen colors and fonts' },
   { name: 'Generating content', description: 'Creating pages tailored to your business' },
+  { name: 'Authentication required', description: 'Sign up to save and manage your website' },
   { name: 'Publishing website', description: 'Making your site live and accessible' },
   { name: 'Final optimizations', description: 'Adding finishing touches for performance' }
 ];
@@ -25,6 +26,7 @@ export default function Generating() {
   const [isGenerating, setIsGenerating] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [generatedData, setGeneratedData] = useState<any>(null);
 
   const {
     website_id, unique_id, colors, fonts, pages_meta,
@@ -37,14 +39,14 @@ export default function Generating() {
     try {
       setError(null);
       
-      // Simulate progress
+      // Simulate progress through initial steps
       const stepInterval = setInterval(() => {
         setCurrentStep(prev => {
-          const next = prev < generationSteps.length - 1 ? prev + 1 : prev;
-          setProgress(Math.min(((next + 1) / generationSteps.length) * 90, 90));
+          const next = prev < 3 ? prev + 1 : prev; // Stop at step 3 (before auth)
+          setProgress(Math.min(((next + 1) / generationSteps.length) * 60, 60));
           return next;
         });
-      }, 3000);
+      }, 2000);
 
       // Save design
       await updateDesign(website_id, {
@@ -55,7 +57,7 @@ export default function Generating() {
         website_type,
       });
 
-      // Generate and publish - fix payload structure to match API expectations
+      // Generate website structure - fix payload structure to match API expectations
       const onboardingData = {
         business_name, 
         business_description, 
@@ -70,17 +72,48 @@ export default function Generating() {
       };
       
       const generateResponse = await api.generateFromWithPolling(website_id, unique_id, onboardingData);
-      const publishResponse = await api.publishAndFrontWithPolling(website_id);
-
+      
       clearInterval(stepInterval);
-      setProgress(100);
-      setIsGenerating(false);
+      
+      // Store generation data and move to auth step
+      setGeneratedData({ generateResponse, onboardingData });
+      setCurrentStep(3); // Move to auth step
+      setProgress(70);
+      
+      // Check if user is already authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setIsGenerating(false);
+        setShowAuthModal(true);
+        return;
+      }
+      
+      // Continue with publishing if already authenticated
+      await completeWebsiteGeneration(session.user);
 
+    } catch (error: any) {
+      console.error('Generation error:', error);
+      setError(error.message || 'Failed to generate website. Please try again.');
+      setIsGenerating(false);
+    }
+  };
+
+  const completeWebsiteGeneration = async (user: any) => {
+    try {
+      setCurrentStep(4); // Publishing step
+      setProgress(85);
+      
+      const publishResponse = await api.publishAndFrontWithPolling(website_id);
+      
+      setCurrentStep(5); // Final optimizations
+      setProgress(100);
+      
       console.log('Full publish response:', publishResponse);
       
-      // IMMEDIATELY store URLs in database regardless of auth status
+      // Store URLs and associate with user
       if (website_id && (publishResponse?.preview_url || publishResponse?.admin_url)) {
-        const urlUpdateData: any = {};
+        const urlUpdateData: any = { user_id: user.id };
+        
         if (publishResponse?.preview_url) {
           urlUpdateData.site_url = publishResponse.preview_url;
           updateApiData({ preview_url: publishResponse.preview_url });
@@ -90,8 +123,7 @@ export default function Generating() {
           updateApiData({ admin_url: publishResponse.admin_url });
         }
         
-        console.log('IMMEDIATE URL update:', urlUpdateData);
-        console.log('Updating website_id:', website_id);
+        console.log('Storing URLs with user association:', urlUpdateData);
         
         const { data: urlUpdateResult, error: urlUpdateError } = await supabase
           .from('sites')
@@ -100,31 +132,10 @@ export default function Generating() {
           .select();
           
         if (urlUpdateError) {
-          console.error('CRITICAL: Failed to store URLs immediately:', urlUpdateError);
+          console.error('CRITICAL: Failed to store URLs with user:', urlUpdateError);
+          throw new Error('Failed to save website data');
         } else {
-          console.log('SUCCESS: URLs stored immediately:', urlUpdateResult);
-        }
-      }
-
-      // Check auth before proceeding 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setShowAuthModal(true);
-        return;
-      }
-
-      // Associate website with user if authenticated
-      if (website_id && session.user) {
-        const { data: userUpdateResult, error: userUpdateError } = await supabase
-          .from('sites')
-          .update({ user_id: session.user.id })
-          .eq('website_id', website_id)
-          .select();
-          
-        if (userUpdateError) {
-          console.error('Failed to associate user:', userUpdateError);
-        } else {
-          console.log('Successfully associated user:', userUpdateResult);
+          console.log('SUCCESS: URLs stored with user association:', urlUpdateResult);
         }
       }
 
@@ -133,11 +144,12 @@ export default function Generating() {
         description: 'Your website is ready for preview.'
       });
 
+      setIsGenerating(false);
       setTimeout(() => navigate({ to: '/dashboard' }), 1000);
 
     } catch (error: any) {
-      console.error('Generation error:', error);
-      setError(error.message || 'Failed to generate website. Please try again.');
+      console.error('Publishing error:', error);
+      setError(error.message || 'Failed to publish website. Please try again.');
       setIsGenerating(false);
     }
   };
@@ -146,26 +158,12 @@ export default function Generating() {
     // Check auth state
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user || null);
-      if (event === 'SIGNED_IN' && showAuthModal) {
+      if (event === 'SIGNED_IN' && showAuthModal && session?.user) {
         setShowAuthModal(false);
+        setIsGenerating(true);
         
-        // Associate website with user after authentication (URLs already stored)
-        if (website_id && session?.user) {
-          const { data: userUpdateResult, error: userUpdateError } = await supabase
-            .from('sites')
-            .update({ user_id: session.user.id })
-            .eq('website_id', website_id)
-            .select();
-            
-          if (userUpdateError) {
-            console.error('Failed to associate user after auth:', userUpdateError);
-          } else {
-            console.log('Successfully associated user after auth:', userUpdateResult);
-          }
-        }
-        
-        // Continue to dashboard after auth
-        setTimeout(() => navigate({ to: '/dashboard' }), 1000);
+        // Complete website generation and publishing with authenticated user
+        await completeWebsiteGeneration(session.user);
       }
     });
 
