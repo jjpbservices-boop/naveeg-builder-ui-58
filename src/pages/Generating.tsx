@@ -31,12 +31,61 @@ export default function Generating() {
     website_id, unique_id, colors, fonts, pages_meta,
     seo_title, seo_description, seo_keyphrase,
     business_name, business_description, business_type, website_type,
-    updateApiData,
+    database_id, updateApiData,
   } = useOnboardingStore();
 
   const generateWebsite = async () => {
     try {
       setError(null);
+      
+      // Step 1: Create database entry FIRST
+      console.log('Creating initial database entry...');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        console.log('No authenticated user, showing auth modal');
+        setIsGenerating(false);
+        setShowAuthModal(true);
+        return;
+      }
+
+      // Create initial website record in database
+      const initialWebsiteData = {
+        user_id: session.user.id,
+        business_name: business_name || '',
+        business_description: business_description || '',
+        business_type: business_type || 'basic',
+        website_type: website_type || 'basic',
+        seo_title: seo_title || '',
+        seo_description: seo_description || '',
+        seo_keyphrase: seo_keyphrase || '',
+        website_id: website_id || 0,
+        unique_id: unique_id || '',
+        colors: colors ? JSON.parse(JSON.stringify(colors)) : null,
+        fonts: fonts ? JSON.parse(JSON.stringify(fonts)) : null,
+        pages_meta: pages_meta ? JSON.parse(JSON.stringify(pages_meta)) : null,
+        status: 'generating'
+      };
+
+      console.log('Creating website with data:', initialWebsiteData);
+      
+      const { data: createdWebsite, error: createError } = await supabase
+        .from('sites')
+        .upsert(initialWebsiteData, { 
+          onConflict: 'website_id',
+          ignoreDuplicates: false 
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error('Failed to create website record:', createError);
+        throw new Error('Failed to create website record');
+      }
+
+      console.log('Website created successfully:', createdWebsite);
+      
+      // Store the database ID for future operations
+      updateApiData({ database_id: createdWebsite.id });
       
       // Simulate progress through initial steps
       const stepInterval = setInterval(() => {
@@ -78,15 +127,6 @@ export default function Generating() {
       setGeneratedData({ generateResponse, onboardingData });
       setCurrentStep(2); // Complete content generation step
       setProgress(60);
-      
-      // Check if user is already authenticated
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        console.log('No authenticated user, showing auth modal');
-        setIsGenerating(false);
-        setShowAuthModal(true);
-        return;
-      }
       
       console.log('User is authenticated:', session.user.id);
       // Continue with publishing if already authenticated
@@ -132,11 +172,12 @@ export default function Generating() {
       
       console.log('Updating website with data:', urlUpdateData);
       
-      const { data: urlUpdateResult, error: urlUpdateError } = await supabase
-        .from('sites')
-        .update(urlUpdateData)
-        .eq('website_id', website_id)
-        .select();
+      // Use the database ID if available, otherwise fallback to website_id
+      const updateQuery = database_id 
+        ? supabase.from('sites').update(urlUpdateData).eq('id', database_id)
+        : supabase.from('sites').update(urlUpdateData).eq('website_id', website_id);
+      
+      const { data: urlUpdateResult, error: urlUpdateError } = await updateQuery.select();
         
       if (urlUpdateError) {
         console.error('CRITICAL: Failed to update website:', urlUpdateError);

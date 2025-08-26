@@ -41,6 +41,7 @@ export interface OnboardingState {
   unique_id?: string;
   preview_url?: string;
   admin_url?: string;
+  database_id?: string; // Supabase database ID
   
   // UI state
   currentStep: number;
@@ -55,7 +56,7 @@ export interface OnboardingActions {
   updateDesign: (design: Partial<Pick<OnboardingState, 'colors' | 'fonts'>>) => void;
   updatePages: (pages: Page[]) => void;
   updateWebsiteType: (type: 'basic' | 'ecommerce') => void;
-  updateApiData: (data: Partial<Pick<OnboardingState, 'website_id' | 'unique_id' | 'preview_url' | 'admin_url'>>) => void;
+  updateApiData: (data: Partial<Pick<OnboardingState, 'website_id' | 'unique_id' | 'preview_url' | 'admin_url' | 'database_id'>>) => void;
   
   // Page management
   addPage: (page: Page) => void;
@@ -181,6 +182,7 @@ export const useOnboardingStore = create<OnboardingStore>()(
         unique_id: state.unique_id,
         preview_url: state.preview_url,
         admin_url: state.admin_url,
+        database_id: state.database_id,
         currentStep: state.currentStep,
       }),
     }
