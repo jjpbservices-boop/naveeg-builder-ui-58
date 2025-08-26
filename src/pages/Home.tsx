@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, Zap, Smartphone, Search, Shield, Palette, LayoutDashboard, Star, Users, Clock, CheckCircle } from 'lucide-react';
 import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
+import { HeroAnimation } from '@/components/HeroAnimation';
 
 const Home: React.FC = () => {
   const { t } = useTranslation('home');
@@ -36,8 +37,10 @@ const Home: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16 lg:py-24">
-        <div className="max-w-4xl mx-auto text-center">
+      <section className="relative overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background">
+        <HeroAnimation />
+        <div className="container mx-auto px-4 py-16 lg:py-24">
+          <div className="max-w-4xl mx-auto text-center relative z-10">
           <h1 className="font-syne text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-6 leading-tight">
             {t('hero.title')}
           </h1>
@@ -71,6 +74,7 @@ const Home: React.FC = () => {
           <p className="text-sm text-muted-foreground">
             {t('hero.helper')}
           </p>
+          </div>
         </div>
       </section>
 
