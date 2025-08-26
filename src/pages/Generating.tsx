@@ -38,55 +38,6 @@ export default function Generating() {
     try {
       setError(null);
       
-      // Step 1: Create database entry FIRST
-      console.log('Creating initial database entry...');
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        console.log('No authenticated user, showing auth modal');
-        setIsGenerating(false);
-        setShowAuthModal(true);
-        return;
-      }
-
-      // Create initial website record in database
-      const initialWebsiteData = {
-        user_id: session.user.id,
-        business_name: business_name || '',
-        business_description: business_description || '',
-        business_type: business_type || 'basic',
-        website_type: website_type || 'basic',
-        seo_title: seo_title || '',
-        seo_description: seo_description || '',
-        seo_keyphrase: seo_keyphrase || '',
-        website_id: website_id || 0,
-        unique_id: unique_id || '',
-        colors: colors ? JSON.parse(JSON.stringify(colors)) : null,
-        fonts: fonts ? JSON.parse(JSON.stringify(fonts)) : null,
-        pages_meta: pages_meta ? JSON.parse(JSON.stringify(pages_meta)) : null,
-        status: 'generating'
-      };
-
-      console.log('Creating website with data:', initialWebsiteData);
-      
-      const { data: createdWebsite, error: createError } = await supabase
-        .from('sites')
-        .upsert(initialWebsiteData, { 
-          onConflict: 'website_id',
-          ignoreDuplicates: false 
-        })
-        .select()
-        .single();
-
-      if (createError) {
-        console.error('Failed to create website record:', createError);
-        throw new Error('Failed to create website record');
-      }
-
-      console.log('Website created successfully:', createdWebsite);
-      
-      // Store the database ID for future operations
-      updateApiData({ database_id: createdWebsite.id });
-      
       // Simulate progress through initial steps
       const stepInterval = setInterval(() => {
         setCurrentStep(prev => {
@@ -128,7 +79,20 @@ export default function Generating() {
       setCurrentStep(2); // Complete content generation step
       setProgress(60);
       
+      // Check if user is already authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        console.log('No authenticated user, showing auth modal');
+        setIsGenerating(false);
+        setShowAuthModal(true);
+        return;
+      }
+      
       console.log('User is authenticated:', session.user.id);
+      
+      // Create or update database record now that we have a valid website_id
+      await createDatabaseRecord(session.user);
+      
       // Continue with publishing if already authenticated
       await completeWebsiteGeneration(session.user);
 
@@ -136,6 +100,48 @@ export default function Generating() {
       console.error('Generation error:', error);
       setError(error.message || 'Failed to generate website. Please try again.');
       setIsGenerating(false);
+    }
+  };
+
+  const createDatabaseRecord = async (user: any) => {
+    try {
+      console.log('Creating database record with website_id:', website_id);
+      
+      const websiteData = {
+        user_id: user.id,
+        website_id: website_id,
+        unique_id: unique_id || '',
+        business_name: business_name || '',
+        business_description: business_description || '',
+        business_type: business_type || 'basic',
+        website_type: website_type || 'basic',
+        seo_title: seo_title || '',
+        seo_description: seo_description || '',
+        seo_keyphrase: seo_keyphrase || '',
+        colors: colors ? JSON.parse(JSON.stringify(colors)) : null,
+        fonts: fonts ? JSON.parse(JSON.stringify(fonts)) : null,
+        pages_meta: pages_meta ? JSON.parse(JSON.stringify(pages_meta)) : null,
+        status: 'generating'
+      };
+
+      console.log('Inserting website data:', websiteData);
+      
+      const { data: insertedWebsite, error: insertError } = await supabase
+        .from('sites')
+        .insert(websiteData)
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('Failed to create database record:', insertError);
+        // Don't throw, just log - the website generation can continue
+      } else {
+        console.log('Database record created successfully:', insertedWebsite);
+        updateApiData({ database_id: insertedWebsite.id });
+      }
+    } catch (error) {
+      console.error('Error creating database record:', error);
+      // Don't throw, just log - the website generation can continue
     }
   };
 
