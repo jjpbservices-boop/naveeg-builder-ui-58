@@ -11,7 +11,7 @@ import { toast } from '@/hooks/use-toast';
 
 export default function Auth() {
   const navigate = useNavigate();
-  const search = useSearch({ from: '/auth' });
+  const search = useSearch({ strict: false });
   const [mode, setMode] = useState<'signin' | 'signup'>('signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
