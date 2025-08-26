@@ -129,8 +129,12 @@ const Home: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
           {[0, 1, 2].map((index) => (
             <div key={index} className="text-center">
-              <div className="w-16 h-16 bg-primary-light rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-primary">{index + 1}</span>
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
+                index === 0 ? 'bg-chart-1/10' : index === 1 ? 'bg-chart-2/10' : 'bg-chart-3/10'
+              }`}>
+                <span className={`text-2xl font-bold ${
+                  index === 0 ? 'text-chart-1' : index === 1 ? 'text-chart-2' : 'text-chart-3'
+                }`}>{index + 1}</span>
               </div>
               <h3 className="font-syne font-semibold text-xl text-foreground mb-2">
                 {t(`howItWorks.steps.${index}.title`)}
@@ -164,8 +168,18 @@ const Home: React.FC = () => {
                 key={index}
                 className="p-6 rounded-2xl bg-card border shadow-soft hover:shadow-medium transition-all duration-300"
               >
-                <div className="w-12 h-12 bg-primary-light rounded-2xl flex items-center justify-center mb-4">
-                  <IconComponent className="h-6 w-6 text-primary" />
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${
+                  index % 5 === 0 ? 'bg-chart-1/10' : 
+                  index % 5 === 1 ? 'bg-chart-2/10' : 
+                  index % 5 === 2 ? 'bg-chart-3/10' : 
+                  index % 5 === 3 ? 'bg-chart-4/10' : 'bg-chart-5/10'
+                }`}>
+                  <IconComponent className={`h-6 w-6 ${
+                    index % 5 === 0 ? 'text-chart-1' : 
+                    index % 5 === 1 ? 'text-chart-2' : 
+                    index % 5 === 2 ? 'text-chart-3' : 
+                    index % 5 === 3 ? 'text-chart-4' : 'text-chart-5'
+                  }`} />
                 </div>
                 <h3 className="font-syne font-semibold text-xl text-foreground mb-2">
                   {t(`features.cards.${index}.title`)}

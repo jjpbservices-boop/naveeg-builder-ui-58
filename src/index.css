@@ -41,14 +41,32 @@
     --accent: var(--brand-h) var(--brand-s) 96%;
     --accent-foreground: 0 0% 20%;
 
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 58%;
-    --destructive-foreground: 0 0% 100%;
+    /* Google-inspired semantic colors */
+    --success: 143 78% 41%;
+    --success-foreground: 0 0% 98%;
+    --success-light: 143 78% 95%;
+    
+    --warning: 45 93% 47%;
+    --warning-foreground: 0 0% 98%;
+    --warning-light: 45 93% 95%;
+    
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 98%;
+    --info-light: 217 91% 95%;
+    
+    --error: 4 90% 58%;
+    --error-foreground: 0 0% 98%;
+    --error-light: 4 90% 95%;
+    
+    --destructive: 4 90% 58%;
+    --destructive-foreground: 0 0% 98%;
+    
+    /* Chart colors using semantic palette */
+    --chart-1: var(--brand);  /* Primary orange */
+    --chart-2: 217 91% 60%;   /* Info blue */
+    --chart-3: 143 78% 41%;   /* Success green */
+    --chart-4: 45 93% 47%;    /* Warning yellow */
+    --chart-5: 4 90% 58%;     /* Error red */
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
@@ -98,14 +116,32 @@
     --accent: var(--brand-h) var(--brand-s) 22%;
     --accent-foreground: 0 0% 100%;
 
-    --success: 142 70% 40%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 38 90% 54%;
-    --warning-foreground: 0 0% 10%;
-
-    --destructive: 0 62% 51%;
-    --destructive-foreground: 0 0% 100%;
+    /* Google-inspired semantic colors - dark mode */
+    --success: 143 78% 45%;
+    --success-foreground: 0 0% 98%;
+    --success-light: 143 78% 15%;
+    
+    --warning: 45 93% 52%;
+    --warning-foreground: 0 0% 98%;
+    --warning-light: 45 93% 15%;
+    
+    --info: 217 91% 65%;
+    --info-foreground: 0 0% 98%;
+    --info-light: 217 91% 15%;
+    
+    --error: 4 90% 63%;
+    --error-foreground: 0 0% 98%;
+    --error-light: 4 90% 15%;
+    
+    --destructive: 4 90% 63%;
+    --destructive-foreground: 0 0% 98%;
+    
+    /* Chart colors using semantic palette - dark mode */
+    --chart-1: var(--brand);  /* Primary orange */
+    --chart-2: 217 91% 65%;   /* Info blue */
+    --chart-3: 143 78% 45%;   /* Success green */
+    --chart-4: 45 93% 52%;    /* Warning yellow */
+    --chart-5: 4 90% 63%;     /* Error red */
 
     --border: 221 30% 22%;
     --input: 221 30% 22%;
