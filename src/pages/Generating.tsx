@@ -76,42 +76,55 @@ export default function Generating() {
       setProgress(100);
       setIsGenerating(false);
 
-      // Store API response URLs
-      const apiData: any = {};
-      if (publishResponse?.preview_url) apiData.preview_url = publishResponse.preview_url;
-      if (publishResponse?.admin_url) apiData.admin_url = publishResponse.admin_url;
-      if (Object.keys(apiData).length > 0) {
-        updateApiData(apiData);
+      console.log('Full publish response:', publishResponse);
+      
+      // IMMEDIATELY store URLs in database regardless of auth status
+      if (website_id && (publishResponse?.preview_url || publishResponse?.admin_url)) {
+        const urlUpdateData: any = {};
+        if (publishResponse?.preview_url) {
+          urlUpdateData.site_url = publishResponse.preview_url;
+          updateApiData({ preview_url: publishResponse.preview_url });
+        }
+        if (publishResponse?.admin_url) {
+          urlUpdateData.admin_url = publishResponse.admin_url;
+          updateApiData({ admin_url: publishResponse.admin_url });
+        }
+        
+        console.log('IMMEDIATE URL update:', urlUpdateData);
+        console.log('Updating website_id:', website_id);
+        
+        const { data: urlUpdateResult, error: urlUpdateError } = await supabase
+          .from('sites')
+          .update(urlUpdateData)
+          .eq('website_id', website_id)
+          .select();
+          
+        if (urlUpdateError) {
+          console.error('CRITICAL: Failed to store URLs immediately:', urlUpdateError);
+        } else {
+          console.log('SUCCESS: URLs stored immediately:', urlUpdateResult);
+        }
       }
 
-      console.log('Full publish response:', publishResponse);
-
-      // Check auth before proceeding to ready page
+      // Check auth before proceeding 
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         setShowAuthModal(true);
         return;
       }
 
-      // Associate website with user and update URLs if authenticated
+      // Associate website with user if authenticated
       if (website_id && session.user) {
-        const updateData: any = { user_id: session.user.id };
-        if (publishResponse?.preview_url) updateData.site_url = publishResponse.preview_url;
-        if (publishResponse?.admin_url) updateData.admin_url = publishResponse.admin_url;
-        
-        console.log('Update data being sent:', updateData);
-        console.log('Updating website_id:', website_id);
-        
-        const { data: updateResult, error: updateError } = await supabase
+        const { data: userUpdateResult, error: userUpdateError } = await supabase
           .from('sites')
-          .update(updateData)
+          .update({ user_id: session.user.id })
           .eq('website_id', website_id)
           .select();
           
-        if (updateError) {
-          console.error('Failed to update site URLs:', updateError);
+        if (userUpdateError) {
+          console.error('Failed to associate user:', userUpdateError);
         } else {
-          console.log('Successfully updated site URLs:', updateResult);
+          console.log('Successfully associated user:', userUpdateResult);
         }
       }
 
@@ -136,29 +149,18 @@ export default function Generating() {
       if (event === 'SIGNED_IN' && showAuthModal) {
         setShowAuthModal(false);
         
-        // Associate website with user after authentication
+        // Associate website with user after authentication (URLs already stored)
         if (website_id && session?.user) {
-          const storeState = useOnboardingStore.getState();
-          const updateData: any = { user_id: session.user.id };
-          
-          // Get URLs from store's API data
-          if (storeState.preview_url) updateData.site_url = storeState.preview_url;
-          if (storeState.admin_url) updateData.admin_url = storeState.admin_url;
-          
-          console.log('Store state for URLs:', { preview_url: storeState.preview_url, admin_url: storeState.admin_url });
-          console.log('Updating site URLs after auth:', updateData);
-          console.log('Using website_id:', website_id);
-          
-          const { data: updateResult, error: updateError } = await supabase
+          const { data: userUpdateResult, error: userUpdateError } = await supabase
             .from('sites')
-            .update(updateData)
+            .update({ user_id: session.user.id })
             .eq('website_id', website_id)
             .select();
             
-          if (updateError) {
-            console.error('Failed to update site URLs after auth:', updateError);
+          if (userUpdateError) {
+            console.error('Failed to associate user after auth:', userUpdateError);
           } else {
-            console.log('Successfully updated site URLs after auth:', updateResult);
+            console.log('Successfully associated user after auth:', userUpdateResult);
           }
         }
         

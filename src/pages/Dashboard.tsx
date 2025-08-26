@@ -98,12 +98,13 @@ export default function Dashboard() {
     }
   };
 
-  // Auto-refresh websites every 30 seconds to catch URL updates
+  // Auto-refresh websites every 10 seconds to catch URL updates quickly
   useEffect(() => {
     if (user?.id) {
       const interval = setInterval(() => {
+        console.log('Auto-refreshing websites...');
         loadUserWebsites(user.id);
-      }, 30000);
+      }, 10000);
       
       return () => clearInterval(interval);
     }
