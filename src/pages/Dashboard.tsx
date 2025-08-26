@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -29,7 +29,7 @@ export default function Dashboard() {
     // Check authentication
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
-        navigate('/auth');
+        navigate({ to: '/auth' });
         return;
       }
       setUser(session.user);
@@ -38,7 +38,7 @@ export default function Dashboard() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session) {
-        navigate('/auth');
+        navigate({ to: '/auth' });
         return;
       }
       setUser(session.user);
@@ -75,7 +75,7 @@ export default function Dashboard() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    navigate('/');
+    navigate({ to: '/' });
   };
 
   const handleCopyUrl = async (url: string) => {
@@ -89,7 +89,7 @@ export default function Dashboard() {
   };
 
   const handleNavigate = (to: string) => {
-    navigate(to);
+    navigate({ to });
   };
 
   const reloadWebsites = () => {

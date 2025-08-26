@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import {
   BarChart3,
   Settings,
@@ -51,7 +51,7 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    navigate('/');
+    navigate({ to: '/' });
   };
 
   return (
