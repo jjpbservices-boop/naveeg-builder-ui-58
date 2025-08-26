@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      action_logs: {
+        Row: {
+          created_at: string
+          id: number
+          method: string
+          path: string
+          role: string
+          status: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          method: string
+          path: string
+          role: string
+          status: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          method?: string
+          path?: string
+          role?: string
+          status?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string | null
@@ -46,14 +76,39 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       sites: {
         Row: {
           admin_url: string | null
-          business_description: string
-          business_name: string
-          business_type: string
+          business_description: string | null
+          business_name: string | null
+          business_type: string | null
           colors: Json | null
           created_at: string | null
+          created_by: string | null
           email: string | null
           fonts: Json | null
           id: string
@@ -61,24 +116,28 @@ export type Database = {
           owner_email: string | null
           pages_meta: Json | null
           payload: Json | null
+          plan: string | null
           seo_description: string | null
           seo_keyphrase: string | null
           seo_title: string | null
           site_url: string | null
           status: string | null
+          subdomain: string | null
+          title: string | null
           unique_id: string | null
           updated_at: string | null
-          user_id: string | null
-          website_id: number | null
+          user_id: string
+          website_id: number
           website_type: string | null
         }
         Insert: {
           admin_url?: string | null
-          business_description: string
-          business_name: string
-          business_type: string
+          business_description?: string | null
+          business_name?: string | null
+          business_type?: string | null
           colors?: Json | null
           created_at?: string | null
+          created_by?: string | null
           email?: string | null
           fonts?: Json | null
           id?: string
@@ -86,24 +145,28 @@ export type Database = {
           owner_email?: string | null
           pages_meta?: Json | null
           payload?: Json | null
+          plan?: string | null
           seo_description?: string | null
           seo_keyphrase?: string | null
           seo_title?: string | null
           site_url?: string | null
           status?: string | null
+          subdomain?: string | null
+          title?: string | null
           unique_id?: string | null
           updated_at?: string | null
-          user_id?: string | null
-          website_id?: number | null
+          user_id: string
+          website_id: number
           website_type?: string | null
         }
         Update: {
           admin_url?: string | null
-          business_description?: string
-          business_name?: string
-          business_type?: string
+          business_description?: string | null
+          business_name?: string | null
+          business_type?: string | null
           colors?: Json | null
           created_at?: string | null
+          created_by?: string | null
           email?: string | null
           fonts?: Json | null
           id?: string
@@ -111,25 +174,60 @@ export type Database = {
           owner_email?: string | null
           pages_meta?: Json | null
           payload?: Json | null
+          plan?: string | null
           seo_description?: string | null
           seo_keyphrase?: string | null
           seo_title?: string | null
           site_url?: string | null
           status?: string | null
+          subdomain?: string | null
+          title?: string | null
           unique_id?: string | null
           updated_at?: string | null
-          user_id?: string | null
-          website_id?: number | null
+          user_id?: string
+          website_id?: number
           website_type?: string | null
         }
         Relationships: []
+      }
+      user_websites: {
+        Row: {
+          created_at: string
+          role: string
+          user_id: string
+          website_id: string
+        }
+        Insert: {
+          created_at?: string
+          role?: string
+          user_id: string
+          website_id: string
+        }
+        Update: {
+          created_at?: string
+          role?: string
+          user_id?: string
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_websites_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      user_owns_site: {
+        Args: { site_uuid: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
