@@ -247,25 +247,20 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
 
                 <div className="flex gap-2">
                   <Button 
-                    asChild 
                     className="flex-1"
                     onClick={() => window.open(currentWebsite.site_url, '_blank')}
                   >
-                    <a href={currentWebsite.site_url} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Visit Live Site
-                    </a>
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Visit Live Site
                   </Button>
                   {currentWebsite.admin_url && (
                     <Button 
-                      asChild 
                       variant="outline" 
                       className="flex-1"
+                      onClick={() => window.open(currentWebsite.admin_url, '_blank')}
                     >
-                      <a href={currentWebsite.admin_url} target="_blank" rel="noopener noreferrer">
-                        <Settings className="h-4 w-4 mr-2" />
-                        WP Admin
-                      </a>
+                      <Settings className="h-4 w-4 mr-2" />
+                      WP Admin
                     </Button>
                   )}
                 </div>

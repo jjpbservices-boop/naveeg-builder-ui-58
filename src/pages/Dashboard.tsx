@@ -244,7 +244,7 @@ export default function Dashboard() {
             </header>
 
             {/* Main Content */}
-            <main className="flex-1 p-6 pl-2">
+            <main className="flex-1 p-6">
               {isLoading ? (
                 <DashboardSkeleton />
               ) : (

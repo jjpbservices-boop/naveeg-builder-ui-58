@@ -77,8 +77,8 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border mr-4" style={{ '--sidebar-width': '240px', '--sidebar-width-icon': '64px' } as React.CSSProperties}>
-      <SidebarHeader className="p-4 h-16 flex items-center justify-center">
+    <Sidebar collapsible="icon" className="border-r border-border" style={{ '--sidebar-width': '240px', '--sidebar-width-icon': '64px' } as React.CSSProperties}>
+      <SidebarHeader className={cn("h-16 flex items-center", collapsed ? "justify-center p-2" : "gap-3 p-4")}>
         <div className={cn("flex items-center", collapsed ? "justify-center" : "gap-3")}>
           <div className="flex h-10 w-10 items-center justify-center shrink-0">
             <img 
@@ -110,7 +110,7 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className={cn(collapsed ? "px-2" : "px-4")}>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
@@ -121,11 +121,11 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
                     isActive={activeView === item.id}
                     tooltip={collapsed ? item.title : undefined}
                     className={cn(
-                      "h-10 w-full",
-                      collapsed ? "justify-center px-0" : "justify-start px-3"
+                      "h-10 w-full flex items-center",
+                      collapsed ? "justify-center px-2" : "justify-start px-3"
                     )}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <item.icon className="h-4 w-4 shrink-0" />
                     {!collapsed && <span className="ml-2">{item.title}</span>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -135,7 +135,7 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 space-y-1">
+      <SidebarFooter className={cn("space-y-1", collapsed ? "p-2" : "p-4")}>
         {/* Theme Toggle */}
         <SidebarMenu>
           <SidebarMenuItem>
@@ -143,12 +143,12 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               tooltip={collapsed ? (theme === 'dark' ? 'Light Mode' : 'Dark Mode') : undefined}
               className={cn(
-                "h-10 w-full",
-                collapsed ? "justify-center px-0" : "justify-start px-3"
+                "h-10 w-full flex items-center",
+                collapsed ? "justify-center px-2" : "justify-start px-3"
               )}
             >
-              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <Sun className="h-4 w-4 shrink-0 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-4 w-4 shrink-0 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               {!collapsed && <span className="ml-2">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -162,9 +162,9 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
                 <DropdownMenuTrigger asChild>
                   <SidebarMenuButton 
                     tooltip="Language"
-                    className="h-10 w-full justify-center px-0"
+                    className="h-10 w-full flex items-center justify-center px-2"
                   >
-                    <Languages className="h-4 w-4" />
+                    <Languages className="h-4 w-4 shrink-0" />
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side="right" align="end">
@@ -182,9 +182,9 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
             ) : (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <SidebarMenuButton className="h-10 w-full justify-start px-3">
+                  <SidebarMenuButton className="h-10 w-full flex items-center justify-start px-3">
                     <div className="flex items-center">
-                      <Languages className="h-4 w-4" />
+                      <Languages className="h-4 w-4 shrink-0" />
                       <span className="ml-2">
                         {languages.find(lang => lang.code === i18n.language)?.name || 'English'}
                       </span>
@@ -214,8 +214,8 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
               onClick={collapsed ? handleSignOut : undefined}
               tooltip={collapsed ? "Sign Out" : undefined}
               className={cn(
-                "h-10 w-full relative",
-                collapsed ? "justify-center px-0" : "justify-start px-3"
+                "h-10 w-full relative flex items-center",
+                collapsed ? "justify-center px-2" : "justify-start px-3"
               )}
             >
               <Avatar className="h-6 w-6 shrink-0">
