@@ -189,7 +189,7 @@ export default function Generating() {
   };
 
   const handleSignUp = () => {
-    navigate({ to: '/auth' });
+    navigate({ to: '/auth?context=generation' });
   };
 
   if (error) {

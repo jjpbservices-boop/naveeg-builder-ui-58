@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useSearch } from '@tanstack/react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { toast } from '@/hooks/use-toast';
 
 export default function Auth() {
   const navigate = useNavigate();
+  const search = useSearch({ from: '/auth' }) as { context?: string };
   const [mode, setMode] = useState<'signin' | 'signup'>('signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,18 +22,20 @@ export default function Auth() {
     // Check if user is already authenticated
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate({ to: '/dashboard' });
+        const redirectTo = search?.context === 'generation' ? '/generating' : '/dashboard';
+        navigate({ to: redirectTo });
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        navigate({ to: '/dashboard' });
+        const redirectTo = search?.context === 'generation' ? '/generating' : '/dashboard';
+        navigate({ to: redirectTo });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, search]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,11 +62,12 @@ export default function Auth() {
 
     try {
       if (mode === 'signup') {
+        const redirectPath = search?.context === 'generation' ? '/generating' : '/dashboard';
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`
+            emailRedirectTo: `${window.location.origin}${redirectPath}`
           }
         });
 

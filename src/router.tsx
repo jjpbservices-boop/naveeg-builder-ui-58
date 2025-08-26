@@ -160,6 +160,11 @@ const authRoute = createRoute({
   getParentRoute: () => layoutRoute,
   path: '/auth',
   component: Auth,
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      context: (search.context as string) || undefined,
+    }
+  },
 });
 
 const notFoundRoute = createRoute({
