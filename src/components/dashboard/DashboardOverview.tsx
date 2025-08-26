@@ -62,7 +62,7 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
             <div className="flex items-center space-x-2">
               <TrendingUp className="h-4 w-4 text-primary" />
               <div>
-                <p className="text-2xl font-bold">98.5%</p>
+                <p className="text-2xl font-bold">99.9%</p>
                 <p className="text-xs text-muted-foreground">Uptime</p>
               </div>
             </div>
@@ -73,8 +73,8 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
             <div className="flex items-center space-x-2">
               <Users className="h-4 w-4 text-primary" />
               <div>
-                <p className="text-2xl font-bold">1,247</p>
-                <p className="text-xs text-muted-foreground">Total Visitors</p>
+                <p className="text-2xl font-bold">-</p>
+                <p className="text-xs text-muted-foreground">Visitors</p>
               </div>
             </div>
           </CardContent>
@@ -84,7 +84,7 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
             <div className="flex items-center space-x-2">
               <Eye className="h-4 w-4 text-primary" />
               <div>
-                <p className="text-2xl font-bold">3,821</p>
+                <p className="text-2xl font-bold">-</p>
                 <p className="text-xs text-muted-foreground">Page Views</p>
               </div>
             </div>
@@ -95,7 +95,7 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
             <div className="flex items-center space-x-2">
               <Calendar className="h-4 w-4 text-primary" />
               <div>
-                <p className="text-2xl font-bold">24</p>
+                <p className="text-2xl font-bold">{Math.ceil((Date.now() - new Date(currentWebsite?.created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24))}</p>
                 <p className="text-xs text-muted-foreground">Days Online</p>
               </div>
             </div>
@@ -138,8 +138,23 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
                       className="w-full h-full"
                       title="Website Preview"
                       sandbox="allow-same-origin allow-scripts"
+                      onError={() => {
+                        // Handle iframe loading errors
+                        console.log('Website preview failed to load');
+                      }}
+                      onLoad={() => {
+                        console.log('Website preview loaded successfully');
+                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent pointer-events-none" />
+                    
+                    {/* Fallback overlay for CORS issues */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-muted/50 backdrop-blur-sm opacity-0 hover:opacity-100 transition-opacity">
+                      <div className="text-center">
+                        <Globe className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">Click to view full site</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

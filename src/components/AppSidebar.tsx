@@ -55,11 +55,25 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border">
+    <Sidebar collapsible="icon" className="border-r border-border" style={{ '--sidebar-width': '240px', '--sidebar-width-icon': '60px' } as React.CSSProperties}>
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <span className="text-xs font-bold text-primary-foreground">N</span>
+          <div className="flex h-8 w-8 items-center justify-center">
+            <img 
+              src="/brand-logo.svg" 
+              alt="Naveeg" 
+              className="h-6 w-6 object-contain"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                if (nextElement) {
+                  nextElement.style.display = 'flex';
+                }
+              }}
+            />
+            <div className="flex h-6 w-6 items-center justify-center rounded bg-primary text-xs font-bold text-primary-foreground hidden">
+              N
+            </div>
           </div>
           {!collapsed && (
             <div className="flex flex-col">
@@ -94,19 +108,21 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
       <SidebarFooter className="p-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <div className="flex items-center gap-3 p-2">
-              <Avatar className="h-8 w-8">
+            <SidebarMenuButton
+              onClick={collapsed ? handleSignOut : undefined}
+              tooltip={collapsed ? "Sign Out" : undefined}
+              className="relative"
+            >
+              <Avatar className="h-6 w-6">
                 <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                   {user?.email?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
               {!collapsed && (
                 <div className="flex flex-1 items-center justify-between">
-                  <div className="flex flex-col min-w-0 flex-1">
-                    <span className="text-xs font-medium text-foreground truncate">
-                      {user?.email || 'User'}
-                    </span>
-                  </div>
+                  <span className="text-xs font-medium text-foreground truncate">
+                    My Account
+                  </span>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -117,7 +133,7 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
                   </Button>
                 </div>
               )}
-            </div>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

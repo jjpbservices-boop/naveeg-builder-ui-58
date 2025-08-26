@@ -100,21 +100,32 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="border-b">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold">Dashboard</h1>
-                <p className="text-muted-foreground">Loading your websites...</p>
-              </div>
-            </div>
+      <ErrorBoundary>
+        <SidebarProvider defaultOpen={true}>
+          <div className="flex min-h-screen w-full">
+            <AppSidebar 
+              activeView={activeView}
+              onViewChange={setActiveView}
+              user={user}
+              onSignOut={handleSignOut}
+            />
+            
+            <SidebarInset className="flex-1">
+              <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+                <SidebarTrigger className="-ml-1" />
+                <div className="flex-1">
+                  <h1 className="text-xl font-semibold">Loading...</h1>
+                  <p className="text-sm text-muted-foreground">Please wait</p>
+                </div>
+              </header>
+
+              <main className="flex-1 p-6">
+                <DashboardSkeleton />
+              </main>
+            </SidebarInset>
           </div>
-        </header>
-        <div className="container mx-auto px-4 py-8">
-          <DashboardSkeleton />
-        </div>
-      </div>
+        </SidebarProvider>
+      </ErrorBoundary>
     );
   }
 
@@ -229,9 +240,6 @@ export default function Dashboard() {
                 <p className="text-sm text-muted-foreground">
                   {currentWebsite ? currentWebsite.business_type : 'Manage your websites'}
                 </p>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {user?.email}
               </div>
             </header>
 
