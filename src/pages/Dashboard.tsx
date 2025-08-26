@@ -108,17 +108,8 @@ export default function Dashboard() {
     }
   };
 
-  // Auto-refresh websites every 10 seconds to catch URL updates quickly
-  useEffect(() => {
-    if (user?.id) {
-      const interval = setInterval(() => {
-        console.log('Auto-refreshing websites...');
-        loadUserWebsites(user.id);
-      }, 10000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [user?.id]);
+  // Note: Removed auto-refresh to prevent constant UI updates.
+  // Users can manually refresh when needed.
 
   if (isLoading) {
     return (

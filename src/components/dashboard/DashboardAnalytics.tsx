@@ -156,93 +156,93 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
         </Button>
       </div>
 
-      {/* Modern KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <Card className="relative overflow-hidden border-0 shadow-sm bg-gradient-to-br from-chart-1/5 to-chart-1/10">
+      {/* Clean KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <Card className="border shadow-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-1">Page Views</p>
-                <p className="text-3xl font-bold text-foreground">{analytics.pageViews.toLocaleString()}</p>
+                <p className="text-2xl font-semibold">{analytics.pageViews.toLocaleString()}</p>
                 <p className="text-xs text-success flex items-center mt-2">
                   <TrendingUp className="h-3 w-3 mr-1" />
-                  +12.5% vs last month
+                  +12.5%
                 </p>
               </div>
-              <div className="p-3 bg-chart-1/10 rounded-xl">
-                <Eye className="h-6 w-6 text-chart-1" />
+              <div className="p-2 bg-muted rounded-lg">
+                <Eye className="h-5 w-5 text-muted-foreground" />
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="relative overflow-hidden border-0 shadow-sm bg-gradient-to-br from-chart-2/5 to-chart-2/10">
+        <Card className="border shadow-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-1">Unique Visitors</p>
-                <p className="text-3xl font-bold text-foreground">{analytics.uniqueVisitors.toLocaleString()}</p>
+                <p className="text-2xl font-semibold">{analytics.uniqueVisitors.toLocaleString()}</p>
                 <p className="text-xs text-success flex items-center mt-2">
                   <TrendingUp className="h-3 w-3 mr-1" />
-                  +8.2% vs last month
+                  +8.2%
                 </p>
               </div>
-              <div className="p-3 bg-chart-2/10 rounded-xl">
-                <Users className="h-6 w-6 text-chart-2" />
+              <div className="p-2 bg-muted rounded-lg">
+                <Users className="h-5 w-5 text-muted-foreground" />
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="relative overflow-hidden border-0 shadow-sm bg-gradient-to-br from-chart-3/5 to-chart-3/10">
+        <Card className="border shadow-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-1">Avg. Session</p>
-                <p className="text-3xl font-bold text-foreground">{analytics.avgSessionDuration}</p>
-                <p className="text-xs text-warning flex items-center mt-2">
+                <p className="text-2xl font-semibold">{analytics.avgSessionDuration}</p>
+                <p className="text-xs text-muted-foreground flex items-center mt-2">
                   <Activity className="h-3 w-3 mr-1" />
-                  +2.1% vs last month
+                  +2.1%
                 </p>
               </div>
-              <div className="p-3 bg-chart-3/10 rounded-xl">
-                <Timer className="h-6 w-6 text-chart-3" />
+              <div className="p-2 bg-muted rounded-lg">
+                <Timer className="h-5 w-5 text-muted-foreground" />
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="relative overflow-hidden border-0 shadow-sm bg-gradient-to-br from-chart-4/5 to-chart-4/10">
+        <Card className="border shadow-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-1">Bounce Rate</p>
-                <p className="text-3xl font-bold text-foreground">{analytics.bounceRate}</p>
+                <p className="text-2xl font-semibold">{analytics.bounceRate}</p>
                 <p className="text-xs text-success flex items-center mt-2">
                   <TrendingUp className="h-3 w-3 mr-1" />
-                  -5.3% vs last month
+                  -5.3%
                 </p>
               </div>
-              <div className="p-3 bg-chart-4/10 rounded-xl">
-                <MousePointer className="h-6 w-6 text-chart-4" />
+              <div className="p-2 bg-muted rounded-lg">
+                <MousePointer className="h-5 w-5 text-muted-foreground" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border-0 shadow-sm bg-gradient-to-br from-chart-5/5 to-chart-5/10">
+        <Card className="border shadow-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-1">Conversion Rate</p>
-                <p className="text-3xl font-bold text-foreground">{analytics.conversionRate}</p>
+                <p className="text-2xl font-semibold">{analytics.conversionRate}</p>
                 <p className="text-xs text-success flex items-center mt-2">
                   <TrendingUp className="h-3 w-3 mr-1" />
-                  +15.8% vs last month
+                  +15.8%
                 </p>
               </div>
-              <div className="p-3 bg-chart-5/10 rounded-xl">
-                <Target className="h-6 w-6 text-chart-5" />
+              <div className="p-2 bg-muted rounded-lg">
+                <Target className="h-5 w-5 text-muted-foreground" />
               </div>
             </div>
           </CardContent>
@@ -250,10 +250,10 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
       </div>
 
       {/* Time Series Chart */}
-      <Card className="border-0 shadow-sm">
+      <Card className="border shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center space-x-2">
-            <Activity className="h-5 w-5 text-chart-1" />
+            <Activity className="h-5 w-5 text-muted-foreground" />
             <span>Traffic Overview (Last 7 Days)</span>
           </CardTitle>
         </CardHeader>
@@ -305,10 +305,10 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
       {/* Analytics Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Pages */}
-        <Card className="border-0 shadow-sm">
+        <Card className="border shadow-sm">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center space-x-2">
-              <BarChart3 className="h-5 w-5 text-chart-1" />
+              <BarChart3 className="h-5 w-5 text-muted-foreground" />
               <span>Top Pages</span>
             </CardTitle>
           </CardHeader>
@@ -330,10 +330,10 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
         </Card>
 
         {/* Device Types */}
-        <Card className="border-0 shadow-sm">
+        <Card className="border shadow-sm">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center space-x-2">
-              <Smartphone className="h-5 w-5 text-chart-2" />
+              <Smartphone className="h-5 w-5 text-muted-foreground" />
               <span>Device Types</span>
             </CardTitle>
           </CardHeader>
@@ -374,10 +374,10 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
         </Card>
 
         {/* Traffic Sources */}
-        <Card className="border-0 shadow-sm">
+        <Card className="border shadow-sm">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center space-x-2">
-              <Globe className="h-5 w-5 text-chart-3" />
+              <Globe className="h-5 w-5 text-muted-foreground" />
               <span>Traffic Sources</span>
             </CardTitle>
           </CardHeader>
@@ -399,28 +399,28 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
         </Card>
 
         {/* Performance Insights */}
-        <Card className="border-0 shadow-sm">
+        <Card className="border shadow-sm">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center space-x-2">
-              <Search className="h-5 w-5 text-chart-4" />
+              <Search className="h-5 w-5 text-muted-foreground" />
               <span>Performance Insights</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-success-light rounded-xl border border-success/20">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                 <span className="text-sm font-medium">SEO Score</span>
                 <Badge variant="success">95/100</Badge>
               </div>
-              <div className="flex items-center justify-between p-4 bg-info-light rounded-xl border border-info/20">
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                 <span className="text-sm font-medium">Page Speed</span>
                 <Badge variant="info">Excellent</Badge>
               </div>
-              <div className="flex items-center justify-between p-4 bg-success-light rounded-xl border border-success/20">
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                 <span className="text-sm font-medium">Mobile Friendly</span>
                 <Badge variant="success">Yes</Badge>
               </div>
-              <div className="flex items-center justify-between p-4 bg-success-light rounded-xl border border-success/20">
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                 <span className="text-sm font-medium">Security</span>
                 <Badge variant="success">A+ SSL</Badge>
               </div>
