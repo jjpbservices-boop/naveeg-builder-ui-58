@@ -94,14 +94,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signUp = async (email: string, password: string) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: redirectUrl
-        }
       });
 
       if (error) {
@@ -112,8 +107,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         });
       } else {
         toast({
-          title: "Check your email",
-          description: "We've sent you a confirmation link.",
+          title: "Account created successfully",
+          description: "You are now signed in.",
         });
       }
 

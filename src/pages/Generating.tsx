@@ -108,7 +108,7 @@ export default function Generating() {
         description: 'Your website is ready for preview.'
       });
 
-      setTimeout(() => navigate({ to: '/ready' }), 1000);
+      setTimeout(() => navigate({ to: '/dashboard' }), 1000);
 
     } catch (error: any) {
       console.error('Generation error:', error);
@@ -137,8 +137,8 @@ export default function Generating() {
             .eq('website_id', website_id);
         }
         
-        // Continue to ready page after auth
-        setTimeout(() => navigate({ to: '/ready' }), 1000);
+        // Continue to dashboard after auth
+        setTimeout(() => navigate({ to: '/dashboard' }), 1000);
       }
     });
 
