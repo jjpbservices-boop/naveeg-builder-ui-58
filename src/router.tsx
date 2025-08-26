@@ -22,8 +22,15 @@ import Settings from '@/pages/Settings';
 import Auth from '@/pages/Auth';
 import NotFound from '@/pages/NotFound';
 
-// Root route
+// Root route with layout
 const rootRoute = createRootRoute({
+  component: () => <Outlet />,
+});
+
+// Layout wrapper for non-dashboard routes
+const layoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  id: 'layout',
   component: () => (
     <Layout>
       <Outlet />
@@ -31,105 +38,106 @@ const rootRoute = createRootRoute({
   ),
 });
 
-// Define routes
+// Define routes with layout
 const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/',
   component: Home,
 });
 
 const featuresRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/features',
   component: Features,
 });
 
 const pricingRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/pricing',
   component: Pricing,
 });
 
 const galleryRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/gallery',
   component: Gallery,
 });
 
 const faqRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/faq',
   component: FAQ,
 });
 
 const contactRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/contact',
   component: Contact,
 });
 
 const legalRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/legal',
   component: Legal,
 });
 
 // Onboarding routes
 const onboardingBriefRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/onboarding/brief',
   component: Brief,
 });
 
 const onboardingDesignRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/onboarding/design',
   component: Design,
 });
 
 const generateRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/generate',
   component: Generate,
 });
 
 const generatingRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/generating',
   component: Generating,
 });
 
 const readyRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/ready',
   component: Ready,
 });
 
 // Legacy routes for backward compatibility
 const describeRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/describe',
   component: Describe,
 });
 
 const briefRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/brief',
   component: Brief,
 });
 
 const designRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/design',
   component: Design,
 });
 
 const previewRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/preview',
   component: Preview,
 });
 
+// Dashboard routes WITHOUT layout (no header/footer)
 const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/dashboard',
@@ -149,40 +157,42 @@ const settingsRoute = createRoute({
 });
 
 const authRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/auth',
   component: Auth,
 });
 
 const notFoundRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => layoutRoute,
   path: '/$',
   component: NotFound,
 });
 
 // Create route tree
 const routeTree = rootRoute.addChildren([
-  indexRoute,
-  featuresRoute,
-  pricingRoute,
-  galleryRoute,
-  faqRoute,
-  contactRoute,
-  legalRoute,
-  onboardingBriefRoute,
-  onboardingDesignRoute,
-  describeRoute,
-  briefRoute,
-  designRoute,
-  generateRoute,
-  generatingRoute,
-  readyRoute,
-  previewRoute,
+  layoutRoute.addChildren([
+    indexRoute,
+    featuresRoute,
+    pricingRoute,
+    galleryRoute,
+    faqRoute,
+    contactRoute,
+    legalRoute,
+    onboardingBriefRoute,
+    onboardingDesignRoute,
+    describeRoute,
+    briefRoute,
+    designRoute,
+    generateRoute,
+    generatingRoute,
+    readyRoute,
+    previewRoute,
+    authRoute,
+    notFoundRoute,
+  ]),
   dashboardRoute,
   workspaceRoute,
   settingsRoute,
-  authRoute,
-  notFoundRoute,
 ]);
 
 // Create router

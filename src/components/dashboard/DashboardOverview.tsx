@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,8 +14,11 @@ import {
   Users,
   Eye,
   Calendar,
-  RefreshCw
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DashboardOverviewProps {
   currentWebsite: any;
@@ -25,6 +28,54 @@ interface DashboardOverviewProps {
 }
 
 export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigate }: DashboardOverviewProps) {
+  const { toast } = useToast();
+  const [analytics, setAnalytics] = useState({
+    pageViews: 0,
+    uniqueVisitors: 0,
+    daysOnline: 0
+  });
+  const [previewError, setPreviewError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (currentWebsite?.id) {
+      loadAnalytics();
+    }
+  }, [currentWebsite?.id]);
+
+  const loadAnalytics = async () => {
+    try {
+      setIsLoading(true);
+      const { data: events } = await supabase
+        .from('events')
+        .select('*')
+        .eq('site_id', currentWebsite.id);
+
+      if (events) {
+        const pageViews = events.filter(e => e.label === 'page_view').length;
+        const uniqueVisitors = new Set(
+          events.map(e => {
+            const data = e.data as any;
+            return data?.session_id || data?.user_id;
+          }).filter(Boolean)
+        ).size;
+        
+        const createdDate = new Date(currentWebsite.created_at);
+        const daysOnline = Math.floor((Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        setAnalytics({
+          pageViews,
+          uniqueVisitors,
+          daysOnline: daysOnline > 0 ? daysOnline : 1
+        });
+      }
+    } catch (error) {
+      console.error('Error loading analytics:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!currentWebsite) {
     return (
       <div className="text-center py-8">
@@ -62,7 +113,9 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
             <div className="flex items-center space-x-2">
               <TrendingUp className="h-4 w-4 text-primary" />
               <div>
-                <p className="text-2xl font-bold">99.9%</p>
+                <p className="text-2xl font-bold">
+                  {currentWebsite?.status === 'published' ? '99.9%' : 'N/A'}
+                </p>
                 <p className="text-xs text-muted-foreground">Uptime</p>
               </div>
             </div>
@@ -73,7 +126,9 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
             <div className="flex items-center space-x-2">
               <Users className="h-4 w-4 text-primary" />
               <div>
-                <p className="text-2xl font-bold">-</p>
+                <p className="text-2xl font-bold">
+                  {isLoading ? '-' : analytics.uniqueVisitors || 'N/A'}
+                </p>
                 <p className="text-xs text-muted-foreground">Visitors</p>
               </div>
             </div>
@@ -84,7 +139,9 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
             <div className="flex items-center space-x-2">
               <Eye className="h-4 w-4 text-primary" />
               <div>
-                <p className="text-2xl font-bold">-</p>
+                <p className="text-2xl font-bold">
+                  {isLoading ? '-' : analytics.pageViews || 'N/A'}
+                </p>
                 <p className="text-xs text-muted-foreground">Page Views</p>
               </div>
             </div>
@@ -95,7 +152,9 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
             <div className="flex items-center space-x-2">
               <Calendar className="h-4 w-4 text-primary" />
               <div>
-                <p className="text-2xl font-bold">{Math.ceil((Date.now() - new Date(currentWebsite?.created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24))}</p>
+                <p className="text-2xl font-bold">
+                  {isLoading ? '-' : analytics.daysOnline}
+                </p>
                 <p className="text-xs text-muted-foreground">Days Online</p>
               </div>
             </div>
@@ -133,28 +192,57 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
                 {/* Website Preview Frame */}
                 <div className="border rounded-lg overflow-hidden bg-muted">
                   <div className="aspect-video relative">
-                    <iframe
-                      src={currentWebsite.site_url}
-                      className="w-full h-full"
-                      title="Website Preview"
-                      sandbox="allow-same-origin allow-scripts"
-                      onError={() => {
-                        // Handle iframe loading errors
-                        console.log('Website preview failed to load');
-                      }}
-                      onLoad={() => {
-                        console.log('Website preview loaded successfully');
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent pointer-events-none" />
-                    
-                    {/* Fallback overlay for CORS issues */}
-                    <div className="absolute inset-0 flex items-center justify-center bg-muted/50 backdrop-blur-sm opacity-0 hover:opacity-100 transition-opacity">
-                      <div className="text-center">
-                        <Globe className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground">Click to view full site</p>
+                    {previewError ? (
+                      <div className="flex items-center justify-center h-full text-muted-foreground">
+                        <div className="text-center space-y-4">
+                          <AlertCircle className="h-12 w-12 mx-auto opacity-50" />
+                          <div>
+                            <p className="text-lg font-medium">Preview Not Available</p>
+                            <p className="text-sm">The website cannot be displayed in this frame due to security settings.</p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            onClick={() => window.open(currentWebsite.site_url, '_blank')}
+                            className="mt-4"
+                          >
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            Open Website in New Tab
+                          </Button>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <>
+                        <iframe
+                          src={currentWebsite.site_url}
+                          className="w-full h-full"
+                          title="Website Preview"
+                          sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+                          onError={() => setPreviewError(true)}
+                          onLoad={(e) => {
+                            try {
+                              const iframe = e.target as HTMLIFrameElement;
+                              if (!iframe.contentDocument && !iframe.contentWindow) {
+                                setPreviewError(true);
+                              }
+                            } catch {
+                              setPreviewError(true);
+                            }
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent pointer-events-none" />
+                        
+                        {/* Fallback overlay for CORS issues */}
+                        <div 
+                          className="absolute inset-0 flex items-center justify-center bg-muted/50 backdrop-blur-sm opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+                          onClick={() => window.open(currentWebsite.site_url, '_blank')}
+                        >
+                          <div className="text-center">
+                            <Globe className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">Click to view full site</p>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
