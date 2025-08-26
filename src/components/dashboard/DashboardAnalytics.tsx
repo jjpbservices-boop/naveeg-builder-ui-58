@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, ResponsiveContainer, Area, AreaChart } from 'recharts';
-import { RefreshCw, TrendingUp, Users, Eye, Clock, BarChart3, Smartphone, Globe, Search, Activity, Target, MousePointer, Timer, Monitor } from 'lucide-react';
+import { RefreshCw, TrendingUp, Users, Eye, Clock, BarChart3, Smartphone, Globe, Search, Activity, Target, MousePointer, Timer, Monitor } from 'lucide-react'; // Updated import
 import { supabase } from '@/integrations/supabase/client';
 
 interface DashboardAnalyticsProps {
