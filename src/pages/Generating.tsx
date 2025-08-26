@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, ArrowLeft } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { RefreshCw, ArrowLeft, UserPlus } from 'lucide-react';
 import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
 import { api, updateDesign } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { EnhancedLoading } from '@/components/EnhancedLoading';
+import { supabase } from '@/integrations/supabase/client';
 
 const generationSteps = [
   { name: 'Creating website structure', description: 'Building the foundation of your website' },
@@ -21,6 +23,8 @@ export default function Generating() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   const {
     website_id, unique_id, colors, fonts, pages_meta,
@@ -43,16 +47,25 @@ export default function Generating() {
 
       // Save design
       await updateDesign(website_id, {
-        colors, fonts, pages_meta,
+        colors, 
+        fonts: { primary_font: fonts.heading || fonts.body || 'Inter' }, 
+        pages_meta,
         seo: { title: seo_title, description: seo_description, keyphrase: seo_keyphrase },
         website_type,
       });
 
-      // Generate and publish
+      // Generate and publish - fix payload structure to match API expectations
       const onboardingData = {
-        business_name, business_description, business_type,
-        seo_title, seo_description, seo_keyphrase,
-        pages_meta, colors, fonts, website_type,
+        business_name, 
+        business_description, 
+        business_type,
+        website_title: seo_title,
+        website_description: seo_description,
+        website_keyphrase: seo_keyphrase,
+        pages_meta, 
+        colors, 
+        fonts: { primary_font: fonts.heading || fonts.body || 'Inter' }, 
+        website_type,
       };
       
       await api.generateFromWithPolling(website_id, unique_id, onboardingData);
@@ -61,6 +74,21 @@ export default function Generating() {
       clearInterval(stepInterval);
       setProgress(100);
       
+      // Check auth before proceeding to ready page
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setShowAuthModal(true);
+        return;
+      }
+
+      // Associate website with user if authenticated
+      if (website_id && session.user) {
+        await supabase
+          .from('sites')
+          .update({ user_id: session.user.id })
+          .eq('website_id', website_id);
+      }
+
       toast({
         title: 'Website generated successfully!',
         description: 'Your website is ready for preview.'
@@ -76,19 +104,40 @@ export default function Generating() {
   };
 
   useEffect(() => {
+    // Check auth state
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
+      if (event === 'SIGNED_IN' && showAuthModal) {
+        setShowAuthModal(false);
+        // Continue to ready page after auth
+        setTimeout(() => navigate({ to: '/ready' }), 1000);
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+    });
+
     if (!website_id || !unique_id) {
       navigate({ to: '/brief' });
       return;
     }
     generateWebsite();
-  }, []);
+
+    return () => subscription.unsubscribe();
+  }, [website_id, unique_id]);
 
   const handleRetry = () => {
     setError(null);
     setCurrentStep(0);
     setProgress(0);
     setIsGenerating(true);
+    setShowAuthModal(false);
     generateWebsite();
+  };
+
+  const handleSignUp = () => {
+    navigate({ to: '/auth' });
   };
 
   if (error) {
@@ -125,5 +174,32 @@ export default function Generating() {
     );
   }
 
-  return null;
+  return (
+    <>
+      {showAuthModal && (
+        <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-center">Almost Done! 🎉</DialogTitle>
+            </DialogHeader>
+            <div className="text-center space-y-4">
+              <p className="text-muted-foreground">
+                Your website has been generated successfully! To save and manage your website, please sign up for an account.
+              </p>
+              <div className="space-y-2">
+                <Button onClick={handleSignUp} className="w-full">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Sign Up & Save Website
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Free account • No credit card required
+                </p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+      {!showAuthModal && null}
+    </>
+  );
 }

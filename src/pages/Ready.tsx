@@ -179,7 +179,7 @@ export default function Ready() {
                   </div>
                   <div className="flex items-center gap-2 mb-2">
                     <Palette className="w-4 h-4" />
-                    <span className="text-sm">Fonts: {fonts.heading} / {fonts.body}</span>
+                    <span className="text-sm">Font: {fonts.heading || fonts.body || 'Inter'}</span>
                   </div>
                 </div>
 
