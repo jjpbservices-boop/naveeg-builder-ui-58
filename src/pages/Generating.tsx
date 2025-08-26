@@ -82,11 +82,13 @@ export default function Generating() {
       // Check if user is already authenticated
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
+        console.log('No authenticated user, showing auth modal');
         setIsGenerating(false);
         setShowAuthModal(true);
         return;
       }
       
+      console.log('User is authenticated:', session.user.id);
       // Continue with publishing if already authenticated
       await completeWebsiteGeneration(session.user);
 
@@ -109,50 +111,38 @@ export default function Generating() {
       
       console.log('Full publish response:', publishResponse);
       
-      // Store URLs and associate with user
-      if (website_id && (publishResponse?.preview_url || publishResponse?.admin_url)) {
-        const urlUpdateData: any = { 
-          user_id: user.id,
-          status: 'published' // Update status to published when URLs are available
-        };
+      // CRITICAL: Always associate with current user regardless of URLs
+      console.log('Associating website with authenticated user:', user.id);
+      
+      const urlUpdateData: any = { 
+        user_id: user.id,
+        status: publishResponse?.preview_url ? 'published' : 'generating'
+      };
+      
+      if (publishResponse?.preview_url) {
+        urlUpdateData.site_url = publishResponse.preview_url;
+        updateApiData({ preview_url: publishResponse.preview_url });
+        console.log('Adding site URL:', publishResponse.preview_url);
+      }
+      if (publishResponse?.admin_url) {
+        urlUpdateData.admin_url = publishResponse.admin_url;
+        updateApiData({ admin_url: publishResponse.admin_url });
+        console.log('Adding admin URL:', publishResponse.admin_url);
+      }
+      
+      console.log('Updating website with data:', urlUpdateData);
+      
+      const { data: urlUpdateResult, error: urlUpdateError } = await supabase
+        .from('sites')
+        .update(urlUpdateData)
+        .eq('website_id', website_id)
+        .select();
         
-        if (publishResponse?.preview_url) {
-          urlUpdateData.site_url = publishResponse.preview_url;
-          updateApiData({ preview_url: publishResponse.preview_url });
-        }
-        if (publishResponse?.admin_url) {
-          urlUpdateData.admin_url = publishResponse.admin_url;
-          updateApiData({ admin_url: publishResponse.admin_url });
-        }
-        
-        console.log('Storing URLs with user association and status update:', urlUpdateData);
-        
-        const { data: urlUpdateResult, error: urlUpdateError } = await supabase
-          .from('sites')
-          .update(urlUpdateData)
-          .eq('website_id', website_id)
-          .select();
-          
-        if (urlUpdateError) {
-          console.error('CRITICAL: Failed to store URLs with user:', urlUpdateError);
-          throw new Error('Failed to save website data');
-        } else {
-          console.log('SUCCESS: URLs stored with user association and status updated:', urlUpdateResult);
-        }
+      if (urlUpdateError) {
+        console.error('CRITICAL: Failed to update website:', urlUpdateError);
+        throw new Error('Failed to save website data');
       } else {
-        // Even if no URLs, still associate with user and update status
-        console.log('No URLs received, but updating user association and status');
-        const { error: userUpdateError } = await supabase
-          .from('sites')
-          .update({ 
-            user_id: user.id,
-            status: 'generating' // Status indicates still in progress
-          })
-          .eq('website_id', website_id);
-          
-        if (userUpdateError) {
-          console.error('Failed to associate website with user:', userUpdateError);
-        }
+        console.log('SUCCESS: Website updated:', urlUpdateResult);
       }
 
       toast({

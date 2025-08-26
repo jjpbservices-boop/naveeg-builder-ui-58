@@ -26,22 +26,32 @@ export default function Dashboard() {
   const [activeView, setActiveView] = useState<string>('overview');
 
   useEffect(() => {
-    // Check authentication
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
       if (!session) {
+        console.log('No session, redirecting to auth');
         navigate({ to: '/auth' });
         return;
       }
       setUser(session.user);
-      loadUserWebsites(session.user.id);
+      if (session.user?.id) {
+        loadUserWebsites(session.user.id);
+      }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.id);
       if (!session) {
+        console.log('No initial session, redirecting to auth');
         navigate({ to: '/auth' });
         return;
       }
       setUser(session.user);
+      if (session.user?.id) {
+        loadUserWebsites(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
