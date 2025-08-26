@@ -37,56 +37,56 @@ const Home: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Full-Screen Hero Section with Animation */}
-      <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background flex flex-col">
+      <section className="relative h-screen overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background flex flex-col">
         <HeroAnimation />
         
         {/* Main Hero Content - Centered */}
         <div className="flex-1 flex items-center justify-center relative z-10">
-          <div className="container mx-auto px-4 py-16 lg:py-24">
+          <div className="container mx-auto px-4 py-8">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="font-syne text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-6 leading-tight">
+              <h1 className="font-syne text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground mb-4 leading-tight">
                 {t('hero.title')}
               </h1>
               
-              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-lg md:text-xl text-muted-foreground mb-6 max-w-2xl mx-auto leading-relaxed">
                 {t('hero.subtitle')}
               </p>
               
-              <div className="max-w-2xl mx-auto mb-4">
-                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
+              <div className="max-w-2xl mx-auto mb-3">
+                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
                   <Input
                     type="text"
                     placeholder={t('hero.inputPlaceholder')}
                     value={businessInput}
                     onChange={(e) => setBusinessInput(e.target.value)}
-                    className="flex-1 h-12 px-6 text-lg rounded-2xl border-2 touch-target"
+                    className="flex-1 h-11 px-5 text-base rounded-xl border-2 touch-target"
                     required
                   />
                   <Button
                     type="submit"
                     size="lg"
-                    className="h-12 px-8 bg-gradient-primary hover:bg-primary-hover text-white font-semibold rounded-2xl touch-target whitespace-nowrap"
+                    className="h-11 px-6 bg-gradient-primary hover:bg-primary-hover text-white font-semibold rounded-xl touch-target whitespace-nowrap"
                     disabled={!businessInput.trim()}
                   >
                     {t('hero.ctaButton')}
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </form>
               </div>
               
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mb-6">
                 {t('hero.helper')}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Trial Banner - Bottom of hero */}
-        <div className="relative z-10 backdrop-blur-sm">
-          <div className="container mx-auto px-4 py-8">
-            <div className="max-w-3xl mx-auto">
-              <div className="bg-primary-light/80 border border-primary/20 rounded-2xl p-6 text-center">
-                <p className="text-primary font-medium">
+        {/* Trial Banner - Modern Design */}
+        <div className="relative z-10 px-4 pb-4">
+          <div className="container mx-auto">
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-card/90 dark:bg-card/95 border border-border/50 rounded-xl p-4 text-center shadow-sm">
+                <p className="text-sm font-medium text-foreground">
                   {t('trialBanner.text')}
                 </p>
               </div>
@@ -94,14 +94,14 @@ const Home: React.FC = () => {
           </div>
         </div>
 
-        {/* Social Proof - Very bottom of hero */}
-        <div className="relative z-10 pb-8">
+        {/* Social Proof - Compact */}
+        <div className="relative z-10 pb-6">
           <div className="container mx-auto px-4">
             <div className="text-center">
-              <p className="text-muted-foreground mb-6">{t('socialProof.title')}</p>
-              <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
+              <p className="text-sm text-muted-foreground mb-3">{t('socialProof.title')}</p>
+              <div className="flex flex-wrap justify-center items-center gap-6 opacity-60">
                 {Array.from({ length: 5 }, (_, i) => (
-                  <div key={i} className="h-8 w-24 bg-muted/80 rounded flex items-center justify-center text-xs backdrop-blur-sm">
+                  <div key={i} className="h-6 w-20 bg-muted/60 rounded flex items-center justify-center text-xs">
                     Logo {i + 1}
                   </div>
                 ))}
