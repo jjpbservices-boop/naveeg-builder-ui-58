@@ -1,63 +1,344 @@
-<!-- HERO BACKDROP -->
-<div class="relative isolate overflow-hidden">
-  <!-- radial glow -->
-  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(1200px_600px_at_20%_-10%,hsl(var(--primary)/.12),transparent_60%)]"></div>
-  <!-- grid pattern -->
-  <div class="pointer-events-none absolute inset-0 [background:linear-gradient(to_right,rgba(255,255,255,.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,.06)_1px,transparent_1px)] bg-[size:40px_40px] mix-blend-soft-light dark:opacity-40"></div>
-  <!-- grain -->
-  <div class="pointer-events-none absolute inset-0 opacity-[.06] mix-blend-overlay" style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%223%22 height=%223%22><rect width=%223%22 height=%223%22 fill=%22%23fff%22/></svg>')"></div>
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from '@tanstack/react-router';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ArrowRight, Zap, Smartphone, Search, Shield, Palette, LayoutDashboard, Star, Users, Clock, CheckCircle } from 'lucide-react';
+import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
 
-  <section class="container py-20 md:py-28">
-    <div class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm badge">
-      🇪🇺 EU-based • GDPR compliant
-    </div>
-    <h1 class="mt-5 max-w-[18ch] leading-tight">
-      Launch a modern website in minutes. Host in Europe. Own your data.
-    </h1>
-    <p class="mt-4 max-w-[55ch] text-muted-foreground">
-      Describe your business, let AI build, then refine with a drag-and-drop editor. Fast, secure, and privacy-first.
-    </p>
-    <div class="mt-8 flex flex-wrap gap-3">
-      <a href="/describe" class="btn btn-primary">Generate my site</a>
-      <a href="/#pricing" class="btn btn-outline">See pricing</a>
-    </div>
-    <ul class="mt-6 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-      <li class="flex items-center gap-2"><span class="i-lucide-bolt h-4 w-4 text-primary"></span> 90+ PageSpeed</li>
-      <li class="flex items-center gap-2"><span class="i-lucide-lock h-4 w-4 text-primary"></span> Free SSL</li>
-      <li class="flex items-center gap-2"><span class="i-lucide-server h-4 w-4 text-primary"></span> EU hosting</li>
-    </ul>
-  </section>
-  <!-- angled divider -->
-  <div class="absolute bottom-0 left-0 right-0 h-12 [mask-image:linear-gradient(to_bottom,transparent,black)] bg-[hsl(var(--background))]"></div>
-</div>
+const Home: React.FC = () => {
+  const { t } = useTranslation('home');
+  const navigate = useNavigate();
+  const { updateBasicInfo } = useOnboardingStore();
+  const [businessInput, setBusinessInput] = useState('');
 
-<!-- SECTION WRAPPER ALT -->
-<section class="bg-[hsl(var(--secondary))] py-16 md:py-20">
-  <div class="container">
-    <h2>How it works</h2>
-    <div class="mt-8 grid gap-6 md:grid-cols-3">
-      <div class="card p-6">
-        <span class="badge">Step 1</span>
-        <h3 class="mt-3">Describe</h3>
-        <p class="text-muted-foreground">Tell us your brand, services, and style.</p>
-      </div>
-      <div class="card p-6">
-        <span class="badge">Step 2</span>
-        <h3 class="mt-3">Customize</h3>
-        <p class="text-muted-foreground">Edit with our drag-and-drop editor or AI Copilot.</p>
-      </div>
-      <div class="card p-6">
-        <span class="badge">Step 3</span>
-        <h3 class="mt-3">Publish</h3>
-        <p class="text-muted-foreground">EU hosting, free SSL, instant domain setup.</p>
-      </div>
-    </div>
-  </div>
-</section>
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (businessInput.trim()) {
+      updateBasicInfo({ business_description: businessInput.trim() });
+      navigate({ to: '/onboarding/brief' });
+    }
+  };
 
-<!-- SOFT WAVE DIVIDER -->
-<div class="relative h-12">
-  <svg class="absolute -top-6 w-full" viewBox="0 0 1440 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path fill="hsl(var(--background))" d="M0,64 C240,96 480,0 720,24 C960,48 1200,104 1440,64 L1440,0 L0,0 Z"/>
-  </svg>
-</div>
+  const handleStartOnboarding = () => {
+    navigate({ to: '/onboarding/brief' });
+  };
+
+  const iconMap = {
+    zap: Zap,
+    smartphone: Smartphone,
+    search: Search,
+    shield: Shield,
+    palette: Palette,
+    layout: LayoutDashboard
+  };
+
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 py-16 lg:py-24">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="font-syne text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-6 leading-tight">
+            {t('hero.title')}
+          </h1>
+          
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
+            {t('hero.subtitle')}
+          </p>
+          
+          <div className="max-w-2xl mx-auto mb-4">
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
+              <Input
+                type="text"
+                placeholder={t('hero.inputPlaceholder')}
+                value={businessInput}
+                onChange={(e) => setBusinessInput(e.target.value)}
+                className="flex-1 h-12 px-6 text-lg rounded-2xl border-2 touch-target"
+                required
+              />
+              <Button
+                type="submit"
+                size="lg"
+                className="h-12 px-8 bg-gradient-primary hover:bg-primary-hover text-white font-semibold rounded-2xl touch-target whitespace-nowrap"
+                disabled={!businessInput.trim()}
+              >
+                {t('hero.ctaButton')}
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </form>
+          </div>
+          
+          <p className="text-sm text-muted-foreground">
+            {t('hero.helper')}
+          </p>
+        </div>
+      </section>
+
+      {/* Trial Banner */}
+      <section className="container mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-primary-light border border-primary/20 rounded-2xl p-6 text-center">
+            <p className="text-primary font-medium">
+              {t('trialBanner.text')}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Social Proof */}
+      <section className="container mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <p className="text-muted-foreground mb-6">{t('socialProof.title')}</p>
+          <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
+            {Array.from({ length: 5 }, (_, i) => (
+              <div key={i} className="h-8 w-24 bg-muted rounded flex items-center justify-center text-xs">
+                Logo {i + 1}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
+            {t('howItWorks.title')}
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            {t('howItWorks.subtitle')}
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          {[0, 1, 2].map((index) => (
+            <div key={index} className="text-center">
+              <div className="w-16 h-16 bg-primary-light rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-primary">{index + 1}</span>
+              </div>
+              <h3 className="font-syne font-semibold text-xl text-foreground mb-2">
+                {t(`howItWorks.steps.${index}.title`)}
+              </h3>
+              <p className="text-muted-foreground">
+                {t(`howItWorks.steps.${index}.description`)}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
+            {t('features.title')}
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            {t('features.subtitle')}
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[0, 1, 2, 3, 4, 5].map((index) => {
+            const iconName = t(`features.cards.${index}.icon`) as keyof typeof iconMap;
+            const IconComponent = iconMap[iconName] || Zap;
+            
+            return (
+              <div
+                key={index}
+                className="p-6 rounded-2xl bg-card border shadow-soft hover:shadow-medium transition-all duration-300"
+              >
+                <div className="w-12 h-12 bg-primary-light rounded-2xl flex items-center justify-center mb-4">
+                  <IconComponent className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="font-syne font-semibold text-xl text-foreground mb-2">
+                  {t(`features.cards.${index}.title`)}
+                </h3>
+                <p className="text-muted-foreground">
+                  {t(`features.cards.${index}.description`)}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Why Naveeg */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
+            {t('whyNaveeg.title')}
+          </h2>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          {[0, 1, 2].map((index) => (
+            <div key={index} className="text-center p-6">
+              <h3 className="font-syne font-semibold text-xl text-foreground mb-4">
+                {t(`whyNaveeg.blocks.${index}.title`)}
+              </h3>
+              <p className="text-muted-foreground">
+                {t(`whyNaveeg.blocks.${index}.description`)}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Pricing Preview */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
+            {t('pricing.title')}
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+            {t('pricing.subtitle')}
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          {[0, 1, 2].map((index) => {
+            const plan = t(`pricing.plans.${index}`, { returnObjects: true }) as any;
+            return (
+              <div
+                key={index}
+                className={`p-8 rounded-2xl border shadow-soft hover:shadow-medium transition-all duration-300 relative ${
+                  plan.popular ? 'border-primary bg-primary-light' : 'bg-card'
+                }`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
+                      Popular
+                    </span>
+                  </div>
+                )}
+                <div className="text-center mb-6">
+                  <h3 className="font-syne font-semibold text-xl text-foreground mb-2">
+                    {plan.name}
+                  </h3>
+                  <div className="flex items-center justify-center mb-2">
+                    <span className="text-4xl font-bold text-foreground">{plan.currency}{plan.price}</span>
+                    <span className="text-muted-foreground ml-1">{plan.period}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{plan.description}</p>
+                </div>
+                <ul className="space-y-3 mb-6">
+                  {plan.features?.map((feature: string, fIndex: number) => (
+                    <li key={fIndex} className="flex items-center">
+                      <CheckCircle className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
+                      <span className="text-foreground">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button 
+                  className={`w-full touch-target ${
+                    plan.popular 
+                      ? 'bg-gradient-primary hover:bg-primary-hover text-white' 
+                      : 'bg-background border border-border hover:bg-muted'
+                  }`}
+                >
+                  Get Started
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+        
+        <div className="text-center mt-8">
+          <Button variant="outline" size="lg" onClick={() => navigate({ to: '/pricing' })}>
+            {t('pricing.viewAll')}
+          </Button>
+        </div>
+      </section>
+
+      {/* Gallery Preview */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
+            {t('gallery.title')}
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+            {t('gallery.subtitle')}
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          {Array.from({ length: 6 }, (_, index) => (
+            <div key={index} className="group cursor-pointer">
+              <div className="aspect-video bg-muted rounded-2xl mb-4 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-muted-foreground">Website Preview</span>
+                </div>
+              </div>
+              <h3 className="font-semibold text-foreground mb-1">Sample Website {index + 1}</h3>
+              <p className="text-sm text-muted-foreground">Category name</p>
+            </div>
+          ))}
+        </div>
+        
+        <div className="text-center mt-8">
+          <Button variant="outline" size="lg" onClick={() => navigate({ to: '/gallery' })}>
+            {t('gallery.viewAll')}
+          </Button>
+        </div>
+      </section>
+
+      {/* FAQ Preview */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
+            {t('faq.title')}
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+            {t('faq.subtitle')}
+          </p>
+        </div>
+        
+        <div className="max-w-3xl mx-auto space-y-6">
+          {[0, 1, 2].map((index) => (
+            <div key={index} className="p-6 rounded-2xl bg-card border shadow-soft">
+              <h3 className="font-semibold text-foreground mb-2">
+                {t(`faq.questions.${index}.question`)}
+              </h3>
+              <p className="text-muted-foreground">
+                {t(`faq.questions.${index}.answer`)}
+              </p>
+            </div>
+          ))}
+        </div>
+        
+        <div className="text-center mt-8">
+          <Button variant="outline" size="lg" onClick={() => navigate({ to: '/faq' })}>
+            {t('faq.viewAll')}
+          </Button>
+        </div>
+      </section>
+
+      {/* CTA Banner */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="bg-gradient-primary rounded-3xl p-8 md:p-12 text-center text-white">
+          <h2 className="font-syne text-3xl md:text-4xl font-bold mb-4">
+            {t('ctaBanner.title')}
+          </h2>
+          <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
+            {t('ctaBanner.subtitle')}
+          </p>
+          <Button 
+            size="lg" 
+            className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 touch-target"
+            onClick={handleStartOnboarding}
+          >
+            {t('ctaBanner.button')}
+          </Button>
+          <p className="text-sm mt-4 opacity-75">
+            {t('ctaBanner.helper')}
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export default Home;
