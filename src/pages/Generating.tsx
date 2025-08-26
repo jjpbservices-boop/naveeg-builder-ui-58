@@ -111,7 +111,10 @@ export default function Generating() {
       
       // Store URLs and associate with user
       if (website_id && (publishResponse?.preview_url || publishResponse?.admin_url)) {
-        const urlUpdateData: any = { user_id: user.id };
+        const urlUpdateData: any = { 
+          user_id: user.id,
+          status: 'published' // Update status to published when URLs are available
+        };
         
         if (publishResponse?.preview_url) {
           urlUpdateData.site_url = publishResponse.preview_url;
@@ -122,7 +125,7 @@ export default function Generating() {
           updateApiData({ admin_url: publishResponse.admin_url });
         }
         
-        console.log('Storing URLs with user association:', urlUpdateData);
+        console.log('Storing URLs with user association and status update:', urlUpdateData);
         
         const { data: urlUpdateResult, error: urlUpdateError } = await supabase
           .from('sites')
@@ -134,7 +137,21 @@ export default function Generating() {
           console.error('CRITICAL: Failed to store URLs with user:', urlUpdateError);
           throw new Error('Failed to save website data');
         } else {
-          console.log('SUCCESS: URLs stored with user association:', urlUpdateResult);
+          console.log('SUCCESS: URLs stored with user association and status updated:', urlUpdateResult);
+        }
+      } else {
+        // Even if no URLs, still associate with user and update status
+        console.log('No URLs received, but updating user association and status');
+        const { error: userUpdateError } = await supabase
+          .from('sites')
+          .update({ 
+            user_id: user.id,
+            status: 'generating' // Status indicates still in progress
+          })
+          .eq('website_id', website_id);
+          
+        if (userUpdateError) {
+          console.error('Failed to associate website with user:', userUpdateError);
         }
       }
 

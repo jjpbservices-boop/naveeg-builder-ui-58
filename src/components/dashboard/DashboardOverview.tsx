@@ -87,6 +87,9 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
     );
   }
 
+  const isGenerating = currentWebsite.status === 'creating' || currentWebsite.status === 'generating' || !currentWebsite.site_url;
+  const hasUrls = currentWebsite.site_url || currentWebsite.admin_url;
+
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -98,9 +101,20 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
   const getStatusVariant = (status: string) => {
     switch (status) {
       case 'published': return 'default';
-      case 'generating': return 'secondary';
+      case 'generating': 
+      case 'creating': return 'secondary';
       case 'error': return 'destructive';
       default: return 'secondary';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'published': return 'Published';
+      case 'generating': return 'Generating';
+      case 'creating': return 'Creating';
+      case 'created': return isGenerating ? 'Processing' : 'Ready';
+      default: return status || 'Active';
     }
   };
 
@@ -172,90 +186,96 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {currentWebsite.site_url ? (
+            {hasUrls ? (
               <>
-                <div className="flex items-center gap-2">
-                  <Input 
-                    value={currentWebsite.site_url} 
-                    readOnly 
-                    className="flex-1 font-mono text-sm"
-                  />
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => onCopyUrl(currentWebsite.site_url)}
-                  >
-                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                  </Button>
-                </div>
+                {currentWebsite.site_url && (
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      value={currentWebsite.site_url} 
+                      readOnly 
+                      className="flex-1 font-mono text-sm"
+                    />
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => onCopyUrl(currentWebsite.site_url)}
+                    >
+                      {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                )}
                 
                 {/* Website Preview Frame */}
-                <div className="border rounded-lg overflow-hidden bg-muted relative group">
-                  <div className="aspect-video relative">
-                    {previewError ? (
-                      <div className="flex items-center justify-center h-full text-muted-foreground">
-                        <div className="text-center space-y-4">
-                          <AlertCircle className="h-12 w-12 mx-auto opacity-50" />
-                          <div>
-                            <p className="text-lg font-medium">Preview Not Available</p>
-                            <p className="text-sm">The website cannot be displayed in this frame due to security settings.</p>
+                {currentWebsite.site_url && (
+                  <div className="border rounded-lg overflow-hidden bg-muted relative group">
+                    <div className="aspect-video relative">
+                      {previewError ? (
+                        <div className="flex items-center justify-center h-full text-muted-foreground">
+                          <div className="text-center space-y-4">
+                            <AlertCircle className="h-12 w-12 mx-auto opacity-50" />
+                            <div>
+                              <p className="text-lg font-medium">Preview Not Available</p>
+                              <p className="text-sm">The website cannot be displayed in this frame due to security settings.</p>
+                            </div>
+                            <Button
+                              variant="outline"
+                              onClick={() => window.open(currentWebsite.site_url, '_blank')}
+                              className="mt-4"
+                            >
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Open Website in New Tab
+                            </Button>
                           </div>
-                          <Button
-                            variant="outline"
-                            onClick={() => window.open(currentWebsite.site_url, '_blank')}
-                            className="mt-4"
-                          >
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            Open Website in New Tab
-                          </Button>
                         </div>
-                      </div>
-                    ) : (
-                      <>
-                        <iframe
-                          src={currentWebsite.site_url}
-                          className="w-full h-full"
-                          title="Live Website Preview"
-                          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-presentation"
-                          onError={() => setPreviewError(true)}
-                          onLoad={(e) => {
-                            try {
-                              const iframe = e.target as HTMLIFrameElement;
-                              if (!iframe.contentDocument && !iframe.contentWindow) {
+                      ) : (
+                        <>
+                          <iframe
+                            src={currentWebsite.site_url}
+                            className="w-full h-full"
+                            title="Live Website Preview"
+                            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-presentation"
+                            onError={() => setPreviewError(true)}
+                            onLoad={(e) => {
+                              try {
+                                const iframe = e.target as HTMLIFrameElement;
+                                if (!iframe.contentDocument && !iframe.contentWindow) {
+                                  setPreviewError(true);
+                                }
+                              } catch {
                                 setPreviewError(true);
                               }
-                            } catch {
-                              setPreviewError(true);
-                            }
-                          }}
-                        />
-                        
-                        {/* Clickable overlay */}
-                        <div 
-                          className="absolute inset-0 bg-transparent cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"
-                          onClick={() => window.open(currentWebsite.site_url, '_blank')}
-                        >
-                          <div className="bg-black/80 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                            <ExternalLink className="h-4 w-4" />
-                            <span className="text-sm font-medium">Click to open in new tab</span>
+                            }}
+                          />
+                          
+                          {/* Clickable overlay */}
+                          <div 
+                            className="absolute inset-0 bg-transparent cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"
+                            onClick={() => window.open(currentWebsite.site_url, '_blank')}
+                          >
+                            <div className="bg-black/80 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                              <ExternalLink className="h-4 w-4" />
+                              <span className="text-sm font-medium">Click to open in new tab</span>
+                            </div>
                           </div>
-                        </div>
-                      </>
-                    )}
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="flex gap-2">
-                  <Button 
-                    className="flex-1"
-                    onClick={() => window.open(currentWebsite.site_url, '_blank')}
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Visit Live Site
-                  </Button>
+                  {currentWebsite.site_url && (
+                    <Button 
+                      className="flex-1"
+                      onClick={() => window.open(currentWebsite.site_url, '_blank')}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Visit Live Site
+                    </Button>
+                  )}
                   {currentWebsite.admin_url && (
                     <Button 
-                      variant="outline" 
+                      variant={currentWebsite.site_url ? "outline" : "default"}
                       className="flex-1"
                       onClick={() => window.open(currentWebsite.admin_url, '_blank')}
                     >
@@ -270,8 +290,22 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
                 <div className="flex items-center justify-center mb-4">
                   <RefreshCw className="h-8 w-8 text-muted-foreground animate-spin" />
                 </div>
-                <p className="text-muted-foreground mb-2">Website is being generated</p>
-                <p className="text-sm text-muted-foreground">This usually takes 2-3 minutes</p>
+                <p className="text-muted-foreground mb-2">
+                  {isGenerating ? 'Website is being generated' : 'Website information not available'}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {isGenerating ? 'This usually takes 2-3 minutes' : 'Please check back later or contact support'}
+                </p>
+                {isGenerating && (
+                  <Button
+                    variant="outline"
+                    onClick={() => window.location.reload()}
+                    className="mt-4"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Refresh Status
+                  </Button>
+                )}
               </div>
             )}
           </CardContent>
@@ -298,14 +332,14 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
                 </div>
               </div>
 
-              <div>
-                <Label className="text-sm font-medium text-muted-foreground">Status</Label>
-                <div className="mt-1">
-                  <Badge variant={getStatusVariant(currentWebsite.status)} className="capitalize">
-                    {currentWebsite.status || 'Active'}
-                  </Badge>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Status</Label>
+                  <div className="mt-1">
+                    <Badge variant={getStatusVariant(currentWebsite.status)} className="capitalize">
+                      {getStatusLabel(currentWebsite.status)}
+                    </Badge>
+                  </div>
                 </div>
-              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
