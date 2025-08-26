@@ -92,8 +92,12 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
                 }
               }}
             />
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-primary text-sm font-bold text-primary-foreground hidden">
-              N
+            <div className="flex h-8 w-8 items-center justify-center rounded bg-transparent hidden">
+              <img 
+                src="/lovable-uploads/b874b017-8b73-4029-9431-6caffeaef48c.png" 
+                alt="Naveeg" 
+                className="h-8 w-8 object-contain"
+              />
             </div>
           </div>
           {!collapsed && (
