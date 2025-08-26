@@ -168,7 +168,7 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Globe className="h-5 w-5" />
-              Live Website
+              Live Website Preview
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -178,7 +178,7 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
                   <Input 
                     value={currentWebsite.site_url} 
                     readOnly 
-                    className="flex-1"
+                    className="flex-1 font-mono text-sm"
                   />
                   <Button 
                     size="sm" 
@@ -190,7 +190,7 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
                 </div>
                 
                 {/* Website Preview Frame */}
-                <div className="border rounded-lg overflow-hidden bg-muted">
+                <div className="border rounded-lg overflow-hidden bg-muted relative group">
                   <div className="aspect-video relative">
                     {previewError ? (
                       <div className="flex items-center justify-center h-full text-muted-foreground">
@@ -215,8 +215,8 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
                         <iframe
                           src={currentWebsite.site_url}
                           className="w-full h-full"
-                          title="Website Preview"
-                          sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+                          title="Live Website Preview"
+                          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-presentation"
                           onError={() => setPreviewError(true)}
                           onLoad={(e) => {
                             try {
@@ -229,16 +229,15 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
                             }
                           }}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent pointer-events-none" />
                         
-                        {/* Fallback overlay for CORS issues */}
+                        {/* Clickable overlay */}
                         <div 
-                          className="absolute inset-0 flex items-center justify-center bg-muted/50 backdrop-blur-sm opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+                          className="absolute inset-0 bg-transparent cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"
                           onClick={() => window.open(currentWebsite.site_url, '_blank')}
                         >
-                          <div className="text-center">
-                            <Globe className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground">Click to view full site</p>
+                          <div className="bg-black/80 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                            <ExternalLink className="h-4 w-4" />
+                            <span className="text-sm font-medium">Click to open in new tab</span>
                           </div>
                         </div>
                       </>
@@ -247,17 +246,25 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
                 </div>
 
                 <div className="flex gap-2">
-                  <Button asChild className="flex-1">
+                  <Button 
+                    asChild 
+                    className="flex-1"
+                    onClick={() => window.open(currentWebsite.site_url, '_blank')}
+                  >
                     <a href={currentWebsite.site_url} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4 mr-2" />
-                      Visit Site
+                      Visit Live Site
                     </a>
                   </Button>
                   {currentWebsite.admin_url && (
-                    <Button asChild variant="outline" className="flex-1">
+                    <Button 
+                      asChild 
+                      variant="outline" 
+                      className="flex-1"
+                    >
                       <a href={currentWebsite.admin_url} target="_blank" rel="noopener noreferrer">
                         <Settings className="h-4 w-4 mr-2" />
-                        Admin Panel
+                        WP Admin
                       </a>
                     </Button>
                   )}
