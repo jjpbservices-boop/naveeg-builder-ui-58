@@ -118,7 +118,7 @@ export default function Ready() {
                     <span className="text-sm font-medium">Website URL</span>
                     <div className="flex gap-2">
                       <code className="flex-1 text-sm bg-muted px-3 py-2 rounded border">
-                        {preview_url || 'https://your-site.10web.site'}
+                        {preview_url || 'https://your-site.example.com'}
                       </code>
                       <Button
                         variant="outline"

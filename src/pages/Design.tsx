@@ -4,19 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Palette, Type, Save, Rocket } from 'lucide-react';
 import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
 import { updateDesign } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
-
-const HEADING_FONTS = [
-  'Syne', 'Playfair Display', 'Montserrat', 'Poppins', 'Merriweather', 'DM Sans', 'Karla'
-];
-
-const BODY_FONTS = [
-  'Inter', 'Roboto', 'Lato', 'Open Sans', 'Source Sans 3', 'Noto Sans'
-];
+import { HeroAnimation } from '@/components/HeroAnimation';
+import { GoogleFontSelector } from '@/components/GoogleFonts';
 
 export default function Design() {
   const navigate = useNavigate();
@@ -56,11 +49,12 @@ export default function Design() {
     });
   };
 
-  const handleFontChange = (fontType: keyof typeof fonts, value: string) => {
+  const handleFontChange = (value: string) => {
     updateStoreDesign({
       fonts: {
-        ...fonts,
-        [fontType]: value
+        // Use the same font for both heading and body since we only send one primary font
+        heading: value as any,
+        body: value as any
       }
     });
   };
@@ -135,15 +129,17 @@ export default function Design() {
                      isValidHex(colors.background_dark);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background">
+      <HeroAnimation />
+      
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+        <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">
               Customize your design
             </h1>
-            <p className="text-muted-foreground">
-              Personalize colors, fonts, and pages to match your brand
+            <p className="text-muted-foreground text-lg">
+              Personalize colors and fonts to match your brand
             </p>
           </div>
 
@@ -151,7 +147,7 @@ export default function Design() {
             {/* Design Controls */}
             <div className="space-y-6">
               {/* Colors */}
-              <Card>
+              <Card className="bg-card/90 backdrop-blur-sm border shadow-soft">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Palette className="h-5 w-5" />
@@ -224,7 +220,7 @@ export default function Design() {
               </Card>
 
               {/* Typography */}
-              <Card>
+              <Card className="bg-card/90 backdrop-blur-sm border shadow-soft">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Type className="h-5 w-5" />
@@ -232,37 +228,15 @@ export default function Design() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="heading_font">Heading Font</Label>
-                    <Select value={fonts.heading} onValueChange={(value: any) => handleFontChange('heading', value)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {HEADING_FONTS.map((font) => (
-                          <SelectItem key={font} value={font} style={{ fontFamily: font }}>
-                            {font}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="body_font">Body Font</Label>
-                    <Select value={fonts.body} onValueChange={(value: any) => handleFontChange('body', value)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {BODY_FONTS.map((font) => (
-                          <SelectItem key={font} value={font} style={{ fontFamily: font }}>
-                            {font}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <GoogleFontSelector
+                    selectedFont={fonts.heading}
+                    onFontChange={handleFontChange}
+                    label="Primary Font"
+                    placeholder="Search from 100+ Google Fonts..."
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This font will be used throughout your website for both headings and body text.
+                  </p>
                 </CardContent>
               </Card>
 
@@ -311,7 +285,7 @@ export default function Design() {
 
             {/* Preview */}
             <div className="space-y-6">
-              <Card>
+              <Card className="bg-card/90 backdrop-blur-sm border shadow-soft">
                 <CardHeader>
                   <CardTitle>Preview</CardTitle>
                 </CardHeader>
@@ -385,13 +359,8 @@ export default function Design() {
                       <h3 className="font-semibold text-sm text-muted-foreground">
                         Font Preview
                       </h3>
-                      <div className="space-y-2">
-                        <div style={{ fontFamily: fonts.heading }} className="text-lg font-semibold">
-                          {fonts.heading} - Heading
-                        </div>
-                        <div style={{ fontFamily: fonts.body }} className="text-base">
-                          {fonts.body} - Body text
-                        </div>
+                      <div style={{ fontFamily: fonts.heading }} className="text-lg font-semibold">
+                        {fonts.heading} - Your website will use this font
                       </div>
                     </div>
                   </div>

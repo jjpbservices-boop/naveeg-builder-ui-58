@@ -16,7 +16,11 @@ const Home: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (businessInput.trim()) {
-      updateBasicInfo({ business_description: businessInput.trim() });
+      // Fix: Set business_name instead of business_description
+      updateBasicInfo({ 
+        business_name: businessInput.trim(),
+        business_description: businessInput.trim() 
+      });
       navigate({ to: '/onboarding/brief' });
     }
   };

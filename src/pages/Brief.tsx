@@ -9,6 +9,8 @@ import { Loader2, ChevronRight } from 'lucide-react';
 import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
 import { api } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
+import { HeroAnimation } from '@/components/HeroAnimation';
+import { EnhancedLoading } from '@/components/EnhancedLoading';
 
 export default function Brief() {
   const navigate = useNavigate();
@@ -53,6 +55,13 @@ export default function Brief() {
       setIsAnalyzed(false);
     }
   }, [website_id, seo_title]);
+
+  const analysisSteps = [
+    { name: 'Analyzing Business', description: 'Understanding your business needs and goals' },
+    { name: 'Creating Structure', description: 'Designing your website architecture' },
+    { name: 'Generating Pages', description: 'Creating pages tailored to your business' },
+    { name: 'Optimizing SEO', description: 'Setting up search engine optimization' }
+  ];
 
   const handleAnalyze = async () => {
     console.log('handleAnalyze called with:', { business_name, business_description });
@@ -186,20 +195,35 @@ export default function Brief() {
     navigate({ to: '/design' });
   };
 
+  if (isLoading) {
+    return (
+      <EnhancedLoading
+        steps={analysisSteps}
+        currentStep={Math.floor(Math.random() * analysisSteps.length)} // Simulate progress
+        title="Analyzing Your Business"
+        subtitle="Sit back and relax while we create your perfect website structure"
+        progress={33}
+        encouragementMessage="🚀 Creating something amazing just for you..."
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background">
+      <HeroAnimation />
+      
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+        <div className="container mx-auto max-w-2xl">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">
               Tell us about your business
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-lg">
               We'll analyze your needs and create a custom website structure
             </p>
           </div>
 
-          <Card>
+          <Card className="bg-card/90 backdrop-blur-sm border shadow-soft">
             <CardHeader>
               <CardTitle>Business Information</CardTitle>
             </CardHeader>
