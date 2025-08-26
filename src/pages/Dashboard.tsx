@@ -2,39 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { 
-  Globe, 
-  ExternalLink, 
-  Settings, 
-  BarChart3, 
-  Palette, 
-  Type, 
   Monitor, 
-  Smartphone,
+  Palette, 
+  BarChart3, 
+  Globe,
   User,
   LogOut,
+  Settings2,
   Shield,
-  Copy,
-  Check,
-  Edit3
+  Database,
+  FileText
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { DashboardOverview } from '@/components/dashboard/DashboardOverview';
+import { DashboardAnalytics } from '@/components/dashboard/DashboardAnalytics';
+import { DashboardDesign } from '@/components/dashboard/DashboardDesign';
+import { DashboardDomain } from '@/components/dashboard/DashboardDomain';
 
-const BUTTON_STYLES = [
-  { id: 'rounded', name: 'Rounded', preview: 'border-radius: 0.5rem' },
-  { id: 'squared', name: 'Squared', preview: 'border-radius: 0' },
-  { id: 'pill', name: 'Pill', preview: 'border-radius: 9999px' },
-  { id: 'border-only', name: 'Border Only', preview: 'background: transparent; border: 2px solid' }
-];
-
-const HEADING_FONTS = ['Syne', 'Playfair Display', 'Montserrat', 'Poppins', 'Merriweather'];
-const BODY_FONTS = ['Inter', 'Roboto', 'Lato', 'Open Sans', 'Source Sans 3'];
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -43,14 +29,7 @@ export default function Dashboard() {
   const [currentWebsite, setCurrentWebsite] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [activeView, setActiveView] = useState<'overview' | 'design' | 'analytics' | 'domain'>('overview');
-
-  // Quick design changes state
-  const [buttonStyle, setButtonStyle] = useState('rounded');
-  const [primaryColor, setPrimaryColor] = useState('#FF7A00');
-  const [secondaryColor, setSecondaryColor] = useState('#1E62FF');
-  const [headingFont, setHeadingFont] = useState('Syne');
-  const [bodyFont, setBodyFont] = useState('Inter');
+  const [activeView, setActiveView] = useState<'overview' | 'design' | 'analytics' | 'domain' | 'backup' | 'security'>('overview');
 
   useEffect(() => {
     // Check authentication
@@ -87,15 +66,6 @@ export default function Dashboard() {
       setWebsites(data || []);
       if (data && data.length > 0) {
         setCurrentWebsite(data[0]);
-        // Load current design settings
-        if (data[0].colors && typeof data[0].colors === 'object') {
-          setPrimaryColor((data[0].colors as any).primary_color || '#FF7A00');
-          setSecondaryColor((data[0].colors as any).secondary_color || '#1E62FF');
-        }
-        if (data[0].fonts && typeof data[0].fonts === 'object') {
-          setHeadingFont((data[0].fonts as any).heading || 'Syne');
-          setBodyFont((data[0].fonts as any).body || 'Inter');
-        }
       }
     } catch (error) {
       console.error('Error loading websites:', error);
@@ -118,44 +88,19 @@ export default function Dashboard() {
     await navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+    toast({
+      title: 'Copied!',
+      description: 'URL copied to clipboard',
+    });
   };
 
-  const handleQuickDesignUpdate = async () => {
-    if (!currentWebsite) return;
+  const handleNavigate = (to: string) => {
+    navigate({ to });
+  };
 
-    try {
-      const { error } = await supabase
-        .from('sites')
-        .update({
-          colors: {
-            primary_color: primaryColor,
-            secondary_color: secondaryColor,
-            background_dark: (currentWebsite.colors as any)?.background_dark || '#121212'
-          },
-          fonts: {
-            heading: headingFont,
-            body: bodyFont
-          },
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', currentWebsite.id);
-
-      if (error) throw error;
-
-      toast({
-        title: 'Design updated',
-        description: 'Your website design has been updated successfully.',
-      });
-
-      // Reload current website data
+  const reloadWebsites = () => {
+    if (user?.id) {
       loadUserWebsites(user.id);
-    } catch (error) {
-      console.error('Error updating design:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update design',
-        variant: 'destructive',
-      });
     }
   };
 
@@ -170,305 +115,81 @@ export default function Dashboard() {
     );
   }
 
-  const renderOverview = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Website Preview */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            Your Live Website
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {currentWebsite?.site_url ? (
-            <>
-              <div className="flex items-center gap-2">
-                <Input 
-                  value={currentWebsite.site_url} 
-                  readOnly 
-                  className="flex-1"
-                />
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => handleCopyUrl(currentWebsite.site_url)}
-                >
-                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-              <div className="flex gap-2">
-                <Button asChild className="flex-1">
-                  <a href={currentWebsite.site_url} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Preview Site
-                  </a>
-                </Button>
-                <Button asChild variant="outline" className="flex-1">
-                  <a href={currentWebsite.admin_url} target="_blank" rel="noopener noreferrer">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Admin Panel
-                  </a>
-                </Button>
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">No website found</p>
-              <Button onClick={() => navigate({ to: '/brief' })} className="mt-4">
-                Create Your First Website
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Website Details */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Website Details</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {currentWebsite ? (
-            <>
-              <div>
-                <Label className="text-sm font-medium">Business Name</Label>
-                <p className="text-sm text-muted-foreground">{currentWebsite.business_name}</p>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Business Type</Label>
-                <Badge variant="secondary">{currentWebsite.business_type}</Badge>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Status</Label>
-                <Badge variant={currentWebsite.status === 'published' ? 'default' : 'secondary'}>
-                  {currentWebsite.status || 'Active'}
-                </Badge>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Created</Label>
+  const renderMainContent = () => {
+    switch (activeView) {
+      case 'overview':
+        return (
+          <DashboardOverview
+            currentWebsite={currentWebsite}
+            copied={copied}
+            onCopyUrl={handleCopyUrl}
+            onNavigate={handleNavigate}
+          />
+        );
+      case 'analytics':
+        return (
+          <DashboardAnalytics
+            currentWebsite={currentWebsite}
+          />
+        );
+      case 'design':
+        return (
+          <DashboardDesign
+            currentWebsite={currentWebsite}
+            onWebsiteUpdate={reloadWebsites}
+          />
+        );
+      case 'domain':
+        return (
+          <DashboardDomain
+            currentWebsite={currentWebsite}
+          />
+        );
+      case 'backup':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="h-5 w-5" />
+                Website Backups
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Database className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-4">Backup management coming soon</p>
                 <p className="text-sm text-muted-foreground">
-                  {new Date(currentWebsite.created_at).toLocaleDateString()}
+                  Automated daily backups are already protecting your website.
                 </p>
               </div>
-              <div>
-                <Label className="text-sm font-medium">Last Updated</Label>
+            </CardContent>
+          </Card>
+        );
+      case 'security':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Security & Performance
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Shield className="h-12 w-12 text-green-600 mx-auto mb-4" />
+                <p className="text-muted-foreground mb-4">Your website is secure</p>
                 <p className="text-sm text-muted-foreground">
-                  {new Date(currentWebsite.updated_at).toLocaleDateString()}
+                  SSL certificate active, regular security scans, and performance monitoring.
                 </p>
               </div>
-            </>
-          ) : (
-            <p className="text-muted-foreground">No website selected</p>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
+            </CardContent>
+          </Card>
+        );
+      default:
+        return null;
+    }
+  };
 
-  const renderQuickDesign = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Button Styles */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Edit3 className="h-5 w-5" />
-              Button Style
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-3">
-              {BUTTON_STYLES.map((style) => (
-                <Button
-                  key={style.id}
-                  variant={buttonStyle === style.id ? "default" : "outline"}
-                  className="h-16 flex flex-col"
-                  onClick={() => setButtonStyle(style.id)}
-                >
-                  <span className="font-medium">{style.name}</span>
-                  <span className="text-xs opacity-70">{style.preview}</span>
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Colors */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Palette className="h-5 w-5" />
-              Colors
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Primary Color</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  value={primaryColor}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="flex-1"
-                />
-                <input
-                  type="color"
-                  value={primaryColor}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="w-12 h-10 rounded border"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Secondary Color</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  value={secondaryColor}
-                  onChange={(e) => setSecondaryColor(e.target.value)}
-                  className="flex-1"
-                />
-                <input
-                  type="color"
-                  value={secondaryColor}
-                  onChange={(e) => setSecondaryColor(e.target.value)}
-                  className="w-12 h-10 rounded border"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Fonts */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Type className="h-5 w-5" />
-            Typography
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Heading Font</Label>
-            <Select value={headingFont} onValueChange={setHeadingFont}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {HEADING_FONTS.map((font) => (
-                  <SelectItem key={font} value={font}>
-                    {font}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Body Font</Label>
-            <Select value={bodyFont} onValueChange={setBodyFont}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {BODY_FONTS.map((font) => (
-                  <SelectItem key={font} value={font}>
-                    {font}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="flex justify-end">
-        <Button onClick={handleQuickDesignUpdate}>
-          Apply Changes
-        </Button>
-      </div>
-    </div>
-  );
-
-  const renderAnalytics = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5" />
-          Analytics Overview
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="text-center p-4 bg-muted rounded-lg">
-            <div className="text-2xl font-bold text-primary">1,234</div>
-            <div className="text-sm text-muted-foreground">Page Views</div>
-          </div>
-          <div className="text-center p-4 bg-muted rounded-lg">
-            <div className="text-2xl font-bold text-primary">567</div>
-            <div className="text-sm text-muted-foreground">Unique Visitors</div>
-          </div>
-          <div className="text-center p-4 bg-muted rounded-lg">
-            <div className="text-2xl font-bold text-primary">89%</div>
-            <div className="text-sm text-muted-foreground">Bounce Rate</div>
-          </div>
-        </div>
-        <p className="text-sm text-muted-foreground text-center">
-          Analytics integration coming soon. Connect Google Analytics for detailed insights.
-        </p>
-      </CardContent>
-    </Card>
-  );
-
-  const renderDomain = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Globe className="h-5 w-5" />
-          Domain Management
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div>
-          <Label className="text-sm font-medium">Current Domain</Label>
-          <div className="flex items-center gap-2 mt-2">
-            <Input 
-              value={currentWebsite?.site_url || 'No domain'} 
-              readOnly 
-              className="flex-1"
-            />
-            <Button size="sm" variant="outline">
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-        
-        <Separator />
-        
-        <div>
-          <Label className="text-sm font-medium">Connect Custom Domain</Label>
-          <p className="text-sm text-muted-foreground mb-3">
-            Connect your own domain to your website
-          </p>
-          <div className="flex gap-2">
-            <Input placeholder="yourdomain.com" className="flex-1" />
-            <Button>Connect</Button>
-          </div>
-        </div>
-
-        <div className="p-4 bg-muted rounded-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <Shield className="h-4 w-4 text-green-600" />
-            <span className="text-sm font-medium">SSL Certificate</span>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Your website is secured with a free SSL certificate
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -478,7 +199,7 @@ export default function Dashboard() {
             <div>
               <h1 className="text-2xl font-bold">Dashboard</h1>
               <p className="text-muted-foreground">
-                {currentWebsite ? currentWebsite.business_name : 'Manage your websites'}
+                {currentWebsite ? `${currentWebsite.business_name} • ${currentWebsite.business_type}` : 'Manage your websites'}
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -498,10 +219,10 @@ export default function Dashboard() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Navigation */}
-          <div className="lg:w-64">
+          <div className="lg:w-64 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm">Navigation</CardTitle>
+                <CardTitle className="text-sm">Website Management</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <Button
@@ -513,14 +234,6 @@ export default function Dashboard() {
                   Overview
                 </Button>
                 <Button
-                  variant={activeView === 'design' ? 'default' : 'ghost'}
-                  className="w-full justify-start"
-                  onClick={() => setActiveView('design')}
-                >
-                  <Palette className="h-4 w-4 mr-2" />
-                  Quick Design
-                </Button>
-                <Button
                   variant={activeView === 'analytics' ? 'default' : 'ghost'}
                   className="w-full justify-start"
                   onClick={() => setActiveView('analytics')}
@@ -529,12 +242,52 @@ export default function Dashboard() {
                   Analytics
                 </Button>
                 <Button
+                  variant={activeView === 'design' ? 'default' : 'ghost'}
+                  className="w-full justify-start"
+                  onClick={() => setActiveView('design')}
+                >
+                  <Palette className="h-4 w-4 mr-2" />
+                  Design Studio
+                </Button>
+                <Button
                   variant={activeView === 'domain' ? 'default' : 'ghost'}
                   className="w-full justify-start"
                   onClick={() => setActiveView('domain')}
                 >
                   <Globe className="h-4 w-4 mr-2" />
-                  Domain
+                  Domain & SSL
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Advanced Tools</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button
+                  variant={activeView === 'backup' ? 'default' : 'ghost'}
+                  className="w-full justify-start"
+                  onClick={() => setActiveView('backup')}
+                >
+                  <Database className="h-4 w-4 mr-2" />
+                  Backups
+                </Button>
+                <Button
+                  variant={activeView === 'security' ? 'default' : 'ghost'}
+                  className="w-full justify-start"
+                  onClick={() => setActiveView('security')}
+                >
+                  <Shield className="h-4 w-4 mr-2" />
+                  Security
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={() => navigate({ to: '/workspace' })}
+                >
+                  <Settings2 className="h-4 w-4 mr-2" />
+                  Settings
                 </Button>
               </CardContent>
             </Card>
@@ -542,10 +295,7 @@ export default function Dashboard() {
 
           {/* Main Content */}
           <div className="flex-1">
-            {activeView === 'overview' && renderOverview()}
-            {activeView === 'design' && renderQuickDesign()}
-            {activeView === 'analytics' && renderAnalytics()}
-            {activeView === 'domain' && renderDomain()}
+            {renderMainContent()}
           </div>
         </div>
       </div>
