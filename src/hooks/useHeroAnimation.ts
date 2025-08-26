@@ -18,12 +18,18 @@ export const useHeroAnimation = (canvasId: string) => {
 
     const css = getComputedStyle(document.documentElement)
 
-    // Try common variable names. Fallback to brand orange.
-    const primaryHex =
-      (css.getPropertyValue('--color-primary').trim() ||
-        css.getPropertyValue('--primary').trim() ||
-        css.getPropertyValue('--brand-primary').trim() ||
-        '#FF4A1C')
+    // Get brand hex color first, then fallback to brand orange
+    let primaryHex = css.getPropertyValue('--brand-hex').trim()
+    
+    // If no brand-hex found, use fallback
+    if (!primaryHex) {
+      primaryHex = '#FF4A1C'
+    }
+    
+    // Ensure it starts with #
+    if (!primaryHex.startsWith('#')) {
+      primaryHex = '#FF4A1C'
+    }
 
     // Utils
     const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
