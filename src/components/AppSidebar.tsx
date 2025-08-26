@@ -16,6 +16,7 @@ import {
   Moon,
   Languages
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import {
   Sidebar,
   SidebarContent,
@@ -76,9 +77,9 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border" style={{ '--sidebar-width': '240px', '--sidebar-width-icon': '72px' } as React.CSSProperties}>
-      <SidebarHeader className="p-4">
-        <div className="flex items-center gap-3">
+    <Sidebar collapsible="icon" className="border-r border-border mr-4" style={{ '--sidebar-width': '240px', '--sidebar-width-icon': '64px' } as React.CSSProperties}>
+      <SidebarHeader className="p-4 h-16 flex items-center justify-center">
+        <div className={cn("flex items-center", collapsed ? "justify-center" : "gap-3")}>
           <div className="flex h-10 w-10 items-center justify-center shrink-0">
             <img 
               src="/brand-logo.svg" 
@@ -112,16 +113,20 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton
                     onClick={() => onViewChange(item.id)}
                     isActive={activeView === item.id}
                     tooltip={collapsed ? item.title : undefined}
+                    className={cn(
+                      "h-10 w-full",
+                      collapsed ? "justify-center px-0" : "justify-start px-3"
+                    )}
                   >
                     <item.icon className="h-4 w-4" />
-                    {!collapsed && <span>{item.title}</span>}
+                    {!collapsed && <span className="ml-2">{item.title}</span>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -130,13 +135,17 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 space-y-2">
+      <SidebarFooter className="p-4 space-y-1">
         {/* Theme Toggle */}
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               tooltip={collapsed ? (theme === 'dark' ? 'Light Mode' : 'Dark Mode') : undefined}
+              className={cn(
+                "h-10 w-full",
+                collapsed ? "justify-center px-0" : "justify-start px-3"
+              )}
             >
               <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
               <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -151,7 +160,10 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
             {collapsed ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <SidebarMenuButton tooltip="Language">
+                  <SidebarMenuButton 
+                    tooltip="Language"
+                    className="h-10 w-full justify-center px-0"
+                  >
                     <Languages className="h-4 w-4" />
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
@@ -170,7 +182,7 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
             ) : (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <SidebarMenuButton className="justify-between">
+                  <SidebarMenuButton className="h-10 w-full justify-start px-3">
                     <div className="flex items-center">
                       <Languages className="h-4 w-4" />
                       <span className="ml-2">
@@ -201,7 +213,10 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
             <SidebarMenuButton
               onClick={collapsed ? handleSignOut : undefined}
               tooltip={collapsed ? "Sign Out" : undefined}
-              className="relative"
+              className={cn(
+                "h-10 w-full relative",
+                collapsed ? "justify-center px-0" : "justify-start px-3"
+              )}
             >
               <Avatar className="h-6 w-6 shrink-0">
                 <AvatarFallback className="bg-primary text-primary-foreground text-xs">
@@ -209,7 +224,7 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
                 </AvatarFallback>
               </Avatar>
               {!collapsed && (
-                <div className="flex flex-1 items-center justify-between min-w-0">
+                <div className="flex flex-1 items-center justify-between min-w-0 ml-2">
                   <span className="text-xs font-medium text-foreground truncate">
                     Account
                   </span>

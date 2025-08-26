@@ -111,8 +111,8 @@ export default function Dashboard() {
             />
             
             <SidebarInset className="flex-1">
-              <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-                <SidebarTrigger className="-ml-1" />
+              <header className="flex h-16 shrink-0 items-center gap-4 border-b px-6">
+                <SidebarTrigger className="h-6 w-6" />
                 <div className="flex-1">
                   <h1 className="text-xl font-semibold">Loading...</h1>
                   <p className="text-sm text-muted-foreground">Please wait</p>
@@ -231,8 +231,8 @@ export default function Dashboard() {
           
           <SidebarInset className="flex-1">
             {/* Header */}
-            <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-              <SidebarTrigger className="-ml-1" />
+            <header className="flex h-16 shrink-0 items-center gap-4 border-b px-6">
+              <SidebarTrigger className="h-6 w-6" />
               <div className="flex-1">
                 <h1 className="text-xl font-semibold">
                   {currentWebsite ? currentWebsite.business_name : 'Dashboard'}
@@ -244,7 +244,7 @@ export default function Dashboard() {
             </header>
 
             {/* Main Content */}
-            <main className="flex-1 p-6">
+            <main className="flex-1 p-6 pl-2">
               {isLoading ? (
                 <DashboardSkeleton />
               ) : (
