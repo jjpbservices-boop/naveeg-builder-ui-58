@@ -6,6 +6,7 @@ import { RouterProvider } from '@tanstack/react-router';
 import { ThemeProvider } from "next-themes";
 import { router } from './router';
 import { AppProvider } from '@/context/AppContext';
+import { AuthProvider } from '@/hooks/useAuth';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import '@/i18n/config';
 
@@ -20,13 +21,15 @@ const App = () => (
         enableSystem
         disableTransitionOnChange
       >
-        <AppProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <RouterProvider router={router} />
-          </TooltipProvider>
-        </AppProvider>
+        <AuthProvider>
+          <AppProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <RouterProvider router={router} />
+            </TooltipProvider>
+          </AppProvider>
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   </ErrorBoundary>

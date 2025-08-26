@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { DashboardSkeleton, LoadingSpinner } from '@/components/LoadingStates';
 import { useSecureApi, useAuthCheck } from '@/hooks/useSecureApi';
+import { useAuth } from '@/hooks/useAuth';
 import { DashboardOverview } from '@/components/dashboard/DashboardOverview';
 import { DashboardAnalytics } from '@/components/dashboard/DashboardAnalytics';
 import { DashboardDesign } from '@/components/dashboard/DashboardDesign';
