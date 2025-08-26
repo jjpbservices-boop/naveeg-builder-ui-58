@@ -13,7 +13,6 @@ const generationSteps = [
   { name: 'Creating website structure', description: 'Building the foundation of your website' },
   { name: 'Applying your design', description: 'Implementing your chosen colors and fonts' },
   { name: 'Generating content', description: 'Creating pages tailored to your business' },
-  { name: 'Authentication required', description: 'Sign up to save and manage your website' },
   { name: 'Publishing website', description: 'Making your site live and accessible' },
   { name: 'Final optimizations', description: 'Adding finishing touches for performance' }
 ];
@@ -42,7 +41,7 @@ export default function Generating() {
       // Simulate progress through initial steps
       const stepInterval = setInterval(() => {
         setCurrentStep(prev => {
-          const next = prev < 3 ? prev + 1 : prev; // Stop at step 3 (before auth)
+          const next = prev < 2 ? prev + 1 : prev; // Stop at step 2 (content generation)
           setProgress(Math.min(((next + 1) / generationSteps.length) * 60, 60));
           return next;
         });
@@ -75,10 +74,10 @@ export default function Generating() {
       
       clearInterval(stepInterval);
       
-      // Store generation data and move to auth step
+      // Store generation data and complete the current step
       setGeneratedData({ generateResponse, onboardingData });
-      setCurrentStep(3); // Move to auth step
-      setProgress(70);
+      setCurrentStep(2); // Complete content generation step
+      setProgress(60);
       
       // Check if user is already authenticated
       const { data: { session } } = await supabase.auth.getSession();
@@ -100,12 +99,12 @@ export default function Generating() {
 
   const completeWebsiteGeneration = async (user: any) => {
     try {
-      setCurrentStep(4); // Publishing step
-      setProgress(85);
+      setCurrentStep(3); // Publishing step
+      setProgress(80);
       
       const publishResponse = await api.publishAndFrontWithPolling(website_id);
       
-      setCurrentStep(5); // Final optimizations
+      setCurrentStep(4); // Final optimizations
       setProgress(100);
       
       console.log('Full publish response:', publishResponse);
@@ -237,12 +236,12 @@ export default function Generating() {
             </DialogHeader>
             <div className="text-center space-y-4">
               <p className="text-muted-foreground">
-                Your website has been generated successfully! To save and manage your website, please sign up for an account.
+                Sign up or sign in to publish and preview your website.
               </p>
               <div className="space-y-2">
                 <Button onClick={handleSignUp} className="w-full">
                   <UserPlus className="h-4 w-4 mr-2" />
-                  Sign Up & Save Website
+                  Sign Up or Sign In
                 </Button>
                 <p className="text-xs text-muted-foreground">
                   Free account • No credit card required
