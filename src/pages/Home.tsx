@@ -56,14 +56,14 @@ const Home: React.FC = () => {
                 {t('hero.title')}
               </h1>
               
-              <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                 {t('hero.subtitle')}
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
                 <Button
                   size="lg"
-                  className="h-14 px-10 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl touch-target text-lg animate-pulse-glow"
+                  className="h-12 px-8 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl touch-target text-base animate-pulse-glow"
                   onClick={handleStartOnboarding}
                 >
                   Create Your Website
@@ -72,7 +72,7 @@ const Home: React.FC = () => {
                 <Button 
                   variant="outline" 
                   size="lg"
-                  className="h-14 px-10 rounded-xl touch-target text-lg hover:scale-105 transition-transform duration-200"
+                  className="h-12 px-8 rounded-xl touch-target text-base hover:scale-105 transition-transform duration-200"
                   onClick={() => navigate({ to: '/gallery' })}
                 >
                   {t('hero.secondaryButton')}
@@ -95,7 +95,7 @@ const Home: React.FC = () => {
             <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
               {t('howItWorks.title')}
             </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
               {t('howItWorks.subtitle')}
             </p>
           </div>
@@ -127,7 +127,7 @@ const Home: React.FC = () => {
             <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
               {t('features.title')}
             </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
               {t('features.subtitle')}
             </p>
           </div>
@@ -208,7 +208,7 @@ const Home: React.FC = () => {
             <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
               {t('pricing.title')}
             </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
               {t('pricing.subtitle')}
             </p>
           </div>
@@ -263,7 +263,7 @@ const Home: React.FC = () => {
         
         <ScrollReveal delay={600}>
           <div className="text-center mt-12">
-            <Button variant="outline" size="lg" className="text-lg px-8 h-12" onClick={() => navigate({ to: '/pricing' })}>
+            <Button variant="outline" size="lg" className="text-sm md:text-base px-6 h-11" onClick={() => navigate({ to: '/pricing' })}>
               {t('pricing.viewAll')}
             </Button>
           </div>
@@ -277,7 +277,7 @@ const Home: React.FC = () => {
             <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
               {t('gallery.title')}
             </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
               {t('gallery.subtitle')}
             </p>
           </div>
@@ -306,7 +306,7 @@ const Home: React.FC = () => {
         
         <ScrollReveal delay={600}>
           <div className="text-center mt-12">
-            <Button variant="outline" size="lg" className="text-lg px-8 h-12" onClick={() => navigate({ to: '/gallery' })}>
+            <Button variant="outline" size="lg" className="text-sm md:text-base px-6 h-11" onClick={() => navigate({ to: '/gallery' })}>
               {t('gallery.viewAll')}
             </Button>
           </div>
@@ -323,7 +323,7 @@ const Home: React.FC = () => {
             <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
               {t('faq.title')}
             </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
               {t('faq.subtitle')}
             </p>
           </div>
@@ -346,7 +346,7 @@ const Home: React.FC = () => {
         
         <ScrollReveal delay={600}>
           <div className="text-center mt-12">
-            <Button variant="outline" size="lg" className="text-lg px-8 h-12" onClick={() => navigate({ to: '/faq' })}>
+            <Button variant="outline" size="lg" className="text-sm md:text-base px-6 h-11" onClick={() => navigate({ to: '/faq' })}>
               {t('faq.viewAll')}
             </Button>
           </div>
@@ -365,18 +365,18 @@ const Home: React.FC = () => {
               <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold mb-6 leading-tight">
                 {t('ctaBanner.title')}
               </h2>
-              <p className="text-xl md:text-2xl mb-10 opacity-95 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-lg md:text-xl mb-10 opacity-95 max-w-3xl mx-auto leading-relaxed">
                 {t('ctaBanner.subtitle')}
               </p>
               <Button 
                 size="lg" 
-                className="bg-white text-primary hover:bg-white/95 font-semibold px-12 h-16 text-xl rounded-xl hover:scale-105 transition-transform duration-200 shadow-lg"
+                className="bg-white text-primary hover:bg-white/95 font-semibold px-10 h-14 text-lg rounded-xl hover:scale-105 transition-transform duration-200 shadow-lg"
                 onClick={handleStartOnboarding}
               >
                 {t('ctaBanner.button')}
                 <ArrowRight className="ml-3 h-6 w-6" />
               </Button>
-              <p className="text-lg mt-6 opacity-80">
+              <p className="text-sm md:text-base mt-6 opacity-80">
                 {t('ctaBanner.helper')}
               </p>
             </div>
