@@ -477,7 +477,8 @@ const Home: React.FC = () => {
                 </p>
                 <Button 
                   size="lg" 
-                  className="bg-white text-primary hover:bg-white/95 font-semibold px-10 h-14 text-lg rounded-xl hover:scale-105 transition-transform duration-200 shadow-lg"
+                  variant="secondary"
+                  className="font-semibold px-10 h-14 text-lg rounded-xl hover:scale-105 transition-transform duration-200 shadow-lg"
                   onClick={handleStartOnboarding}
                 >
                   Start Building Now
