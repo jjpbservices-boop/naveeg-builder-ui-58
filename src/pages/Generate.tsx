@@ -135,7 +135,7 @@ const Generate: React.FC = () => {
 
   if (hasError) {
     return (
-      <div className="min-h-screen flex items-center justify-center py-8">
+      <div className="min-h-screen flex items-center justify-center py-8 pt-14 sm:pt-16">
         <div className="container mx-auto px-4 max-w-2xl text-center">
           <div className="bg-card rounded-3xl border shadow-soft p-8">
             <div className="w-16 h-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mx-auto mb-6">
@@ -154,7 +154,7 @@ const Generate: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 flex items-center justify-center py-4 sm:py-6 md:py-8">
+    <div className="flex-1 flex items-center justify-center py-4 sm:py-6 md:py-8 pt-14 sm:pt-16">
       <div className="container mx-auto px-4 max-w-2xl text-center">
         <div className="animate-slide-up">
           <h1 className="font-sansation text-3xl md:text-4xl font-bold text-foreground mb-6">Building Your Website</h1>
