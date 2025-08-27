@@ -231,9 +231,10 @@ const Home: React.FC = () => {
                 <Button 
                   className={`w-full touch-target ${
                     plan.popular 
-                      ? 'bg-gradient-primary hover:bg-primary-hover text-white' 
-                      : 'bg-background border border-border hover:bg-muted'
+                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
+                      : 'bg-primary hover:bg-primary/90 text-primary-foreground'
                   }`}
+                  size="lg"
                 >
                   Get Started
                 </Button>
