@@ -88,7 +88,7 @@ const Home: React.FC = () => {
 
       </section>
 
-      {/* How It Works */}
+      {/* 2. How It Works */}
       <section className="container mx-auto px-4 py-20">
         <ScrollReveal>
           <div className="text-center mb-16">
@@ -181,12 +181,63 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Features */}
+      {/* Section Divider */}
+      <div className="relative py-12">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-border to-transparent"></div>
+        <div className="container mx-auto px-4">
+          <div className="w-24 h-px bg-primary mx-auto"></div>
+        </div>
+      </div>
+
+      {/* 3. Why Choose Naveeg */}
       <section className="container mx-auto px-4 py-20">
         <ScrollReveal>
           <div className="text-center mb-16">
             <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
-              {t('features.title')}
+              {t('whyNaveeg.title')}
+            </h2>
+          </div>
+        </ScrollReveal>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 max-w-6xl mx-auto">
+          {[0, 1, 2].map((index) => (
+            <ScrollReveal key={index} delay={index * 200} direction="scale">
+              <div className="relative group">
+                {/* Animated Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 scale-110"></div>
+                
+                {/* Main Card */}
+                <div className="relative bg-card/90 backdrop-blur-sm border border-border/50 rounded-3xl p-8 hover:border-primary/30 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 group-hover:scale-105">
+                  {/* Content */}
+                  <div className="text-center">
+                    <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-4">
+                      {t(`whyNaveeg.blocks.${index}.title`)}
+                    </h3>
+                    <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
+                      {t(`whyNaveeg.blocks.${index}.description`)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+          ))}
+        </div>
+      </section>
+
+      {/* Section Divider */}
+      <div className="relative py-12">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-border to-transparent"></div>
+        <div className="container mx-auto px-4">
+          <div className="w-24 h-px bg-primary mx-auto"></div>
+        </div>
+      </div>
+
+      {/* 4. Everything You Need to Succeed Online */}
+      <section className="container mx-auto px-4 py-20">
+        <ScrollReveal>
+          <div className="text-center mb-16">
+            <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
+              Everything You Need to Succeed Online
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
               {t('features.subtitle')}
@@ -222,56 +273,128 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Trust Section */}
+      {/* Section Divider */}
+      <div className="relative py-12">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-border to-transparent"></div>
+        <div className="container mx-auto px-4">
+          <div className="w-24 h-px bg-primary mx-auto"></div>
+        </div>
+      </div>
+
+      {/* 5. Quote Block */}
+      <section className="bg-muted/30 py-20">
+        <div className="container mx-auto px-4">
+          <ScrollReveal>
+            <div className="max-w-5xl mx-auto text-center">
+              <div className="relative">
+                {/* Quote decoration */}
+                <div className="absolute -top-8 -left-8 text-6xl text-primary/20 font-serif">"</div>
+                <div className="absolute -bottom-8 -right-8 text-6xl text-primary/20 font-serif rotate-180">"</div>
+                
+                <blockquote className="text-xl md:text-2xl lg:text-3xl font-medium text-foreground mb-8 font-sansation leading-relaxed relative z-10">
+                  "If you can send an email, you can build a website with Naveeg. No coding, no hassle, just results."
+                </blockquote>
+                
+                <div className="flex items-center justify-center space-x-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                    <CheckCircle className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-foreground">Sarah Johnson</p>
+                    <p className="text-muted-foreground">Small Business Owner</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* Section Divider */}
+      <div className="relative py-12">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-border to-transparent"></div>
+        <div className="container mx-auto px-4">
+          <div className="w-24 h-px bg-primary mx-auto"></div>
+        </div>
+      </div>
+
+      {/* 6. Built with Naveeg */}
+      <section className="container mx-auto px-4 py-20">
+        <ScrollReveal>
+          <div className="text-center mb-16">
+            <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
+              Built with Naveeg
+            </h2>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+              {t('gallery.subtitle')}
+            </p>
+          </div>
+        </ScrollReveal>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {Array.from({ length: 6 }, (_, index) => (
+            <ScrollReveal 
+              key={index} 
+              delay={index * 100} 
+              direction={index % 2 === 0 ? 'left' : 'right'}
+            >
+              <div className="group cursor-pointer hover:scale-105 transition-transform duration-300">
+                <div className="aspect-video bg-muted rounded-3xl mb-6 relative overflow-hidden shadow-soft group-hover:shadow-medium transition-shadow duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-muted-foreground text-lg font-medium">Website Preview</span>
+                  </div>
+                </div>
+                <h3 className="font-semibold text-foreground text-xl mb-2">Sample Website {index + 1}</h3>
+                <p className="text-muted-foreground">Category name</p>
+              </div>
+            </ScrollReveal>
+          ))}
+        </div>
+        
+        <ScrollReveal delay={600}>
+          <div className="text-center mt-12">
+            <Button variant="outline" size="lg" className="text-sm md:text-base px-6 h-11" onClick={() => navigate({ to: '/gallery' })}>
+              View All Examples
+            </Button>
+          </div>
+        </ScrollReveal>
+      </section>
+
+      {/* Section Divider */}
+      <div className="relative py-12">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-border to-transparent"></div>
+        <div className="container mx-auto px-4">
+          <div className="w-24 h-px bg-primary mx-auto"></div>
+        </div>
+      </div>
+
+      {/* 7. Trusted by... */}
       <section className="bg-muted/50 py-20">
         <div className="container mx-auto px-4">
           <ScrollReveal>
             <div className="max-w-5xl mx-auto text-center">
-              <blockquote className="text-xl md:text-2xl lg:text-3xl font-medium text-foreground mb-12 font-sansation leading-relaxed">
-                "{t('trust.quote')}"
-              </blockquote>
+              <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-12">
+                Trusted by Businesses Worldwide
+              </h2>
               <TrustBadges />
             </div>
           </ScrollReveal>
         </div>
       </section>
 
-      {/* Why Naveeg */}
-      <section className="container mx-auto px-4 py-20">
-        <ScrollReveal>
-          <div className="text-center mb-16">
-            <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
-              {t('whyNaveeg.title')}
-            </h2>
-          </div>
-        </ScrollReveal>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 max-w-6xl mx-auto">
-          {[0, 1, 2].map((index) => (
-            <ScrollReveal key={index} delay={index * 200} direction="scale">
-              <div className="relative group">
-                {/* Animated Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 scale-110"></div>
-                
-                {/* Main Card */}
-                <div className="relative bg-card/90 backdrop-blur-sm border border-border/50 rounded-3xl p-8 hover:border-primary/30 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 group-hover:scale-105">
-                  {/* Content */}
-                  <div className="text-center">
-                    <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-4">
-                      {t(`whyNaveeg.blocks.${index}.title`)}
-                    </h3>
-                    <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
-                      {t(`whyNaveeg.blocks.${index}.description`)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </ScrollReveal>
-          ))}
-        </div>
-      </section>
+      {/* Testimonial Carousel */}
+      <TestimonialCarousel />
 
-      {/* Pricing Preview */}
+      {/* Section Divider */}
+      <div className="relative py-12">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-border to-transparent"></div>
+        <div className="container mx-auto px-4">
+          <div className="w-24 h-px bg-primary mx-auto"></div>
+        </div>
+      </div>
+
+      {/* 8. Pricing */}
       <section className="container mx-auto px-4 py-20">
         <ScrollReveal>
           <div className="text-center mb-16">
@@ -340,53 +463,15 @@ const Home: React.FC = () => {
         </ScrollReveal>
       </section>
 
-      {/* Gallery Preview */}
-      <section className="container mx-auto px-4 py-20">
-        <ScrollReveal>
-          <div className="text-center mb-16">
-            <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
-              {t('gallery.title')}
-            </h2>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              {t('gallery.subtitle')}
-            </p>
-          </div>
-        </ScrollReveal>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {Array.from({ length: 6 }, (_, index) => (
-            <ScrollReveal 
-              key={index} 
-              delay={index * 100} 
-              direction={index % 2 === 0 ? 'left' : 'right'}
-            >
-              <div className="group cursor-pointer hover:scale-105 transition-transform duration-300">
-                <div className="aspect-video bg-muted rounded-3xl mb-6 relative overflow-hidden shadow-soft group-hover:shadow-medium transition-shadow duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-muted-foreground text-lg font-medium">Website Preview</span>
-                  </div>
-                </div>
-                <h3 className="font-semibold text-foreground text-xl mb-2">Sample Website {index + 1}</h3>
-                <p className="text-muted-foreground">Category name</p>
-              </div>
-            </ScrollReveal>
-          ))}
+      {/* Section Divider */}
+      <div className="relative py-12">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-border to-transparent"></div>
+        <div className="container mx-auto px-4">
+          <div className="w-24 h-px bg-primary mx-auto"></div>
         </div>
-        
-        <ScrollReveal delay={600}>
-          <div className="text-center mt-12">
-            <Button variant="outline" size="lg" className="text-sm md:text-base px-6 h-11" onClick={() => navigate({ to: '/gallery' })}>
-              {t('gallery.viewAll')}
-            </Button>
-          </div>
-        </ScrollReveal>
-      </section>
+      </div>
 
-      {/* Testimonial Carousel */}
-      <TestimonialCarousel />
-
-      {/* FAQ Preview */}
+      {/* 9. FAQ */}
       <section className="container mx-auto px-4 py-20">
         <ScrollReveal>
           <div className="text-center mb-16">
@@ -423,7 +508,15 @@ const Home: React.FC = () => {
         </ScrollReveal>
       </section>
 
-      {/* CTA Banner */}
+      {/* Section Divider */}
+      <div className="relative py-12">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-border to-transparent"></div>
+        <div className="container mx-auto px-4">
+          <div className="w-24 h-px bg-primary mx-auto"></div>
+        </div>
+      </div>
+
+      {/* 10. Final CTA */}
       <section className="container mx-auto px-4 py-20">
         <ScrollReveal direction="scale">
           <div className="bg-gradient-to-br from-primary via-primary to-primary/90 rounded-3xl p-12 md:p-16 text-center text-white shadow-2xl overflow-hidden relative">
@@ -433,21 +526,21 @@ const Home: React.FC = () => {
             
             <div className="relative z-10">
               <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold mb-6 leading-tight">
-                {t('ctaBanner.title')}
+                Ready to Build Your Dream Website?
               </h2>
               <p className="text-lg md:text-xl mb-10 opacity-95 max-w-3xl mx-auto leading-relaxed">
-                {t('ctaBanner.subtitle')}
+                Join thousands of businesses who've transformed their online presence with Naveeg. Start building today!
               </p>
               <Button 
                 size="lg" 
                 className="bg-white text-primary hover:bg-white/95 font-semibold px-10 h-14 text-lg rounded-xl hover:scale-105 transition-transform duration-200 shadow-lg"
                 onClick={handleStartOnboarding}
               >
-                {t('ctaBanner.button')}
+                Start Building Now
                 <ArrowRight className="ml-3 h-6 w-6" />
               </Button>
               <p className="text-sm md:text-base mt-6 opacity-80">
-                {t('ctaBanner.helper')}
+                No credit card required • Launch in minutes
               </p>
             </div>
           </div>
