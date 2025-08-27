@@ -115,9 +115,9 @@ const Home: React.FC = () => {
                 />
                 <defs>
                   <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.5" />
-                    <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
-                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.5" />
+                    <stop offset="0%" stopColor="hsl(var(--muted-foreground))" stopOpacity="0.3" />
+                    <stop offset="50%" stopColor="hsl(var(--muted-foreground))" stopOpacity="0.5" />
+                    <stop offset="100%" stopColor="hsl(var(--muted-foreground))" stopOpacity="0.3" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -125,7 +125,7 @@ const Home: React.FC = () => {
 
             {/* Tablet/Mobile Flow Path */}
             <div className="lg:hidden absolute left-1/2 top-0 bottom-0 w-px">
-              <div className="w-full h-full bg-gradient-to-b from-transparent via-primary/30 to-transparent"></div>
+              <div className="w-full h-full bg-gradient-to-b from-transparent via-muted-foreground/30 to-transparent"></div>
             </div>
 
             <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
@@ -140,9 +140,9 @@ const Home: React.FC = () => {
                     <div className="absolute inset-0 bg-gradient-to-br from-card/50 to-muted/30 rounded-3xl blur-xl scale-110 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
                     
                     {/* Main Content */}
-                    <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-3xl p-8 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
+                    <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-3xl p-8 hover:border-muted-foreground/30 transition-all duration-300 hover:shadow-xl hover:shadow-muted-foreground/10">
                       {/* Step Indicator */}
-                      <div className="absolute -top-4 left-6 bg-primary text-primary-foreground text-sm font-bold px-3 py-1 rounded-full">
+                      <div className="absolute -top-4 left-6 bg-muted-foreground text-background text-sm font-bold px-3 py-1 rounded-full">
                         {step.step}
                       </div>
 
@@ -164,14 +164,14 @@ const Home: React.FC = () => {
                     {/* Connection Arrow (Desktop Only) */}
                     {index < 2 && (
                       <div className="hidden lg:block absolute top-1/2 -right-8 transform -translate-y-1/2 z-10">
-                        <ArrowRight className="w-6 h-6 text-primary/60" />
+                        <ArrowRight className="w-6 h-6 text-muted-foreground/60" />
                       </div>
                     )}
 
                     {/* Connection Arrow (Mobile/Tablet) */}
                     {index < 2 && (
                       <div className="lg:hidden absolute -bottom-6 left-1/2 transform -translate-x-1/2 z-10">
-                        <ArrowRight className="w-6 h-6 text-primary/60 rotate-90" />
+                        <ArrowRight className="w-6 h-6 text-muted-foreground/60 rotate-90" />
                       </div>
                     )}
                   </div>
@@ -198,10 +198,10 @@ const Home: React.FC = () => {
               <ScrollReveal key={index} delay={index * 200} direction="scale">
                 <div className="relative group">
                   {/* Animated Background */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 scale-110"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-muted/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 scale-110"></div>
                   
                   {/* Main Card */}
-                  <div className="relative bg-card/90 backdrop-blur-sm border border-border/50 rounded-3xl p-8 hover:border-primary/30 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 group-hover:scale-105">
+                  <div className="relative bg-card/90 backdrop-blur-sm border border-border/50 rounded-3xl p-8 hover:border-muted-foreground/30 transition-all duration-300 hover:shadow-2xl hover:shadow-muted-foreground/10 group-hover:scale-105">
                     {/* Content */}
                     <div className="text-center">
                       <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-4">
@@ -244,7 +244,7 @@ const Home: React.FC = () => {
                   delay={index * 100} 
                   direction={index % 2 === 0 ? 'left' : 'right'}
                 >
-                  <div className="group p-8 rounded-3xl bg-card border shadow-soft hover:shadow-medium hover:scale-105 hover:border-primary/30 transition-all duration-500 h-full">
+                  <div className="group p-8 rounded-3xl bg-card border shadow-soft hover:shadow-medium hover:scale-105 hover:border-muted-foreground/30 transition-all duration-500 h-full">
                     <div className="w-16 h-16 flex items-center justify-center mb-6">
                       <IconComponent className="h-12 w-12 text-muted-foreground" />
                     </div>
@@ -269,8 +269,8 @@ const Home: React.FC = () => {
             <div className="max-w-5xl mx-auto text-center">
               <div className="relative">
                 {/* Quote decoration */}
-                <div className="absolute -top-8 -left-8 text-6xl text-primary/20 font-serif">"</div>
-                <div className="absolute -bottom-8 -right-8 text-6xl text-primary/20 font-serif rotate-180">"</div>
+                <div className="absolute -top-8 -left-8 text-6xl text-muted-foreground/20 font-serif">"</div>
+                <div className="absolute -bottom-8 -right-8 text-6xl text-muted-foreground/20 font-serif rotate-180">"</div>
                 
                 <blockquote className="text-xl md:text-2xl lg:text-3xl font-medium text-foreground mb-12 font-sansation leading-relaxed relative z-10">
                   "If you can send an email, you can build your website with Naveeg"
@@ -373,7 +373,7 @@ const Home: React.FC = () => {
                 <ScrollReveal key={index} delay={index * 150} direction="scale">
                   <div
                     className={`group p-8 md:p-10 rounded-3xl border shadow-soft hover:shadow-xl hover:scale-105 transition-all duration-500 relative h-full ${
-                      plan.popular ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'bg-card hover:border-primary/30'
+                      plan.popular ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'bg-card hover:border-muted-foreground/30'
                     }`}
                   >
                     {plan.popular && (
@@ -440,7 +440,7 @@ const Home: React.FC = () => {
           <div className="max-w-4xl mx-auto space-y-6">
             {[0, 1, 2].map((index) => (
               <ScrollReveal key={index} delay={index * 150} direction="up">
-                <div className="p-8 rounded-3xl bg-card border shadow-soft hover:shadow-medium hover:border-primary/30 transition-all duration-300 group">
+                <div className="p-8 rounded-3xl bg-card border shadow-soft hover:shadow-medium hover:border-muted-foreground/30 transition-all duration-300 group">
                   <h3 className="font-semibold text-foreground text-xl md:text-2xl mb-4">
                     {t(`faq.questions.${index}.question`)}
                   </h3>
