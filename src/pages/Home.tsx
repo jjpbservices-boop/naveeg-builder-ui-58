@@ -272,19 +272,31 @@ const Home: React.FC = () => {
                 <div className="absolute -top-8 -left-8 text-6xl text-primary/20 font-serif">"</div>
                 <div className="absolute -bottom-8 -right-8 text-6xl text-primary/20 font-serif rotate-180">"</div>
                 
-                <blockquote className="text-xl md:text-2xl lg:text-3xl font-medium text-foreground mb-8 font-sansation leading-relaxed relative z-10">
-                  "If you can send an email, you can build a website with Naveeg. No coding, no hassle, just results."
+                <blockquote className="text-xl md:text-2xl lg:text-3xl font-medium text-foreground mb-12 font-sansation leading-relaxed relative z-10">
+                  "If you can send an email, you can build your website with Naveeg"
                 </blockquote>
                 
-                <div className="flex items-center justify-center space-x-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    <CheckCircle className="w-6 h-6 text-primary" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-foreground">Sarah Johnson</p>
-                    <p className="text-muted-foreground">Small Business Owner</p>
-                  </div>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+                  <Button 
+                    size="lg" 
+                    className="px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+                    onClick={handleStartOnboarding}
+                  >
+                    Try for Free
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="px-8 py-6 text-lg"
+                    onClick={() => navigate({ to: '/gallery' })}
+                  >
+                    See Live Demo
+                  </Button>
                 </div>
+                
+                <p className="text-sm text-muted-foreground">
+                  7 days free - no credit card required
+                </p>
               </div>
             </div>
           </ScrollReveal>
