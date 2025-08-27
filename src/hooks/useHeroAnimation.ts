@@ -3,9 +3,15 @@ import { useEffect, useCallback } from 'react'
 export const useHeroAnimation = (canvasId: string) => {
   const initHeroAnimation = useCallback(() => {
     const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null
-    if (!canvas) return
+    if (!canvas) {
+      console.warn(`Canvas with id "${canvasId}" not found`)
+      return
+    }
     const ctx = canvas.getContext('2d', { alpha: true })
-    if (!ctx) return
+    if (!ctx) {
+      console.warn('Unable to get 2d context from canvas')
+      return
+    }
 
     // ---- Tunables ----
     const SPACING = 20
@@ -70,7 +76,10 @@ export const useHeroAnimation = (canvasId: string) => {
 
     function resize() {
       const parent = canvas.parentElement as HTMLElement | null
-      if (!parent) return
+      if (!parent) {
+        console.warn('Canvas parent element not found')
+        return
+      }
       const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2))
       const rect = parent.getBoundingClientRect()
       w = Math.max(1, rect.width | 0)
@@ -156,15 +165,32 @@ export const useHeroAnimation = (canvasId: string) => {
 
     const ro = new ResizeObserver(resize)
     const parent = canvas.parentElement
-    if (parent) ro.observe(parent)
+    if (parent) {
+      ro.observe(parent)
+    } else {
+      console.warn('Canvas parent element not found for ResizeObserver')
+    }
 
-    requestAnimationFrame(() => { resize(); raf = requestAnimationFrame(step) })
+    // Initial setup with delay to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      resize()
+      raf = requestAnimationFrame(step)
+    }, 100)
 
-    return () => { ro.disconnect(); cancelAnimationFrame(raf) }
+    return () => { 
+      ro.disconnect()
+      cancelAnimationFrame(raf)
+      clearTimeout(timeoutId)
+    }
   }, [canvasId])
 
   useEffect(() => {
-    const cleanup = initHeroAnimation()
-    return cleanup
+    // Small delay to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      const cleanup = initHeroAnimation()
+      return cleanup
+    }, 50)
+    
+    return () => clearTimeout(timeoutId)
   }, [initHeroAnimation])
 }

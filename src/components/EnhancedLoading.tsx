@@ -26,45 +26,48 @@ export const EnhancedLoading: React.FC<EnhancedLoadingProps> = ({
   encouragementMessage
 }) => {
   return (
-    <div className="bg-gradient-to-br from-background via-muted/30 to-background">
-      <HeroAnimation />
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
+      {/* Full-screen animation background */}
+      <div className="fixed inset-0 w-full h-full">
+        <HeroAnimation />
+      </div>
       
-      <div className="relative z-10 flex-1 flex items-center justify-center py-6 sm:py-8 md:py-12 px-4 sm:px-6 md:px-8">
-        <div className="container mx-auto max-w-md sm:max-w-lg md:max-w-3xl lg:max-w-4xl">
-          <Card className="bg-card/90 backdrop-blur-sm border shadow-soft rounded-2xl sm:rounded-3xl">
-            <CardContent className="p-6 sm:p-8 md:p-10 lg:p-12">
-              <div className="text-center mb-8 sm:mb-10 md:mb-12">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4">
+      <div className="relative z-10 min-h-screen flex items-center justify-center py-8 sm:py-12 md:py-16 px-4 sm:px-6 md:px-8">
+        <div className="w-full max-w-2xl sm:max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto">
+          <Card className="bg-card/95 backdrop-blur-md border border-border/50 shadow-xl rounded-2xl sm:rounded-3xl">
+            <CardContent className="p-8 sm:p-10 md:p-12 lg:p-16">
+              <div className="text-center mb-10 sm:mb-12 md:mb-16">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 sm:mb-6">
                   {title}
                 </h1>
-                <p className="text-muted-foreground text-lg sm:text-xl md:text-2xl">
+                <p className="text-muted-foreground text-xl sm:text-2xl md:text-3xl leading-relaxed">
                   {subtitle}
                 </p>
               </div>
 
               {/* Progress Bar */}
-              <div className="mb-8 sm:mb-10 md:mb-12">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs sm:text-sm font-medium text-foreground">Progress</span>
-                  <span className="text-xs sm:text-sm text-muted-foreground">{progress}%</span>
+              <div className="mb-10 sm:mb-12 md:mb-16">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-sm sm:text-base font-medium text-foreground">Progress</span>
+                  <span className="text-sm sm:text-base text-muted-foreground font-semibold">{progress}%</span>
                 </div>
-                <div className="w-full bg-muted rounded-full h-2">
+                <div className="w-full bg-muted rounded-full h-3 sm:h-4">
                   <div 
-                    className="bg-gradient-primary h-2 rounded-full transition-all duration-500 ease-out"
+                    className="bg-gradient-primary h-3 sm:h-4 rounded-full transition-all duration-500 ease-out shadow-sm"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
               </div>
 
               {/* Current Step Highlight */}
-              <div className="mb-8 sm:mb-10 md:mb-12 p-4 sm:p-5 md:p-6 bg-primary/10 rounded-lg border border-primary/20">
-                <div className="flex items-center gap-3">
-                  <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary animate-spin flex-shrink-0" />
+              <div className="mb-10 sm:mb-12 md:mb-16 p-6 sm:p-7 md:p-8 bg-primary/10 rounded-xl border border-primary/20 shadow-sm">
+                <div className="flex items-center gap-4 sm:gap-5">
+                  <Loader2 className="h-6 w-6 sm:h-7 sm:w-7 text-primary animate-spin flex-shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-foreground text-sm sm:text-base truncate">
+                    <p className="font-semibold text-foreground text-lg sm:text-xl md:text-2xl truncate">
                       {steps[currentStep]?.name}
                     </p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">
+                    <p className="text-base sm:text-lg text-muted-foreground mt-1">
                       {steps[currentStep]?.description}
                     </p>
                   </div>
@@ -72,7 +75,7 @@ export const EnhancedLoading: React.FC<EnhancedLoadingProps> = ({
               </div>
 
               {/* Steps List */}
-              <div className="space-y-3 sm:space-y-4 md:space-y-5 mb-8 sm:mb-10 md:mb-12">
+              <div className="space-y-4 sm:space-y-5 md:space-y-6 mb-10 sm:mb-12 md:mb-16">
                 {steps.map((step, index) => {
                   const isCompleted = index < currentStep;
                   const isCurrent = index === currentStep;
@@ -81,28 +84,28 @@ export const EnhancedLoading: React.FC<EnhancedLoadingProps> = ({
                   return (
                     <div
                       key={index}
-                      className={`flex items-center gap-4 sm:gap-5 p-3 sm:p-4 md:p-5 rounded-lg transition-all duration-300 ${
-                        isCurrent ? 'bg-primary/5 border border-primary/20' : 
+                      className={`flex items-center gap-5 sm:gap-6 p-4 sm:p-5 md:p-6 rounded-xl transition-all duration-300 ${
+                        isCurrent ? 'bg-primary/5 border border-primary/20 shadow-sm' : 
                         isCompleted ? 'bg-muted/50' : 'opacity-60'
                       }`}
                     >
                       <div className="flex-shrink-0">
                         {isCompleted ? (
-                          <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
+                          <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />
                         ) : isCurrent ? (
-                          <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary animate-spin" />
+                          <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary animate-spin" />
                         ) : (
-                          <Circle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                          <Circle className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className={`font-medium text-sm sm:text-base truncate ${
+                        <p className={`font-semibold text-base sm:text-lg truncate ${
                           isCurrent ? 'text-foreground' : 
                           isCompleted ? 'text-foreground' : 'text-muted-foreground'
                         }`}>
                           {step.name}
                         </p>
-                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+                        <p className="text-sm sm:text-base text-muted-foreground line-clamp-2 mt-1">
                           {step.description}
                         </p>
                       </div>
@@ -113,8 +116,8 @@ export const EnhancedLoading: React.FC<EnhancedLoadingProps> = ({
 
               {/* Encouragement Message */}
               {encouragementMessage && (
-                <div className="text-center p-4 sm:p-5 md:p-6 bg-muted/50 rounded-lg">
-                  <p className="text-sm sm:text-base text-muted-foreground">
+                <div className="text-center p-6 sm:p-7 md:p-8 bg-muted/50 rounded-xl">
+                  <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
                     {encouragementMessage}
                   </p>
                 </div>
