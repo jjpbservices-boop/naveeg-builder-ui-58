@@ -4,7 +4,7 @@ import { Globe, Sun, Moon, Menu, Sparkles, Check, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useLocation } from '@tanstack/react-router';
 import { useTheme } from 'next-themes';
 import CookieBanner from '@/components/CookieBanner';
 import Footer from '@/components/Footer';
@@ -17,6 +17,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { i18n } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { theme, setTheme } = useTheme();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -52,8 +53,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     navigate({ to: '/auth' });
   };
 
-  // Check if current route is an onboarding page
-  const currentPath = window.location.pathname;
+  // Check if current route is an onboarding page using proper router state
+  const currentPath = location.pathname;
   const isOnboardingPage = currentPath.includes('/onboarding') || 
                           currentPath.includes('/generating') || 
                           currentPath.includes('/generate') || 
