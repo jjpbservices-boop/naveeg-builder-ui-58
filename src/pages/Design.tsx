@@ -129,7 +129,7 @@ export default function Design() {
                      isValidHex(colors.background_dark);
 
   return (
-    <div className="bg-gradient-to-br from-background via-muted/30 to-background">
+    <div className="bg-gradient-to-br from-background via-muted/30 to-background pt-14 sm:pt-16">
       <HeroAnimation />
       
       <div className="relative z-10 flex-1 py-8 sm:py-12 px-3 sm:px-4">
