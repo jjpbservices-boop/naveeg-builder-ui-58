@@ -29,21 +29,21 @@ export const EnhancedLoading: React.FC<EnhancedLoadingProps> = ({
     <div className="bg-gradient-to-br from-background via-muted/30 to-background">
       <HeroAnimation />
       
-      <div className="relative z-10 flex-1 flex items-center justify-center py-4 sm:py-6 md:py-8 px-3 sm:px-4">
-        <div className="container mx-auto max-w-xs sm:max-w-sm md:max-w-2xl">
+      <div className="relative z-10 flex-1 flex items-center justify-center py-6 sm:py-8 md:py-12 px-4 sm:px-6 md:px-8">
+        <div className="container mx-auto max-w-md sm:max-w-lg md:max-w-3xl lg:max-w-4xl">
           <Card className="bg-card/90 backdrop-blur-sm border shadow-soft rounded-2xl sm:rounded-3xl">
-            <CardContent className="p-4 sm:p-6 md:p-8">
-              <div className="text-center mb-6 sm:mb-8">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2">
+            <CardContent className="p-6 sm:p-8 md:p-10 lg:p-12">
+              <div className="text-center mb-8 sm:mb-10 md:mb-12">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4">
                   {title}
                 </h1>
-                <p className="text-muted-foreground text-base sm:text-lg">
+                <p className="text-muted-foreground text-lg sm:text-xl md:text-2xl">
                   {subtitle}
                 </p>
               </div>
 
               {/* Progress Bar */}
-              <div className="mb-6 sm:mb-8">
+              <div className="mb-8 sm:mb-10 md:mb-12">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-xs sm:text-sm font-medium text-foreground">Progress</span>
                   <span className="text-xs sm:text-sm text-muted-foreground">{progress}%</span>
@@ -57,7 +57,7 @@ export const EnhancedLoading: React.FC<EnhancedLoadingProps> = ({
               </div>
 
               {/* Current Step Highlight */}
-              <div className="mb-6 sm:mb-8 p-3 sm:p-4 bg-primary/10 rounded-lg border border-primary/20">
+              <div className="mb-8 sm:mb-10 md:mb-12 p-4 sm:p-5 md:p-6 bg-primary/10 rounded-lg border border-primary/20">
                 <div className="flex items-center gap-3">
                   <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary animate-spin flex-shrink-0" />
                   <div className="min-w-0 flex-1">
@@ -72,7 +72,7 @@ export const EnhancedLoading: React.FC<EnhancedLoadingProps> = ({
               </div>
 
               {/* Steps List */}
-              <div className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
+              <div className="space-y-3 sm:space-y-4 md:space-y-5 mb-8 sm:mb-10 md:mb-12">
                 {steps.map((step, index) => {
                   const isCompleted = index < currentStep;
                   const isCurrent = index === currentStep;
@@ -81,7 +81,7 @@ export const EnhancedLoading: React.FC<EnhancedLoadingProps> = ({
                   return (
                     <div
                       key={index}
-                      className={`flex items-center gap-3 p-2 sm:p-3 rounded-lg transition-all duration-300 ${
+                      className={`flex items-center gap-4 sm:gap-5 p-3 sm:p-4 md:p-5 rounded-lg transition-all duration-300 ${
                         isCurrent ? 'bg-primary/5 border border-primary/20' : 
                         isCompleted ? 'bg-muted/50' : 'opacity-60'
                       }`}
@@ -113,8 +113,8 @@ export const EnhancedLoading: React.FC<EnhancedLoadingProps> = ({
 
               {/* Encouragement Message */}
               {encouragementMessage && (
-                <div className="text-center p-3 sm:p-4 bg-muted/50 rounded-lg">
-                  <p className="text-xs sm:text-sm text-muted-foreground">
+                <div className="text-center p-4 sm:p-5 md:p-6 bg-muted/50 rounded-lg">
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     {encouragementMessage}
                   </p>
                 </div>

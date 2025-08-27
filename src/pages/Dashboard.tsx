@@ -124,7 +124,7 @@ export default function Dashboard() {
             />
             
             <SidebarInset className="flex-1">
-              <header className="flex h-16 shrink-0 items-center gap-4 border-b px-6">
+              <header className="flex h-16 shrink-0 items-center gap-4 px-6">
                 <SidebarTrigger className="h-6 w-6" />
                 <div className="flex-1">
                   <h1 className="text-xl font-semibold">Loading...</h1>
@@ -244,7 +244,7 @@ export default function Dashboard() {
           
           <SidebarInset className="flex-1">
             {/* Header */}
-            <header className="flex h-16 shrink-0 items-center gap-4 border-b px-6">
+            <header className="flex h-16 shrink-0 items-center gap-4 px-6">
               <SidebarTrigger className="h-6 w-6" />
               <div className="flex-1">
                 <h1 className="text-xl font-semibold">
