@@ -63,7 +63,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 className="h-8 w-auto object-contain shrink-0"
                 onError={(e) => e.currentTarget.style.display = 'none'}
               />
-              <span className="font-sansation font-semibold text-xl text-foreground">
+              <span className="font-sansation font-bold text-xl text-foreground">
                 Naveeg
               </span>
             </div>
