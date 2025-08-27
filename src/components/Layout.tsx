@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, Sun, Moon, Menu, Sparkles, Check } from 'lucide-react';
+import { Globe, Sun, Moon, Menu, Sparkles, Check, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -46,6 +46,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const handleGenerateClick = () => {
     navigate({ to: '/onboarding/brief' });
+  };
+
+  const handleLoginClick = () => {
+    navigate({ to: '/auth' });
   };
 
   // Check if current route is an onboarding page
@@ -95,7 +99,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-9 px-3">
                     <Globe className="h-4 w-4 mr-2" />
-                    <span className="text-sm">{currentLanguage.flag}</span>
+                    <span className="text-sm">{currentLanguage.name}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
@@ -105,10 +109,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       onClick={() => changeLanguage(language.code)}
                       className="flex items-center justify-between"
                     >
-                      <span className="flex items-center">
-                        <span className="mr-2">{language.flag}</span>
-                        {language.name}
-                      </span>
+                      <span>{language.name}</span>
                       {i18n.language === language.code && (
                         <Check className="h-4 w-4 text-primary" />
                       )}
@@ -116,6 +117,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              {/* Login Button */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleLoginClick}
+                className="h-9 w-9 p-0"
+              >
+                <LogIn className="h-4 w-4" />
+              </Button>
 
               {/* Theme Toggle */}
               <Button variant="ghost" size="sm" onClick={toggleTheme} className="h-9 w-9 p-0">
@@ -185,18 +196,30 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                           <button
                             key={language.code}
                             onClick={() => changeLanguage(language.code)}
-                            className={`flex items-center space-x-2 p-2 rounded-lg border transition-colors ${
+                            className={`flex items-center justify-center p-2 rounded-lg border transition-colors ${
                               i18n.language === language.code
                                 ? 'bg-primary/10 border-primary text-primary'
                                 : 'border-border hover:bg-muted'
                             }`}
                           >
-                            <span>{language.flag}</span>
                             <span className="text-sm">{language.name}</span>
                           </button>
                         ))}
                       </div>
                     </div>
+
+                    {/* Login Button */}
+                    <Button 
+                      onClick={() => {
+                        handleLoginClick();
+                        setIsSheetOpen(false);
+                      }}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Login
+                    </Button>
 
                     {/* CTA Button */}
                     <Button 
