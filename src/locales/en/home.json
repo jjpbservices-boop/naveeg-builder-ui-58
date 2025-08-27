@@ -19,15 +19,15 @@
     "subtitle": "Get your website up and running in three simple steps",
     "steps": [
       {
-        "title": "Describe your business",
+        "title": "Describe & Brief",
         "description": "Tell us about your company and what makes you unique"
       },
       {
-        "title": "AI generates your site", 
+        "title": "AI Generates",
         "description": "Professional website created instantly with content and design"
       },
       {
-        "title": "Launch with domain & marketing tools",
+        "title": "Launch & Optimize",
         "description": "Go live with hosting, SSL, and built-in marketing features"
       }
     ]
