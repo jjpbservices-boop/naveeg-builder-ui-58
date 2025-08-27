@@ -1,18 +1,64 @@
 import { useEffect, useCallback } from 'react'
 
 export const useHeroAnimation = (canvasId: string) => {
-  const initHeroAnimation = useCallback(() => {
-    const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null
-    if (!canvas) {
-      console.warn(`Canvas with id "${canvasId}" not found`)
-      return
-    }
-    console.log('Hero animation initializing on canvas:', canvasId)
-    const ctx = canvas.getContext('2d', { alpha: true })
-    if (!ctx) {
-      console.warn('Unable to get 2d context from canvas')
-      return
-    }
+  const waitForReadyCanvas = useCallback((retryCount = 0): Promise<HTMLCanvasElement> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null
+      
+      if (!canvas) {
+        if (retryCount < 10) {
+          console.log(`Canvas not found, retry ${retryCount + 1}/10`)
+          setTimeout(() => {
+            waitForReadyCanvas(retryCount + 1).then(resolve).catch(reject)
+          }, 50 * (retryCount + 1))
+        } else {
+          reject(new Error(`Canvas with id "${canvasId}" not found after 10 retries`))
+        }
+        return
+      }
+
+      const parent = canvas.parentElement
+      if (!parent) {
+        if (retryCount < 10) {
+          console.log(`Canvas parent not found, retry ${retryCount + 1}/10`)
+          setTimeout(() => {
+            waitForReadyCanvas(retryCount + 1).then(resolve).catch(reject)
+          }, 50 * (retryCount + 1))
+        } else {
+          reject(new Error('Canvas parent element not found after 10 retries'))
+        }
+        return
+      }
+
+      // Check if parent has proper dimensions
+      const rect = parent.getBoundingClientRect()
+      if (rect.width === 0 || rect.height === 0) {
+        if (retryCount < 10) {
+          console.log(`Parent has zero dimensions (${rect.width}x${rect.height}), retry ${retryCount + 1}/10`)
+          setTimeout(() => {
+            waitForReadyCanvas(retryCount + 1).then(resolve).catch(reject)
+          }, 50 * (retryCount + 1))
+        } else {
+          reject(new Error('Canvas parent has zero dimensions after 10 retries'))
+        }
+        return
+      }
+
+      console.log(`Canvas ready with parent dimensions: ${rect.width}x${rect.height}`)
+      resolve(canvas)
+    })
+  }, [canvasId])
+
+  const initHeroAnimation = useCallback(async () => {
+    try {
+      const canvas = await waitForReadyCanvas()
+      console.log('Hero animation initializing on canvas:', canvasId)
+      
+      const ctx = canvas.getContext('2d', { alpha: true })
+      if (!ctx) {
+        console.warn('Unable to get 2d context from canvas')
+        return
+      }
 
     // ---- Tunables ----
     const SPACING = 20
@@ -179,38 +225,36 @@ export const useHeroAnimation = (canvasId: string) => {
       raf = requestAnimationFrame(step)
     }, 100)
 
-    return () => { 
-      ro.disconnect()
-      cancelAnimationFrame(raf)
-      clearTimeout(timeoutId)
+      return () => { 
+        ro.disconnect()
+        cancelAnimationFrame(raf)
+        clearTimeout(timeoutId)
+      }
+    } catch (error) {
+      console.error('Failed to initialize hero animation:', error)
+      return () => {} // Return empty cleanup function
     }
-  }, [canvasId])
+  }, [canvasId, waitForReadyCanvas])
 
   useEffect(() => {
-    let animationFrameId: number
-    let resizeObserver: ResizeObserver | null = null
+    let cleanup: (() => void) | undefined
 
-    const init = () => {
-      const canvas = document.getElementById(canvasId);
-      if (canvas) {
-        const cleanup = initHeroAnimation()
-        return cleanup
-      } else {
-        // Retry once after a short delay
-        setTimeout(() => {
-          const retryCanvas = document.getElementById(canvasId);
-          if (retryCanvas) {
-            const cleanup = initHeroAnimation()
-            return cleanup
-          }
-        }, 50);
+    const init = async () => {
+      try {
+        cleanup = await initHeroAnimation()
+      } catch (error) {
+        console.error('Animation initialization failed:', error)
       }
-    };
+    }
 
-    const cleanup = init();
+    // Use requestAnimationFrame to ensure DOM is ready
+    const frameId = requestAnimationFrame(() => {
+      init()
+    })
 
     return () => {
+      cancelAnimationFrame(frameId)
       if (cleanup) cleanup()
     }
-  }, [initHeroAnimation, canvasId])
+  }, [initHeroAnimation])
 }
