@@ -146,14 +146,11 @@ const Home: React.FC = () => {
                       {step.step}
                     </div>
 
-                    {/* Modern Icon Container */}
-                    <div className="relative w-16 h-16 md:w-20 md:h-20 mx-auto mb-6">
-                      <div className="absolute inset-0 bg-primary/10 rounded-2xl rotate-6 group-hover:rotate-12 transition-transform duration-300"></div>
-                      <div className="relative w-full h-full bg-primary/5 border-2 border-primary/20 rounded-2xl flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/40 transition-all duration-300">
-                        {step.icon === "MessageSquare" && <MessageSquare className="w-8 h-8 md:w-10 md:h-10 text-primary" />}
-                        {step.icon === "Sparkles" && <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-primary" />}
-                        {step.icon === "Rocket" && <Rocket className="w-8 h-8 md:w-10 md:h-10 text-primary" />}
-                      </div>
+                    {/* Clean Icon */}
+                    <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-6 flex items-center justify-center">
+                      {step.icon === "MessageSquare" && <MessageSquare className="w-12 h-12 md:w-16 md:h-16 text-primary" />}
+                      {step.icon === "Sparkles" && <Sparkles className="w-12 h-12 md:w-16 md:h-16 text-primary" />}
+                      {step.icon === "Rocket" && <Rocket className="w-12 h-12 md:w-16 md:h-16 text-primary" />}
                     </div>
                     
                     <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-4">
@@ -209,8 +206,8 @@ const Home: React.FC = () => {
                 direction={index % 2 === 0 ? 'left' : 'right'}
               >
                 <div className="group p-8 rounded-3xl bg-card border shadow-soft hover:shadow-medium hover:scale-105 hover:border-primary/30 transition-all duration-500 h-full">
-                  <div className="w-16 h-16 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-6 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
-                    <IconComponent className="h-8 w-8 text-primary" />
+                  <div className="w-16 h-16 flex items-center justify-center mb-6">
+                    <IconComponent className="h-12 w-12 text-primary" />
                   </div>
                   <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-4">
                     {t(`features.cards.${index}.title`)}
@@ -249,50 +246,30 @@ const Home: React.FC = () => {
           </div>
         </ScrollReveal>
         
-        <div className="relative max-w-7xl mx-auto">
-          {/* Modern Background Grid */}
-          <div className="absolute inset-0 -z-10">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 h-full">
-              {[0, 1, 2].map((index) => (
-                <div key={index} className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-3xl opacity-30"></div>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { icon: "Zap", gradient: "from-blue-500/20 to-purple-500/20" },
-              { icon: "Shield", gradient: "from-purple-500/20 to-pink-500/20" },
-              { icon: "TrendingUp", gradient: "from-green-500/20 to-blue-500/20" }
-            ].map((item, index) => (
-              <ScrollReveal key={index} delay={index * 200} direction="scale">
-                <div className="relative group">
-                  {/* Animated Background */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 scale-110`}></div>
-                  
-                  {/* Main Card */}
-                  <div className="relative bg-card/90 backdrop-blur-sm border border-border/50 rounded-3xl p-8 hover:border-primary/30 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 group-hover:scale-105">
-                    {/* Icon */}
-                    <div className="w-16 h-16 mx-auto mb-6 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
-                      {item.icon === "Zap" && <Zap className="w-8 h-8 text-primary" />}
-                      {item.icon === "Shield" && <Shield className="w-8 h-8 text-primary" />}
-                      {item.icon === "TrendingUp" && <TrendingUp className="w-8 h-8 text-primary" />}
-                    </div>
-
-                    {/* Content */}
-                    <div className="text-center">
-                      <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-4 min-h-[2.5rem] flex items-center justify-center">
-                        {t(`whyNaveeg.blocks.${index}.title`)}
-                      </h3>
-                      <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
-                        {t(`whyNaveeg.blocks.${index}.description`)}
-                      </p>
-                    </div>
-                  </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 max-w-6xl mx-auto">
+          {[
+            { icon: "Zap" },
+            { icon: "Shield" },
+            { icon: "TrendingUp" }
+          ].map((item, index) => (
+            <ScrollReveal key={index} delay={index * 200} direction="scale">
+              <div className="text-center p-8 group hover:scale-105 transition-transform duration-300">
+                {/* Clean Icon */}
+                <div className="w-16 h-16 mx-auto mb-6 flex items-center justify-center">
+                  {item.icon === "Zap" && <Zap className="w-12 h-12 text-primary" />}
+                  {item.icon === "Shield" && <Shield className="w-12 h-12 text-primary" />}
+                  {item.icon === "TrendingUp" && <TrendingUp className="w-12 h-12 text-primary" />}
                 </div>
-              </ScrollReveal>
-            ))}
-          </div>
+
+                <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-6">
+                  {t(`whyNaveeg.blocks.${index}.title`)}
+                </h3>
+                <p className="text-muted-foreground text-lg leading-relaxed">
+                  {t(`whyNaveeg.blocks.${index}.description`)}
+                </p>
+              </div>
+            </ScrollReveal>
+          ))}
         </div>
       </section>
 
