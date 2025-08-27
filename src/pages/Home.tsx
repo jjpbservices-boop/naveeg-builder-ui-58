@@ -263,17 +263,18 @@ const Home: React.FC = () => {
       </section>
 
       {/* 5. Quote Block */}
-      <section className="py-24 bg-muted/20">
+      <section className="py-24 bg-primary">
         <div className="container mx-auto px-4">
           <ScrollReveal>
             <div className="max-w-5xl mx-auto text-center">
               <div className="relative">
-                <blockquote className="text-xl md:text-2xl lg:text-3xl font-medium text-foreground mb-12 font-sansation leading-relaxed relative z-10">
+                <blockquote className="text-xl md:text-2xl lg:text-3xl font-medium text-primary-foreground mb-12 font-sansation leading-relaxed relative z-10">
                   If you can send an email, you can build your website with Naveeg
                 </blockquote>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
                   <Button 
+                    variant="secondary"
                     size="lg" 
                     className="px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
                     onClick={handleStartOnboarding}
@@ -283,14 +284,14 @@ const Home: React.FC = () => {
                   <Button 
                     variant="outline" 
                     size="lg" 
-                    className="px-8 py-6 text-lg"
+                    className="px-8 py-6 text-lg border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:border-primary-foreground/50"
                     onClick={() => navigate({ to: '/gallery' })}
                   >
                     See Live Demo
                   </Button>
                 </div>
                 
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-primary-foreground/80">
                   7 days free - no credit card required
                 </p>
               </div>
