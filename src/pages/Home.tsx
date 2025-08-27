@@ -72,7 +72,7 @@ const Home: React.FC = () => {
                 <Button 
                   variant="outline" 
                   size="lg"
-                  className="h-12 px-8 rounded-xl touch-target text-base hover:scale-105 transition-transform duration-200"
+                  className="h-12 px-8 rounded-xl touch-target text-base hover:bg-accent hover:text-accent-foreground hover:scale-105 transition-all duration-200"
                   onClick={() => navigate({ to: '/gallery' })}
                 >
                   {t('hero.secondaryButton')}
@@ -337,7 +337,7 @@ const Home: React.FC = () => {
           
           <ScrollReveal delay={600}>
             <div className="text-center mt-12">
-              <Button variant="outline" size="lg" className="text-sm md:text-base px-6 h-11" onClick={() => navigate({ to: '/gallery' })}>
+              <Button variant="outline" size="lg" className="text-sm md:text-base px-6 h-11 hover:bg-accent hover:text-accent-foreground" onClick={() => navigate({ to: '/gallery' })}>
                 View All Examples
               </Button>
             </div>
@@ -412,7 +412,7 @@ const Home: React.FC = () => {
           
           <ScrollReveal delay={600}>
             <div className="text-center mt-12">
-              <Button variant="outline" size="lg" className="text-sm md:text-base px-6 h-11" onClick={() => navigate({ to: '/pricing' })}>
+              <Button variant="outline" size="lg" className="text-sm md:text-base px-6 h-11 hover:bg-accent hover:text-accent-foreground" onClick={() => navigate({ to: '/pricing' })}>
                 {t('pricing.viewAll')}
               </Button>
             </div>
@@ -451,7 +451,7 @@ const Home: React.FC = () => {
           
           <ScrollReveal delay={600}>
             <div className="text-center mt-12">
-              <Button variant="outline" size="lg" className="text-sm md:text-base px-6 h-11" onClick={() => navigate({ to: '/faq' })}>
+              <Button variant="outline" size="lg" className="text-sm md:text-base px-6 h-11 hover:bg-accent hover:text-accent-foreground" onClick={() => navigate({ to: '/faq' })}>
                 {t('faq.viewAll')}
               </Button>
             </div>
