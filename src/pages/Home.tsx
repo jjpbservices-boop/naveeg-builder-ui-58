@@ -101,36 +101,82 @@ const Home: React.FC = () => {
           </div>
         </ScrollReveal>
         
+        {/* Modern Background with Flow */}
         <div className="relative max-w-6xl mx-auto">
-          {/* Connection Lines */}
-          <div className="hidden md:block absolute top-12 left-1/6 right-1/6 h-0.5 bg-gradient-to-r from-primary/30 via-primary/60 to-primary/30"></div>
-          <div className="hidden md:block absolute top-12 left-1/6 w-3 h-3 bg-primary rounded-full -translate-x-1/2"></div>
-          <div className="hidden md:block absolute top-12 right-1/6 w-3 h-3 bg-primary rounded-full translate-x-1/2"></div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+          {/* Desktop Flow Path */}
+          <div className="hidden lg:block absolute inset-0">
+            <svg className="w-full h-full" viewBox="0 0 800 200" preserveAspectRatio="none">
+              <path
+                d="M100 100 Q400 50 700 100"
+                stroke="url(#flowGradient)"
+                strokeWidth="2"
+                fill="none"
+                className="opacity-30"
+              />
+              <defs>
+                <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.5" />
+                  <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.5" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+
+          {/* Tablet/Mobile Flow Path */}
+          <div className="lg:hidden absolute left-1/2 top-0 bottom-0 w-px">
+            <div className="w-full h-full bg-gradient-to-b from-transparent via-primary/30 to-transparent"></div>
+          </div>
+
+          <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
             {[
-              { icon: "MessageSquare", color: "text-blue-500" },
-              { icon: "Sparkles", color: "text-purple-500" },
-              { icon: "Rocket", color: "text-green-500" }
+              { icon: "MessageSquare", step: "01" },
+              { icon: "Sparkles", step: "02" },
+              { icon: "Rocket", step: "03" }
             ].map((step, index) => (
               <ScrollReveal key={index} delay={index * 200} direction="up">
-                <div className="text-center group hover:scale-105 transition-transform duration-300 relative">
-                  {/* Modern Icon Container */}
-                  <div className="relative w-20 h-20 md:w-24 md:h-24 mx-auto mb-6">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl rotate-6 group-hover:rotate-12 transition-transform duration-300"></div>
-                    <div className="relative w-full h-full bg-white dark:bg-card rounded-2xl shadow-lg border border-primary/10 flex items-center justify-center group-hover:shadow-xl transition-all duration-300">
-                      {step.icon === "MessageSquare" && <MessageSquare className={`w-8 h-8 md:w-10 md:h-10 ${step.color}`} />}
-                      {step.icon === "Sparkles" && <Sparkles className={`w-8 h-8 md:w-10 md:h-10 ${step.color}`} />}
-                      {step.icon === "Rocket" && <Rocket className={`w-8 h-8 md:w-10 md:h-10 ${step.color}`} />}
-                    </div>
-                  </div>
+                <div className="relative text-center group">
+                  {/* Background Card */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-card/50 to-muted/30 rounded-3xl blur-xl scale-110 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
                   
-                  <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-4">
-                    {t(`howItWorks.steps.${index}.title`)}
-                  </h3>
-                  <p className="text-muted-foreground text-lg leading-relaxed">
-                    {t(`howItWorks.steps.${index}.description`)}
-                  </p>
+                  {/* Main Content */}
+                  <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-3xl p-8 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
+                    {/* Step Indicator */}
+                    <div className="absolute -top-4 left-6 bg-primary text-primary-foreground text-sm font-bold px-3 py-1 rounded-full">
+                      {step.step}
+                    </div>
+
+                    {/* Modern Icon Container */}
+                    <div className="relative w-16 h-16 md:w-20 md:h-20 mx-auto mb-6">
+                      <div className="absolute inset-0 bg-primary/10 rounded-2xl rotate-6 group-hover:rotate-12 transition-transform duration-300"></div>
+                      <div className="relative w-full h-full bg-primary/5 border-2 border-primary/20 rounded-2xl flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/40 transition-all duration-300">
+                        {step.icon === "MessageSquare" && <MessageSquare className="w-8 h-8 md:w-10 md:h-10 text-primary" />}
+                        {step.icon === "Sparkles" && <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-primary" />}
+                        {step.icon === "Rocket" && <Rocket className="w-8 h-8 md:w-10 md:h-10 text-primary" />}
+                      </div>
+                    </div>
+                    
+                    <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-4">
+                      {t(`howItWorks.steps.${index}.title`)}
+                    </h3>
+                    <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
+                      {t(`howItWorks.steps.${index}.description`)}
+                    </p>
+                  </div>
+
+                  {/* Connection Arrow (Desktop Only) */}
+                  {index < 2 && (
+                    <div className="hidden lg:block absolute top-1/2 -right-8 transform -translate-y-1/2 z-10">
+                      <ArrowRight className="w-6 h-6 text-primary/60" />
+                    </div>
+                  )}
+
+                  {/* Connection Arrow (Mobile/Tablet) */}
+                  {index < 2 && (
+                    <div className="lg:hidden absolute -bottom-6 left-1/2 transform -translate-x-1/2 z-10">
+                      <ArrowRight className="w-6 h-6 text-primary/60 rotate-90" />
+                    </div>
+                  )}
                 </div>
               </ScrollReveal>
             ))}
