@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowRight, Zap, Smartphone, Search, Shield, Palette, LayoutDashboard, Star, Users, Clock, CheckCircle } from 'lucide-react';
+import { ArrowRight, Zap, LayoutDashboard, Shield, Database, TrendingUp, Headphones, CheckCircle } from 'lucide-react';
 import TrustBadges from '@/components/TrustBadges';
 import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
 import { HeroAnimation } from '@/components/HeroAnimation';
@@ -32,14 +32,11 @@ const Home: React.FC = () => {
 
   const iconMap = {
     zap: Zap,
-    smartphone: Smartphone,
-    search: Search,
-    shield: Shield,
-    palette: Palette,
     layout: LayoutDashboard,
-    database: Users, // Using Users as database icon placeholder
-    'trending-up': Star, // Using Star as trending icon placeholder
-    headphones: Clock // Using Clock as headphones icon placeholder
+    shield: Shield,
+    database: Database,
+    'trending-up': TrendingUp,
+    headphones: Headphones
   };
 
   return (
@@ -60,32 +57,19 @@ const Home: React.FC = () => {
                 {t('hero.subtitle')}
               </p>
               
-              <div className="max-w-2xl mx-auto mb-3">
-                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-                  <Input
-                    type="text"
-                    placeholder={t('hero.inputPlaceholder')}
-                    value={businessInput}
-                    onChange={(e) => setBusinessInput(e.target.value)}
-                    className="flex-1 h-11 px-5 text-base rounded-xl border-2 touch-target"
-                    required
-                  />
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="h-11 px-6 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl touch-target whitespace-nowrap"
-                    disabled={!businessInput.trim()}
-                  >
-                    {t('hero.ctaButton')}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </form>
-              </div>
-              
-              <div className="mb-6">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
+                <Button
+                  size="lg"
+                  className="h-12 px-8 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl touch-target"
+                  onClick={handleStartOnboarding}
+                >
+                  Create Your Website
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
                 <Button 
                   variant="outline" 
-                  className="mr-4 mb-3 sm:mb-0"
+                  size="lg"
+                  className="h-12 px-8 rounded-xl touch-target"
                   onClick={() => navigate({ to: '/gallery' })}
                 >
                   {t('hero.secondaryButton')}
@@ -98,21 +82,6 @@ const Home: React.FC = () => {
         </div>
 
 
-        {/* Social Proof - Compact */}
-        <div className="relative z-10 pb-6">
-          <div className="container mx-auto px-4">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-3">{t('socialProof.title')}</p>
-              <div className="flex flex-wrap justify-center items-center gap-6 opacity-60">
-                {Array.from({ length: 5 }, (_, i) => (
-                  <div key={i} className="h-6 w-20 bg-muted/60 rounded flex items-center justify-center text-xs">
-                    Logo {i + 1}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* How It Works */}

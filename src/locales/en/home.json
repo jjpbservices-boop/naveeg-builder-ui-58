@@ -38,32 +38,32 @@
     "cards": [
       {
         "title": "AI Website Creation",
-        "description": "From description to professional site instantly.",
+        "description": "Transform your business description into a professional website instantly. Our AI understands your industry and creates content, design, and structure tailored to your business needs.",
         "icon": "zap"
       },
       {
         "title": "Simple Dashboard", 
-        "description": "Update text and images without technical skills.",
+        "description": "Update content, images, and settings without any technical skills. Manage your entire website from one intuitive dashboard - perfect for busy business owners.",
         "icon": "layout"
       },
       {
         "title": "Hosting + SSL",
-        "description": "Your site secure and GDPR compliant by default.",
+        "description": "Your website is automatically secured with SSL certificates and hosted on enterprise-grade infrastructure. GDPR compliant by default for European businesses.",
         "icon": "shield"
       },
       {
         "title": "Automatic Backups",
-        "description": "Daily backups for peace of mind.",
+        "description": "Sleep soundly knowing your website is backed up daily. Restore any version with one click if something goes wrong - your business is always protected.",
         "icon": "database"
       },
       {
         "title": "Marketing Tools",
-        "description": "SEO checklist, analytics, automations.",
+        "description": "Built-in SEO optimization, Google Analytics integration, and automated marketing features to help customers find your business online and drive growth.",
         "icon": "trending-up"
       },
       {
         "title": "Human Support",
-        "description": "Talk to a real person when you need help.",
+        "description": "Get help from real people when you need it. Our support team understands small business challenges and provides personal assistance via chat and email.",
         "icon": "headphones"
       }
     ]

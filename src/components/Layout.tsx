@@ -38,12 +38,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const navigation = [
-    { name: 'Features', href: '/features' },
-    { name: 'How it Works', href: '/how-it-works' },
     { name: 'Pricing', href: '/pricing' },
     { name: 'Gallery', href: '/gallery' },
-    { name: 'Blog', href: '/blog' },
-    { name: 'FAQ', href: '/faq' },
     { name: 'Contact', href: '/contact' }
   ];
 
@@ -62,9 +58,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               className="flex items-center space-x-2 cursor-pointer"
               onClick={() => navigate({ to: '/' })}
             >
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">N</span>
-              </div>
+              <img 
+                src="/lovable-uploads/b874b017-8b73-4029-9431-6caffeaef48c.png" 
+                alt="Naveeg" 
+                className="h-8 w-auto"
+              />
               <span className="font-sansation text-xl font-bold text-foreground">Naveeg</span>
             </div>
 
@@ -144,9 +142,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <SheetContent side="right" className="w-80">
                   <SheetHeader>
                     <SheetTitle className="flex items-center space-x-2">
-                      <div className="w-6 h-6 bg-primary rounded-md flex items-center justify-center">
-                        <span className="text-white font-bold text-xs">N</span>
-                      </div>
+                      <img 
+                        src="/lovable-uploads/b874b017-8b73-4029-9431-6caffeaef48c.png" 
+                        alt="Naveeg" 
+                        className="h-6 w-auto"
+                      />
                       <span className="font-sansation text-lg font-bold">Naveeg</span>
                     </SheetTitle>
                   </SheetHeader>

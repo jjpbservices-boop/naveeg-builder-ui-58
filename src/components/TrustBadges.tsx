@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Lock, X } from 'lucide-react';
+import { Shield, Lock, Calendar } from 'lucide-react';
 
 interface TrustBadgesProps {
   variant?: 'horizontal' | 'vertical';
@@ -22,9 +22,9 @@ const TrustBadges: React.FC<TrustBadgesProps> = ({
       subtext: 'Secure'
     },
     {
-      icon: X,
-      text: 'No',
-      subtext: 'Commitment'
+      icon: Calendar,
+      text: 'Cancel',
+      subtext: 'Anytime'
     }
   ];
 
