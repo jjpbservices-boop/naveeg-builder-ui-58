@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowRight, Zap, LayoutDashboard, Shield, Database, TrendingUp, Headphones, CheckCircle } from 'lucide-react';
+import { ArrowRight, Zap, LayoutDashboard, Shield, Database, TrendingUp, Headphones, CheckCircle, MessageSquare, Sparkles, Rocket } from 'lucide-react';
 import TrustBadges from '@/components/TrustBadges';
 import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
 import { HeroAnimation } from '@/components/HeroAnimation';
@@ -101,22 +101,40 @@ const Home: React.FC = () => {
           </div>
         </ScrollReveal>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 max-w-6xl mx-auto">
-          {[0, 1, 2].map((index) => (
-            <ScrollReveal key={index} delay={index * 200} direction="up">
-              <div className="text-center group hover:scale-105 transition-transform duration-300">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-3xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors duration-300">
-                  <span className="text-3xl md:text-4xl font-bold text-primary">{index + 1}</span>
+        <div className="relative max-w-6xl mx-auto">
+          {/* Connection Lines */}
+          <div className="hidden md:block absolute top-12 left-1/6 right-1/6 h-0.5 bg-gradient-to-r from-primary/30 via-primary/60 to-primary/30"></div>
+          <div className="hidden md:block absolute top-12 left-1/6 w-3 h-3 bg-primary rounded-full -translate-x-1/2"></div>
+          <div className="hidden md:block absolute top-12 right-1/6 w-3 h-3 bg-primary rounded-full translate-x-1/2"></div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+            {[
+              { icon: "MessageSquare", color: "text-blue-500" },
+              { icon: "Sparkles", color: "text-purple-500" },
+              { icon: "Rocket", color: "text-green-500" }
+            ].map((step, index) => (
+              <ScrollReveal key={index} delay={index * 200} direction="up">
+                <div className="text-center group hover:scale-105 transition-transform duration-300 relative">
+                  {/* Modern Icon Container */}
+                  <div className="relative w-20 h-20 md:w-24 md:h-24 mx-auto mb-6">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl rotate-6 group-hover:rotate-12 transition-transform duration-300"></div>
+                    <div className="relative w-full h-full bg-white dark:bg-card rounded-2xl shadow-lg border border-primary/10 flex items-center justify-center group-hover:shadow-xl transition-all duration-300">
+                      {step.icon === "MessageSquare" && <MessageSquare className={`w-8 h-8 md:w-10 md:h-10 ${step.color}`} />}
+                      {step.icon === "Sparkles" && <Sparkles className={`w-8 h-8 md:w-10 md:h-10 ${step.color}`} />}
+                      {step.icon === "Rocket" && <Rocket className={`w-8 h-8 md:w-10 md:h-10 ${step.color}`} />}
+                    </div>
+                  </div>
+                  
+                  <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-4">
+                    {t(`howItWorks.steps.${index}.title`)}
+                  </h3>
+                  <p className="text-muted-foreground text-lg leading-relaxed">
+                    {t(`howItWorks.steps.${index}.description`)}
+                  </p>
                 </div>
-                <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-4">
-                  {t(`howItWorks.steps.${index}.title`)}
-                </h3>
-                <p className="text-muted-foreground text-lg leading-relaxed">
-                  {t(`howItWorks.steps.${index}.description`)}
-                </p>
-              </div>
-            </ScrollReveal>
-          ))}
+              </ScrollReveal>
+            ))}
+          </div>
         </div>
       </section>
 
