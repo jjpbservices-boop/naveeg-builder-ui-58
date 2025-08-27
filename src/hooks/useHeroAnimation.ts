@@ -185,12 +185,30 @@ export const useHeroAnimation = (canvasId: string) => {
   }, [canvasId])
 
   useEffect(() => {
-    // Small delay to ensure DOM is ready
-    const timeoutId = setTimeout(() => {
-      const cleanup = initHeroAnimation()
-      return cleanup
-    }, 50)
-    
-    return () => clearTimeout(timeoutId)
-  }, [initHeroAnimation])
+    let animationFrameId: number
+    let resizeObserver: ResizeObserver | null = null
+
+    const init = () => {
+      const canvas = document.getElementById(canvasId);
+      if (canvas) {
+        const cleanup = initHeroAnimation()
+        return cleanup
+      } else {
+        // Retry once after a short delay
+        setTimeout(() => {
+          const retryCanvas = document.getElementById(canvasId);
+          if (retryCanvas) {
+            const cleanup = initHeroAnimation()
+            return cleanup
+          }
+        }, 50);
+      }
+    };
+
+    const cleanup = init();
+
+    return () => {
+      if (cleanup) cleanup()
+    }
+  }, [initHeroAnimation, canvasId])
 }

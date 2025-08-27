@@ -26,13 +26,13 @@ export const EnhancedLoading: React.FC<EnhancedLoadingProps> = ({
   encouragementMessage
 }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
-      {/* Full-screen animation background */}
-      <div className="fixed inset-0 w-full h-full">
+    <div className="relative flex-1 bg-gradient-to-br from-background via-muted/30 to-background">
+      {/* Animation background */}
+      <div className="absolute inset-0 w-full h-full">
         <HeroAnimation />
       </div>
       
-      <div className="relative z-10 min-h-screen flex items-center justify-center py-8 sm:py-12 md:py-16 px-4 sm:px-6 md:px-8">
+      <div className="relative z-10 flex items-center justify-center py-8 sm:py-12 md:py-16 px-4 sm:px-6 md:px-8 min-h-full">
         <div className="w-full max-w-2xl sm:max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto">
           <Card className="bg-card/95 backdrop-blur-md border border-border/50 shadow-xl rounded-2xl sm:rounded-3xl">
             <CardContent className="p-8 sm:p-10 md:p-12 lg:p-16">
