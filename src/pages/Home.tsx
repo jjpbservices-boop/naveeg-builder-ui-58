@@ -284,7 +284,7 @@ const Home: React.FC = () => {
                   <Button 
                     variant="outline" 
                     size="lg" 
-                    className="px-8 py-6 text-lg border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:border-primary-foreground/50"
+                    className="px-8 py-6 text-lg bg-background text-foreground border-border hover:bg-accent hover:text-accent-foreground"
                     onClick={() => navigate({ to: '/gallery' })}
                   >
                     See Live Demo
