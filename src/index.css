@@ -38,8 +38,8 @@
     --muted: 220 13% 97%; /* #F9FAFB - Neutral light */
     --muted-foreground: 220 9% 40%;
 
-    --accent: 225 100% 55%; /* #1C64FF - Accent blue */
-    --accent-foreground: 0 0% 98%;
+    --accent: 220 13% 95%; /* Neutral gray - no more blue */
+    --accent-foreground: 220 9% 15%;
 
     /* Success color - #00C389 */
     --success: 166 100% 38%;
