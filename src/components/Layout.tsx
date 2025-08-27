@@ -8,6 +8,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useTheme } from 'next-themes';
 import CookieBanner from '@/components/CookieBanner';
 import Footer from '@/components/Footer';
+import { HeroAnimation } from '@/components/HeroAnimation';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -46,6 +47,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const handleGenerateClick = () => {
     navigate({ to: '/onboarding/brief' });
   };
+
+  // Check if current route is an onboarding page
+  const currentPath = window.location.pathname;
+  const isOnboardingPage = currentPath.includes('/brief') || 
+                          currentPath.includes('/design') || 
+                          currentPath.includes('/generating') || 
+                          currentPath.includes('/generate') || 
+                          currentPath.includes('/ready');
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -209,8 +218,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
-        {children}
+      <main className={`flex-1 ${isOnboardingPage ? 'bg-gradient-to-br from-background via-muted/30 to-background pt-14 sm:pt-16 relative' : ''}`}>
+        {isOnboardingPage && <HeroAnimation />}
+        <div className={isOnboardingPage ? 'relative z-10' : ''}>
+          {children}
+        </div>
       </main>
 
       {/* Footer */}

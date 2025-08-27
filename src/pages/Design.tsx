@@ -8,7 +8,7 @@ import { Loader2, Palette, Type, Save, Rocket } from 'lucide-react';
 import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
 import { updateDesign } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
-import { HeroAnimation } from '@/components/HeroAnimation';
+
 import { GoogleFontSelector } from '@/components/GoogleFonts';
 
 export default function Design() {
@@ -129,10 +129,7 @@ export default function Design() {
                      isValidHex(colors.background_dark);
 
   return (
-    <div className="bg-gradient-to-br from-background via-muted/30 to-background pt-14 sm:pt-16">
-      <HeroAnimation />
-      
-      <div className="relative z-10 flex-1 py-8 sm:py-12 px-3 sm:px-4">
+    <div className="flex-1 py-8 sm:py-12 px-3 sm:px-4">
         <div className="container mx-auto max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl">
           <div className="text-center mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
@@ -367,7 +364,6 @@ export default function Design() {
                 </CardContent>
               </Card>
             </div>
-          </div>
         </div>
       </div>
     </div>

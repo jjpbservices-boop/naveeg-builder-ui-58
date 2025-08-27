@@ -78,7 +78,7 @@ export default function Ready() {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-14 sm:pt-16">
+    <div className="flex-1">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Success Header */}
