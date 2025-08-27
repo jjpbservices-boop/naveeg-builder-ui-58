@@ -132,8 +132,8 @@ export default function Design() {
     <div className="bg-gradient-to-br from-background via-muted/30 to-background">
       <HeroAnimation />
       
-      <div className="relative z-10 flex-1 py-4 sm:py-6 md:py-8 px-3 sm:px-4">
-        <div className="container mx-auto max-w-xs sm:max-w-sm md:max-w-2xl lg:max-w-4xl xl:max-w-6xl">
+      <div className="relative z-10 flex-1 py-8 sm:py-12 px-3 sm:px-4">
+        <div className="container mx-auto max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl">
           <div className="text-center mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
               Customize your design
