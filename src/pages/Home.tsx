@@ -47,7 +47,6 @@ const Home: React.FC = () => {
       {/* Full-Screen Hero Section with Animation */}
       <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background flex flex-col">
         <HeroAnimation />
-        <FloatingElements />
         
         {/* Main Hero Content - Centered */}
         <div className="flex-1 flex items-center justify-center relative z-10">
@@ -93,7 +92,7 @@ const Home: React.FC = () => {
       <section className="container mx-auto px-4 py-20">
         <ScrollReveal>
           <div className="text-center mb-16">
-            <h2 className="font-sansation text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+            <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
               {t('howItWorks.title')}
             </h2>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
@@ -125,7 +124,7 @@ const Home: React.FC = () => {
       <section className="container mx-auto px-4 py-20">
         <ScrollReveal>
           <div className="text-center mb-16">
-            <h2 className="font-sansation text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+            <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
               {t('features.title')}
             </h2>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
@@ -167,7 +166,7 @@ const Home: React.FC = () => {
         <div className="container mx-auto px-4">
           <ScrollReveal>
             <div className="max-w-5xl mx-auto text-center">
-              <blockquote className="text-2xl md:text-3xl lg:text-4xl font-medium text-foreground mb-12 font-sansation leading-relaxed">
+              <blockquote className="text-xl md:text-2xl lg:text-3xl font-medium text-foreground mb-12 font-sansation leading-relaxed">
                 "{t('trust.quote')}"
               </blockquote>
               <TrustBadges />
@@ -180,7 +179,7 @@ const Home: React.FC = () => {
       <section className="container mx-auto px-4 py-20">
         <ScrollReveal>
           <div className="text-center mb-16">
-            <h2 className="font-sansation text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+            <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
               {t('whyNaveeg.title')}
             </h2>
           </div>
@@ -206,7 +205,7 @@ const Home: React.FC = () => {
       <section className="container mx-auto px-4 py-20">
         <ScrollReveal>
           <div className="text-center mb-16">
-            <h2 className="font-sansation text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+            <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
               {t('pricing.title')}
             </h2>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8">
@@ -275,7 +274,7 @@ const Home: React.FC = () => {
       <section className="container mx-auto px-4 py-20">
         <ScrollReveal>
           <div className="text-center mb-16">
-            <h2 className="font-sansation text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+            <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
               {t('gallery.title')}
             </h2>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8">
@@ -321,7 +320,7 @@ const Home: React.FC = () => {
       <section className="container mx-auto px-4 py-20">
         <ScrollReveal>
           <div className="text-center mb-16">
-            <h2 className="font-sansation text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+            <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
               {t('faq.title')}
             </h2>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8">
@@ -363,7 +362,7 @@ const Home: React.FC = () => {
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24" />
             
             <div className="relative z-10">
-              <h2 className="font-sansation text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
+              <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold mb-6 leading-tight">
                 {t('ctaBanner.title')}
               </h2>
               <p className="text-xl md:text-2xl mb-10 opacity-95 max-w-3xl mx-auto leading-relaxed">
