@@ -140,7 +140,7 @@ const Home: React.FC = () => {
                     <div className="absolute inset-0 bg-gradient-to-br from-card/50 to-muted/30 rounded-3xl blur-xl scale-110 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
                     
                     {/* Main Content */}
-                    <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-3xl p-8 hover:border-muted-foreground/30 transition-all duration-300 hover:shadow-xl hover:shadow-muted-foreground/10">
+                    <div className="relative bg-muted border border-border/50 rounded-3xl p-8 hover:border-muted-foreground/30 transition-all duration-300 hover:shadow-xl hover:shadow-muted-foreground/10">
                       {/* Step Indicator */}
                       <div className="absolute -top-4 left-6 bg-primary text-primary-foreground text-sm font-bold px-3 py-1 rounded-full">
                         {step.step}
