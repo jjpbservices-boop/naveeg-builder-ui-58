@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Globe, Sun, Moon, Menu, Sparkles } from 'lucide-react';
@@ -43,7 +44,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const handleGenerateClick = () => {
-    navigate({ to: '/describe' });
+    navigate({ to: '/onboarding/brief' });
   };
 
   return (
