@@ -113,22 +113,22 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+    <div className="bg-background flex items-center justify-center p-3 sm:p-4 min-h-[500px] sm:min-h-[600px]">
+      <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
+        <div className="text-center mb-6 sm:mb-8">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate({ to: '/' })}
-            className="mb-4"
+            className="mb-3 sm:mb-4 h-8 sm:h-9 text-xs sm:text-sm"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
             Back to Home
           </Button>
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
             {mode === 'signup' ? 'Create Your Account' : 'Welcome Back'}
           </h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-sm sm:text-base text-muted-foreground mt-2">
             {mode === 'signup' 
               ? 'Sign up to save and manage your websites'
               : 'Sign in to access your dashboard'

@@ -129,35 +129,35 @@ export default function Design() {
                      isValidHex(colors.background_dark);
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background">
+    <div className="bg-gradient-to-br from-background via-muted/30 to-background">
       <HeroAnimation />
       
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">
+      <div className="relative z-10 flex-1 py-4 sm:py-6 md:py-8 px-3 sm:px-4">
+        <div className="container mx-auto max-w-xs sm:max-w-sm md:max-w-2xl lg:max-w-4xl xl:max-w-6xl">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
               Customize your design
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-base sm:text-lg">
               Personalize colors and fonts to match your brand
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             {/* Design Controls */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Colors */}
-              <Card className="bg-card/90 backdrop-blur-sm border shadow-soft">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Palette className="h-5 w-5" />
+              <Card className="bg-card/90 backdrop-blur-sm border shadow-soft rounded-2xl sm:rounded-3xl">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                    <Palette className="h-4 w-4 sm:h-5 sm:w-5" />
                     Colors
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 gap-4">
+                <CardContent className="space-y-3 sm:space-y-4">
+                  <div className="grid grid-cols-1 gap-3 sm:gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="primary_color">Primary Color</Label>
+                      <Label htmlFor="primary_color" className="text-sm sm:text-base">Primary Color</Label>
                       <div className="flex gap-2">
                         <Input
                           id="primary_color"
@@ -165,19 +165,19 @@ export default function Design() {
                           value={colors.primary_color}
                           onChange={(e) => handleColorChange('primary_color', e.target.value)}
                           placeholder="#FF7A00"
-                          className="font-mono"
+                          className="font-mono text-xs sm:text-sm h-9 sm:h-10 rounded-xl"
                         />
                         <input
                           type="color"
                           value={colors.primary_color}
                           onChange={(e) => handleColorChange('primary_color', e.target.value)}
-                          className="w-12 h-10 rounded border border-input"
+                          className="w-9 h-9 sm:w-12 sm:h-10 rounded border border-input"
                         />
                       </div>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="secondary_color">Secondary Color</Label>
+                      <Label htmlFor="secondary_color" className="text-sm sm:text-base">Secondary Color</Label>
                       <div className="flex gap-2">
                         <Input
                           id="secondary_color"
@@ -185,19 +185,19 @@ export default function Design() {
                           value={colors.secondary_color}
                           onChange={(e) => handleColorChange('secondary_color', e.target.value)}
                           placeholder="#1E62FF"
-                          className="font-mono"
+                          className="font-mono text-xs sm:text-sm h-9 sm:h-10 rounded-xl"
                         />
                         <input
                           type="color"
                           value={colors.secondary_color}
                           onChange={(e) => handleColorChange('secondary_color', e.target.value)}
-                          className="w-12 h-10 rounded border border-input"
+                          className="w-9 h-9 sm:w-12 sm:h-10 rounded border border-input"
                         />
                       </div>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="background_dark">Background Dark</Label>
+                      <Label htmlFor="background_dark" className="text-sm sm:text-base">Background Dark</Label>
                       <div className="flex gap-2">
                         <Input
                           id="background_dark"
@@ -205,13 +205,13 @@ export default function Design() {
                           value={colors.background_dark}
                           onChange={(e) => handleColorChange('background_dark', e.target.value)}
                           placeholder="#121212"
-                          className="font-mono"
+                          className="font-mono text-xs sm:text-sm h-9 sm:h-10 rounded-xl"
                         />
                         <input
                           type="color"
                           value={colors.background_dark}
                           onChange={(e) => handleColorChange('background_dark', e.target.value)}
-                          className="w-12 h-10 rounded border border-input"
+                          className="w-9 h-9 sm:w-12 sm:h-10 rounded border border-input"
                         />
                       </div>
                     </div>
@@ -220,14 +220,14 @@ export default function Design() {
               </Card>
 
               {/* Typography */}
-              <Card className="bg-card/90 backdrop-blur-sm border shadow-soft">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Type className="h-5 w-5" />
+              <Card className="bg-card/90 backdrop-blur-sm border shadow-soft rounded-2xl sm:rounded-3xl">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                    <Type className="h-4 w-4 sm:h-5 sm:w-5" />
                     Typography
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3 sm:space-y-4">
                   <GoogleFontSelector
                     selectedFont={fonts.heading}
                     onFontChange={handleFontChange}
@@ -246,17 +246,17 @@ export default function Design() {
                   onClick={handleSave}
                   disabled={isSaving}
                   variant="outline"
-                  className="w-full"
+                  className="w-full h-10 sm:h-12 text-sm sm:text-base rounded-xl"
                   size="lg"
                 >
                   {isSaving ? (
                     <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      <Loader2 className="mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin" />
                       Saving...
                     </>
                   ) : (
                     <>
-                      <Save className="mr-2 h-5 w-5" />
+                      <Save className="mr-2 h-4 sm:h-5 w-4 sm:w-5" />
                       Save
                     </>
                   )}
@@ -265,17 +265,17 @@ export default function Design() {
                 <Button
                   onClick={handleGenerate}
                   disabled={isLoading || !canGenerate}
-                  className="w-full text-lg py-6"
+                  className="w-full text-sm sm:text-lg py-4 sm:py-6 h-12 sm:h-auto rounded-xl"
                   size="lg"
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      <Loader2 className="mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin" />
                       Generating Website...
                     </>
                   ) : (
                     <>
-                      <Rocket className="mr-2 h-5 w-5" />
+                      <Rocket className="mr-2 h-4 sm:h-5 w-4 sm:w-5" />
                       Generate Website
                     </>
                   )}

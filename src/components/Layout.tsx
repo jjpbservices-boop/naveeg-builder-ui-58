@@ -51,8 +51,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+        <div className="container mx-auto px-3 sm:px-4">
+          <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo */}
             <div 
               className="flex items-center space-x-2 cursor-pointer"
@@ -61,9 +61,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <img 
                 src="/lovable-uploads/b874b017-8b73-4029-9431-6caffeaef48c.png" 
                 alt="Naveeg" 
-                className="h-8 w-auto"
+                className="h-6 sm:h-8 w-auto"
               />
-              <span className="font-sansation text-xl font-bold text-foreground">Naveeg</span>
+              <span className="font-sansation text-lg sm:text-xl font-bold text-foreground">Naveeg</span>
             </div>
 
             {/* Desktop Navigation */}

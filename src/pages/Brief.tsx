@@ -209,45 +209,45 @@ export default function Brief() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background">
+    <div className="bg-gradient-to-br from-background via-muted/30 to-background">
       <HeroAnimation />
       
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
-        <div className="container mx-auto max-w-2xl">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">
+      <div className="relative z-10 flex-1 flex items-center justify-center py-4 sm:py-6 md:py-8 px-3 sm:px-4">
+        <div className="container mx-auto max-w-xs sm:max-w-sm md:max-w-2xl">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
               Tell us about your business
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-base sm:text-lg">
               We'll analyze your needs and create a custom website structure
             </p>
           </div>
 
-          <Card className="bg-card/90 backdrop-blur-sm border shadow-soft">
-            <CardHeader>
-              <CardTitle>Business Information</CardTitle>
+          <Card className="bg-card/90 backdrop-blur-sm border shadow-soft rounded-2xl sm:rounded-3xl">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg sm:text-xl">Business Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="business_name">Business Name</Label>
+                <Label htmlFor="business_name" className="text-sm sm:text-base">Business Name</Label>
                 <Input
                   id="business_name"
                   value={business_name}
                   onChange={(e) => updateBasicInfo({ business_name: e.target.value })}
                   placeholder="Enter your business name"
-                  className="text-lg"
+                  className="text-sm sm:text-lg h-10 sm:h-12 rounded-xl"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="business_description">Business Description</Label>
+                <Label htmlFor="business_description" className="text-sm sm:text-base">Business Description</Label>
                 <Textarea
                   id="business_description"
                   value={business_description}
                   onChange={(e) => updateBasicInfo({ business_description: e.target.value })}
                   placeholder="Describe what your business does, your services, target audience..."
                   rows={4}
-                  className="resize-none"
+                  className="resize-none text-sm sm:text-base rounded-xl"
                 />
               </div>
 
@@ -255,34 +255,34 @@ export default function Brief() {
                 <Button
                   onClick={handleAnalyze}
                   disabled={isLoading || !business_name?.trim() || !business_description?.trim()}
-                  className="w-full text-lg py-6"
+                  className="w-full text-sm sm:text-lg py-4 sm:py-6 h-12 sm:h-auto rounded-xl"
                   size="lg"
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      <Loader2 className="mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin" />
                       Analyzing & Creating Structure...
                     </>
                   ) : (
                     <>
                       Analyze & Create Structure
-                      <ChevronRight className="ml-2 h-5 w-5" />
+                      <ChevronRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
                     </>
                   )}
                 </Button>
               ) : (
                 <div className="space-y-4">
-                  <div className="p-4 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-2">✅ Analysis Complete</p>
-                    <p className="text-sm">Website structure generated successfully. Ready to proceed to design customization.</p>
+                  <div className="p-3 sm:p-4 bg-muted rounded-lg">
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-2">✅ Analysis Complete</p>
+                    <p className="text-xs sm:text-sm">Website structure generated successfully. Ready to proceed to design customization.</p>
                   </div>
                   <Button
                     onClick={handleNextStep}
-                    className="w-full text-lg py-6"
+                    className="w-full text-sm sm:text-lg py-4 sm:py-6 h-12 sm:h-auto rounded-xl"
                     size="lg"
                   >
                     Continue to Design
-                    <ChevronRight className="ml-2 h-5 w-5" />
+                    <ChevronRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
                   </Button>
                 </div>
               )}
