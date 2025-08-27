@@ -247,26 +247,24 @@ const Home: React.FC = () => {
         </ScrollReveal>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 max-w-6xl mx-auto">
-          {[
-            { icon: "Zap" },
-            { icon: "Shield" },
-            { icon: "TrendingUp" }
-          ].map((item, index) => (
+          {[0, 1, 2].map((index) => (
             <ScrollReveal key={index} delay={index * 200} direction="scale">
-              <div className="text-center p-8 group hover:scale-105 transition-transform duration-300">
-                {/* Clean Icon */}
-                <div className="w-16 h-16 mx-auto mb-6 flex items-center justify-center">
-                  {item.icon === "Zap" && <Zap className="w-12 h-12 text-primary" />}
-                  {item.icon === "Shield" && <Shield className="w-12 h-12 text-primary" />}
-                  {item.icon === "TrendingUp" && <TrendingUp className="w-12 h-12 text-primary" />}
+              <div className="relative group">
+                {/* Animated Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 scale-110"></div>
+                
+                {/* Main Card */}
+                <div className="relative bg-card/90 backdrop-blur-sm border border-border/50 rounded-3xl p-8 hover:border-primary/30 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 group-hover:scale-105">
+                  {/* Content */}
+                  <div className="text-center">
+                    <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-4">
+                      {t(`whyNaveeg.blocks.${index}.title`)}
+                    </h3>
+                    <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
+                      {t(`whyNaveeg.blocks.${index}.description`)}
+                    </p>
+                  </div>
                 </div>
-
-                <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-6">
-                  {t(`whyNaveeg.blocks.${index}.title`)}
-                </h3>
-                <p className="text-muted-foreground text-lg leading-relaxed">
-                  {t(`whyNaveeg.blocks.${index}.description`)}
-                </p>
               </div>
             </ScrollReveal>
           ))}
