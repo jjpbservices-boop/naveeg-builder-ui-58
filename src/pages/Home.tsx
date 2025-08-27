@@ -262,40 +262,38 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* 5. CTA Section */}
-      <section className="py-24 bg-primary">
+      {/* 5. Quote Block */}
+      <section className="py-24 bg-muted/20">
         <div className="container mx-auto px-4">
           <ScrollReveal>
-            <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-6">
-                Ready to build your website?
-              </h2>
-              <p className="text-xl text-primary-foreground/90 mb-12 leading-relaxed">
-                Join thousands of businesses who trust Naveeg to create their professional online presence
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-                <Button 
-                  variant="secondary"
-                  size="lg" 
-                  className="px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
-                  onClick={handleStartOnboarding}
-                >
-                  Start Building Now
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="px-8 py-6 text-lg border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:border-primary-foreground/50"
-                  onClick={() => navigate({ to: '/gallery' })}
-                >
-                  View Examples
-                </Button>
+            <div className="max-w-5xl mx-auto text-center">
+              <div className="relative">
+                <blockquote className="text-xl md:text-2xl lg:text-3xl font-medium text-foreground mb-12 font-sansation leading-relaxed relative z-10">
+                  If you can send an email, you can build your website with Naveeg
+                </blockquote>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+                  <Button 
+                    size="lg" 
+                    className="px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+                    onClick={handleStartOnboarding}
+                  >
+                    Try for Free
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="px-8 py-6 text-lg"
+                    onClick={() => navigate({ to: '/gallery' })}
+                  >
+                    See Live Demo
+                  </Button>
+                </div>
+                
+                <p className="text-sm text-muted-foreground">
+                  7 days free - no credit card required
+                </p>
               </div>
-              
-              <p className="text-sm text-primary-foreground/80">
-                7 days free - no credit card required
-              </p>
             </div>
           </ScrollReveal>
         </div>
