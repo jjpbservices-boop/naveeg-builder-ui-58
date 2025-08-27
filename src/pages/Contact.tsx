@@ -9,9 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Phone, MapPin, Clock, Send, BookOpen } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
 
 const Contact: React.FC = () => {
   const { t } = useTranslation('contact');
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -101,7 +103,7 @@ const Contact: React.FC = () => {
           <div>
             <div className="bg-card rounded-3xl border shadow-soft p-8">
               <h2 className="font-sansation text-2xl font-bold text-foreground mb-6">
-                {t('form.title')}
+                Get in touch
               </h2>
               
               <Form {...form}>
@@ -148,10 +150,10 @@ const Contact: React.FC = () => {
                     name="subject"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('form.subject')}</FormLabel>
+                        <FormLabel>Business Type</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder={t('form.subjectPlaceholder')} 
+                            placeholder="Restaurant, Services, E-commerce..." 
                             {...field} 
                             className="touch-target"
                           />
@@ -246,17 +248,23 @@ const Contact: React.FC = () => {
                 <Button 
                   variant="outline" 
                   className="w-full justify-start touch-target"
+                  onClick={() => navigate({ to: '/blog' })}
                 >
                   <BookOpen className="h-5 w-5 mr-3" />
-                  {t('support.helpCenter')}
+                  Help Center
                 </Button>
                 <Button 
                   variant="outline" 
                   className="w-full justify-start touch-target"
+                  onClick={() => navigate({ to: '/faq' })}
                 >
                   <BookOpen className="h-5 w-5 mr-3" />
-                  {t('support.documentation')}
+                  Documentation
                 </Button>
+                
+                <p className="text-xs text-muted-foreground mt-4 text-center">
+                  "We only use your data to answer your request."
+                </p>
               </div>
             </div>
           </div>

@@ -1,24 +1,12 @@
-
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, Sun, Moon, Menu, Sparkles } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { Globe, Sun, Moon, Menu, Sparkles, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Sheet,
-  SheetContent,
-  SheetClose,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useNavigate } from '@tanstack/react-router';
+import { useTheme } from 'next-themes';
+import CookieBanner from '@/components/CookieBanner';
 import Footer from '@/components/Footer';
 
 interface LayoutProps {
@@ -26,212 +14,196 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { t, i18n } = useTranslation('common');
+  const { i18n } = useTranslation();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const languages = [
-    { code: 'en', name: 'English' },
-    { code: 'fr', name: 'Français' },
-    { code: 'es', name: 'Español' },
-    { code: 'pt', name: 'Português' },
-    { code: 'it', name: 'Italiano' },
+    { code: 'en', name: 'English', flag: '🇺🇸' },
+    { code: 'fr', name: 'Français', flag: '🇫🇷' },
+    { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+    { code: 'pt', name: 'Português', flag: '🇵🇹' },
   ];
 
-  const changeLanguage = (langCode: string) => {
-    i18n.changeLanguage(langCode);
+  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+
+  const changeLanguage = (languageCode: string) => {
+    i18n.changeLanguage(languageCode);
   };
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
+  const navigation = [
+    { name: 'Features', href: '/features' },
+    { name: 'How it Works', href: '/how-it-works' },
+    { name: 'Pricing', href: '/pricing' },
+    { name: 'Gallery', href: '/gallery' },
+    { name: 'Blog', href: '/blog' },
+    { name: 'FAQ', href: '/faq' },
+    { name: 'Contact', href: '/contact' }
+  ];
 
   const handleGenerateClick = () => {
     navigate({ to: '/onboarding/brief' });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-soft">
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          {/* Logo */}
-          <div className="flex items-center space-x-4">
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
             <div 
-              className="flex items-center space-x-3 cursor-pointer"
+              className="flex items-center space-x-2 cursor-pointer"
               onClick={() => navigate({ to: '/' })}
             >
-              <img 
-                src="/lovable-uploads/b874b017-8b73-4029-9431-6caffeaef48c.png" 
-                alt={t('header.logoAlt')}
-                className="h-8 w-auto object-contain shrink-0"
-                onError={(e) => e.currentTarget.style.display = 'none'}
-              />
-              <span className="font-sansation font-bold text-xl text-foreground">
-                Naveeg
-              </span>
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">N</span>
+              </div>
+              <span className="font-sansation text-xl font-bold text-foreground">Naveeg</span>
             </div>
-          </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8">
-            <Button variant="ghost" onClick={() => navigate({ to: '/features' })}>
-              {t('header.nav.features')}
-            </Button>
-            <Button variant="ghost" onClick={() => navigate({ to: '/pricing' })}>
-              {t('header.nav.pricing')}
-            </Button>
-            <Button variant="ghost" onClick={() => navigate({ to: '/gallery' })}>
-              {t('header.nav.gallery')}
-            </Button>
-            <Button variant="ghost" onClick={() => navigate({ to: '/faq' })}>
-              {t('header.nav.faq')}
-            </Button>
-            <Button variant="ghost" onClick={() => navigate({ to: '/contact' })}>
-              {t('header.nav.contact')}
-            </Button>
-          </nav>
-
-          {/* Right side */}
-          <div className="flex items-center space-x-4">
-            {/* Desktop Theme Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="touch-target hidden lg:inline-flex"
-              aria-label="Toggle theme"
-            >
-              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            </Button>
-
-            {/* Desktop Language Selector */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="touch-target hidden lg:inline-flex"
-                  aria-label={t('header.changeLanguage')}
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center space-x-8">
+              {navigation.map((item) => (
+                <button
+                  key={item.name}
+                  onClick={() => navigate({ to: item.href })}
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
                 >
-                  <Globe className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                {languages.map((lang) => (
-                  <DropdownMenuItem
-                    key={lang.code}
-                    onClick={() => changeLanguage(lang.code)}
-                    className={i18n.language === lang.code ? 'bg-accent' : ''}
-                  >
-                    {lang.name}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  {item.name}
+                </button>
+              ))}
+            </nav>
 
-            {/* Desktop CTA Button */}
-            <Button 
-              onClick={handleGenerateClick}
-              className="touch-target bg-gradient-primary hover:bg-primary-hover hidden lg:inline-flex"
-            >
-              {t('header.generateWebsite')}
-            </Button>
-
-            {/* Mobile CTA Button - Icon Only */}
-            <Button 
-              onClick={handleGenerateClick}
-              size="icon"
-              className="touch-target bg-gradient-primary hover:bg-primary-hover lg:hidden"
-              aria-label={t('header.generateWebsite')}
-            >
-              <Sparkles className="h-4 w-4" />
-            </Button>
-
-            {/* Mobile Menu */}
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="touch-target lg:hidden"
-                  aria-label="Open menu"
-                >
-                  <Menu className="h-4 w-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-80">
-                <SheetHeader>
-                  <SheetTitle>{t('header.menu')}</SheetTitle>
-                </SheetHeader>
-                
-                <div className="flex flex-col space-y-6 mt-6">
-                  {/* Navigation Links */}
-                  <nav className="flex flex-col space-y-4">
-                    <SheetClose asChild>
-                      <Button variant="ghost" onClick={() => navigate({ to: '/features' })} className="justify-start">
-                        {t('header.nav.features')}
-                      </Button>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Button variant="ghost" onClick={() => navigate({ to: '/pricing' })} className="justify-start">
-                        {t('header.nav.pricing')}
-                      </Button>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Button variant="ghost" onClick={() => navigate({ to: '/gallery' })} className="justify-start">
-                        {t('header.nav.gallery')}
-                      </Button>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Button variant="ghost" onClick={() => navigate({ to: '/faq' })} className="justify-start">
-                        {t('header.nav.faq')}
-                      </Button>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Button variant="ghost" onClick={() => navigate({ to: '/contact' })} className="justify-start">
-                        {t('header.nav.contact')}
-                      </Button>
-                    </SheetClose>
-                  </nav>
-
-                  {/* Separator */}
-                  <div className="border-t border-border" />
-
-                  {/* Preferences */}
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-medium text-muted-foreground">{t('header.preferences')}</h4>
-                    
-                    {/* Theme Toggle */}
-                    <Button
-                      variant="ghost"
-                      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                      className="justify-start w-full"
+            {/* Desktop Controls */}
+            <div className="hidden lg:flex items-center space-x-4">
+              {/* Language Selector */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-9 px-3">
+                    <Globe className="h-4 w-4 mr-2" />
+                    <span className="text-sm">{currentLanguage.flag}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {languages.map((language) => (
+                    <DropdownMenuItem
+                      key={language.code}
+                      onClick={() => changeLanguage(language.code)}
+                      className="flex items-center justify-between"
                     >
-                      <Sun className="h-4 w-4 mr-2 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                      <Moon className="absolute h-4 w-4 ml-2 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                      <span className="ml-6">{theme === 'dark' ? t('header.lightMode') : t('header.darkMode')}</span>
-                    </Button>
+                      <span className="flex items-center">
+                        <span className="mr-2">{language.flag}</span>
+                        {language.name}
+                      </span>
+                      {i18n.language === language.code && (
+                        <Check className="h-4 w-4 text-primary" />
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-                    {/* Language Selection */}
-                    <div className="space-y-2">
-                      <h5 className="text-sm font-medium text-muted-foreground">{t('header.changeLanguage')}</h5>
-                      <div className="grid grid-cols-1 gap-2">
-                        {languages.map((lang) => (
-                          <SheetClose asChild key={lang.code}>
-                            <Button
-                              variant={i18n.language === lang.code ? 'secondary' : 'ghost'}
-                              onClick={() => changeLanguage(lang.code)}
-                              className="justify-start"
-                            >
-                              {lang.name}
-                            </Button>
-                          </SheetClose>
+              {/* Theme Toggle */}
+              <Button variant="ghost" size="sm" onClick={toggleTheme} className="h-9 w-9 p-0">
+                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              </Button>
+
+              {/* CTA Button */}
+              <Button 
+                onClick={handleGenerateClick}
+                className="bg-primary hover:bg-primary/90 text-white font-semibold"
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Try Free
+              </Button>
+            </div>
+
+            {/* Mobile Controls */}
+            <div className="flex lg:hidden items-center space-x-2">
+              {/* Theme Toggle */}
+              <Button variant="ghost" size="sm" onClick={toggleTheme} className="h-9 w-9 p-0">
+                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              </Button>
+
+              {/* Mobile Menu */}
+              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-80">
+                  <SheetHeader>
+                    <SheetTitle className="flex items-center space-x-2">
+                      <div className="w-6 h-6 bg-primary rounded-md flex items-center justify-center">
+                        <span className="text-white font-bold text-xs">N</span>
+                      </div>
+                      <span className="font-sansation text-lg font-bold">Naveeg</span>
+                    </SheetTitle>
+                  </SheetHeader>
+                  
+                  <div className="mt-8 space-y-6">
+                    {/* Navigation Links */}
+                    <nav className="space-y-4">
+                      {navigation.map((item) => (
+                        <button
+                          key={item.name}
+                          onClick={() => {
+                            navigate({ to: item.href });
+                            setIsSheetOpen(false);
+                          }}
+                          className="block text-muted-foreground hover:text-foreground transition-colors text-base font-medium w-full text-left"
+                        >
+                          {item.name}
+                        </button>
+                      ))}
+                    </nav>
+
+                    {/* Language Selector */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-foreground">Language</h3>
+                      <div className="grid grid-cols-2 gap-2">
+                        {languages.map((language) => (
+                          <button
+                            key={language.code}
+                            onClick={() => changeLanguage(language.code)}
+                            className={`flex items-center space-x-2 p-2 rounded-lg border transition-colors ${
+                              i18n.language === language.code
+                                ? 'bg-primary/10 border-primary text-primary'
+                                : 'border-border hover:bg-muted'
+                            }`}
+                          >
+                            <span>{language.flag}</span>
+                            <span className="text-sm">{language.name}</span>
+                          </button>
                         ))}
                       </div>
                     </div>
+
+                    {/* CTA Button */}
+                    <Button 
+                      onClick={() => {
+                        handleGenerateClick();
+                        setIsSheetOpen(false);
+                      }}
+                      className="w-full bg-primary hover:bg-primary/90 text-white font-semibold"
+                    >
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Try Free
+                    </Button>
                   </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </header>
@@ -243,6 +215,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Footer */}
       <Footer />
+
+      {/* Cookie Banner */}
+      <CookieBanner />
     </div>
   );
 };

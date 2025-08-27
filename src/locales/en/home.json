@@ -1,13 +1,14 @@
 {
   "hero": {
-    "title": "Rome wasn't built in a day — but your website will be.",
-    "subtitle": "With Naveeg, generate a professional website in just minutes. No code, no stress.",
+    "title": "Your business online in minutes.",
+    "subtitle": "Naveeg builds and manages your website so you can focus on your business.",
     "inputPlaceholder": "Enter your business name…",
-    "ctaButton": "Generate My Website",
+    "ctaButton": "Start Free Trial – 7 Days, Cancel Anytime",
+    "secondaryButton": "See Example Site",
     "helper": "Your site will be ready within minutes after you click generate."
   },
   "trialBanner": {
-    "text": "Start with a 14-day free trial on a Naveeg subdomain. No credit card required."
+    "text": "GDPR • SSL Secure • No Commitment"
   },
   "socialProof": {
     "title": "Trusted by thousands of businesses",
@@ -18,16 +19,16 @@
     "subtitle": "Get your website up and running in three simple steps",
     "steps": [
       {
-        "title": "Tell us about your business",
-        "description": "Describe your company in a few words"
+        "title": "Describe your business",
+        "description": "Tell us about your company and what makes you unique"
       },
       {
-        "title": "Pick your style and colors",
-        "description": "Choose colors, fonts, and design preferences"
+        "title": "AI generates your site", 
+        "description": "Professional website created instantly with content and design"
       },
       {
-        "title": "Generate your website in minutes",
-        "description": "Your professional website is ready to go live"
+        "title": "Launch with domain & marketing tools",
+        "description": "Go live with hosting, SSL, and built-in marketing features"
       }
     ]
   },
@@ -36,34 +37,34 @@
     "subtitle": "Built for modern businesses that want to get online fast",
     "cards": [
       {
-        "title": "Mobile-first design",
-        "description": "Every website is optimized for mobile devices and looks perfect everywhere",
-        "icon": "smartphone"
+        "title": "AI Website Creation",
+        "description": "From description to professional site instantly.",
+        "icon": "zap"
       },
       {
-        "title": "SEO optimization included",
-        "description": "Built-in SEO features to help your business get found on search engines",
-        "icon": "search"
-      },
-      {
-        "title": "Custom colors & fonts",
-        "description": "Change colors, fonts, and content without any technical knowledge",
-        "icon": "palette"
-      },
-      {
-        "title": "Fast & secure hosting",
-        "description": "Enterprise-grade security with 99.9% uptime guarantee",
-        "icon": "shield"
-      },
-      {
-        "title": "Simple dashboard",
-        "description": "Manage your website from an intuitive and easy-to-use dashboard",
+        "title": "Simple Dashboard", 
+        "description": "Update text and images without technical skills.",
         "icon": "layout"
       },
       {
-        "title": "Free 14-day trial",
-        "description": "Get your website ready in under 30 seconds with our AI-powered builder",
-        "icon": "zap"
+        "title": "Hosting + SSL",
+        "description": "Your site secure and GDPR compliant by default.",
+        "icon": "shield"
+      },
+      {
+        "title": "Automatic Backups",
+        "description": "Daily backups for peace of mind.",
+        "icon": "database"
+      },
+      {
+        "title": "Marketing Tools",
+        "description": "SEO checklist, analytics, automations.",
+        "icon": "trending-up"
+      },
+      {
+        "title": "Human Support",
+        "description": "Talk to a real person when you need help.",
+        "icon": "headphones"
       }
     ]
   },
@@ -91,28 +92,28 @@
     "plans": [
       {
         "name": "Starter",
-        "price": "29",
+        "price": "49",
         "currency": "€",
-        "period": "/month",
+        "period": "/month TTC",
         "description": "Perfect for small businesses getting started",
-        "features": ["1 Website", "Basic Templates", "SSL Certificate", "Email Support"]
+        "features": ["AI Website Creation", "Hosting + SSL", "Up to 5 pages", "1 domain (1 year)", "Daily backups"]
       },
       {
         "name": "Pro",
-        "price": "59",
+        "price": "99",
         "currency": "€", 
-        "period": "/month",
+        "period": "/month TTC",
         "description": "For growing businesses that need more",
-        "features": ["5 Websites", "Premium Templates", "Custom Domain", "Priority Support", "Analytics"],
+        "features": ["Everything in Starter", "Unlimited pages + blog", "AI Copilot", "SEO & Analytics", "Priority support"],
         "popular": true
       },
       {
-        "name": "Business",
-        "price": "99",
-        "currency": "€",
-        "period": "/month", 
-        "description": "For agencies and large businesses",
-        "features": ["Unlimited Websites", "White Label", "API Access", "24/7 Phone Support", "Advanced Analytics"]
+        "name": "Custom",
+        "price": "Contact",
+        "currency": "",
+        "period": "us", 
+        "description": "For agencies with advanced needs",
+        "features": ["Multi-site solutions", "Advanced integrations", "Dedicated onboarding"]
       }
     ]
   },
@@ -142,9 +143,13 @@
     ]
   },
   "ctaBanner": {
-    "title": "Ready to build your website?",
+    "title": "Launch your site today. Risk-free.",
     "subtitle": "Join thousands of businesses that trust Naveeg for their online presence",
-    "button": "Start Building Now",
-    "helper": "No credit card required • 14-day free trial"
+    "button": "Start Free Trial",
+    "helper": "7-day free trial • Cancel anytime • No credit card required"
+  },
+  "trust": {
+    "quote": "If you can send an email, you can manage your website with Naveeg.",
+    "badges": ["GDPR compliant", "SSL secure", "Cancel anytime"]
   }
 }

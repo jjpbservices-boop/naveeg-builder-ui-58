@@ -9,6 +9,8 @@ import Gallery from '@/pages/Gallery';
 import FAQ from '@/pages/FAQ';
 import Contact from '@/pages/Contact';
 import Legal from '@/pages/Legal';
+import Blog from '@/pages/Blog';
+import HowItWorks from '@/pages/HowItWorks';
 import Describe from '@/pages/Describe';
 import Brief from '@/pages/Brief';
 import Design from '@/pages/Design';
@@ -79,6 +81,18 @@ const legalRoute = createRoute({
   getParentRoute: () => layoutRoute,
   path: '/legal',
   component: Legal,
+});
+
+const blogRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/blog',
+  component: Blog,
+});
+
+const howItWorksRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/how-it-works',
+  component: HowItWorks,
 });
 
 // Onboarding routes
@@ -183,6 +197,8 @@ const routeTree = rootRoute.addChildren([
     faqRoute,
     contactRoute,
     legalRoute,
+    blogRoute,
+    howItWorksRoute,
     onboardingBriefRoute,
     onboardingDesignRoute,
     describeRoute,

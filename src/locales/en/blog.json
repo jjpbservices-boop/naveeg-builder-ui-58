@@ -1,0 +1,70 @@
+{
+  "title": "Resources for small businesses",
+  "subtitle": "Expert tips and guides to help your business succeed online",
+  "featured": {
+    "title": "Featured Articles",
+    "subtitle": "Our most popular resources for entrepreneurs"
+  },
+  "categories": {
+    "all": "All",
+    "website": "Website Tips",
+    "seo": "SEO & Marketing", 
+    "business": "Business Growth",
+    "legal": "Legal & Compliance"
+  },
+  "articles": [
+    {
+      "id": 1,
+      "title": "How to launch a website without a developer",
+      "excerpt": "Step-by-step guide to getting your business online quickly and affordably using AI-powered tools.",
+      "category": "website",
+      "readTime": "5 min read",
+      "featured": true
+    },
+    {
+      "id": 2,
+      "title": "GDPR checklist for SMBs",
+      "excerpt": "Essential compliance steps every small business needs to take to protect customer data and avoid fines.",
+      "category": "legal",
+      "readTime": "8 min read",
+      "featured": true
+    },
+    {
+      "id": 3,
+      "title": "Local SEO basics",
+      "excerpt": "Simple strategies to help local customers find your business online and drive more foot traffic.",
+      "category": "seo",
+      "readTime": "6 min read",
+      "featured": true
+    },
+    {
+      "id": 4,
+      "title": "Automating customer follow-ups",
+      "excerpt": "Set up automated email sequences to nurture leads and keep customers engaged without manual work.",
+      "category": "business",
+      "readTime": "7 min read",
+      "featured": false
+    },
+    {
+      "id": 5,
+      "title": "Website security essentials",
+      "excerpt": "Protect your business and customers with these crucial security measures every website needs.",
+      "category": "website",
+      "readTime": "5 min read",
+      "featured": false
+    },
+    {
+      "id": 6,
+      "title": "Converting visitors to customers",
+      "excerpt": "Proven tactics to turn website visitors into paying customers with better design and copy.",
+      "category": "business",
+      "readTime": "9 min read",
+      "featured": false
+    }
+  ],
+  "cta": {
+    "title": "Ready to build your website?",
+    "subtitle": "Join thousands of businesses using Naveeg",
+    "button": "Start Free Trial"
+  }
+}

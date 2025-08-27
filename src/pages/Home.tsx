@@ -4,6 +4,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, Zap, Smartphone, Search, Shield, Palette, LayoutDashboard, Star, Users, Clock, CheckCircle } from 'lucide-react';
+import TrustBadges from '@/components/TrustBadges';
 import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
 import { HeroAnimation } from '@/components/HeroAnimation';
 
@@ -35,7 +36,10 @@ const Home: React.FC = () => {
     search: Search,
     shield: Shield,
     palette: Palette,
-    layout: LayoutDashboard
+    layout: LayoutDashboard,
+    database: Users, // Using Users as database icon placeholder
+    'trending-up': Star, // Using Star as trending icon placeholder
+    headphones: Clock // Using Clock as headphones icon placeholder
   };
 
   return (
@@ -69,7 +73,7 @@ const Home: React.FC = () => {
                   <Button
                     type="submit"
                     size="lg"
-                    className="h-11 px-6 bg-gradient-primary hover:bg-primary-hover text-white font-semibold rounded-xl touch-target whitespace-nowrap"
+                    className="h-11 px-6 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl touch-target whitespace-nowrap"
                     disabled={!businessInput.trim()}
                   >
                     {t('hero.ctaButton')}
@@ -78,25 +82,21 @@ const Home: React.FC = () => {
                 </form>
               </div>
               
-              <p className="text-sm text-muted-foreground mb-6">
-                {t('hero.helper')}
-              </p>
+              <div className="mb-6">
+                <Button 
+                  variant="outline" 
+                  className="mr-4 mb-3 sm:mb-0"
+                  onClick={() => navigate({ to: '/gallery' })}
+                >
+                  {t('hero.secondaryButton')}
+                </Button>
+              </div>
+              
+              <TrustBadges className="mb-6" />
             </div>
           </div>
         </div>
 
-        {/* Trial Banner - Modern Design */}
-        <div className="relative z-10 px-4 pb-4">
-          <div className="container mx-auto">
-            <div className="max-w-2xl mx-auto">
-              <div className="bg-card/90 dark:bg-card/95 border border-border/50 rounded-xl p-4 text-center shadow-sm">
-                <p className="text-sm font-medium text-foreground">
-                  {t('trialBanner.text')}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Social Proof - Compact */}
         <div className="relative z-10 pb-6">
@@ -176,6 +176,18 @@ const Home: React.FC = () => {
               </div>
             );
           })}
+        </div>
+      </section>
+
+      {/* Trust Section */}
+      <section className="bg-muted py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <blockquote className="text-2xl md:text-3xl font-medium text-foreground mb-8 font-sansation">
+              "{t('trust.quote')}"
+            </blockquote>
+            <TrustBadges />
+          </div>
         </div>
       </section>
 
@@ -334,7 +346,7 @@ const Home: React.FC = () => {
 
       {/* CTA Banner */}
       <section className="container mx-auto px-4 py-16">
-        <div className="bg-gradient-primary rounded-3xl p-8 md:p-12 text-center text-white">
+        <div className="bg-primary rounded-3xl p-8 md:p-12 text-center text-white">
           <h2 className="font-sansation text-3xl md:text-4xl font-bold mb-4">
             {t('ctaBanner.title')}
           </h2>
@@ -343,7 +355,7 @@ const Home: React.FC = () => {
           </p>
           <Button 
             size="lg" 
-            className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 touch-target"
+            className="bg-white text-primary hover:bg-white/90 font-semibold px-8 touch-target"
             onClick={handleStartOnboarding}
           >
             {t('ctaBanner.button')}

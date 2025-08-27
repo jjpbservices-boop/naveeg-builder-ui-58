@@ -10,7 +10,7 @@ const Pricing: React.FC = () => {
   const { t, i18n } = useTranslation('pricing');
   const [isAnnual, setIsAnnual] = useState(false);
 
-  const plans = ['starter', 'pro', 'business'];
+  const plans = ['starter', 'pro', 'custom'];
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat(i18n.language, {
