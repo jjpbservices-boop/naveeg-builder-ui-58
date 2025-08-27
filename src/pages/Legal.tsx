@@ -20,7 +20,7 @@ const Legal: React.FC = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="font-syne text-4xl md:text-5xl font-bold text-foreground mb-6">
+          <h1 className="font-sansation text-4xl md:text-5xl font-bold text-foreground mb-6">
             {t('title')}
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -39,7 +39,7 @@ const Legal: React.FC = () => {
             
             <TabsContent value="terms">
               <div className="bg-card rounded-3xl border shadow-soft p-8 md:p-12">
-                <h2 className="font-syne text-3xl font-bold text-foreground mb-4">
+                <h2 className="font-sansation text-3xl font-bold text-foreground mb-4">
                   {t('terms.title')}
                 </h2>
                 <p className="text-muted-foreground mb-8">
@@ -86,7 +86,7 @@ const Legal: React.FC = () => {
             
             <TabsContent value="privacy">
               <div className="bg-card rounded-3xl border shadow-soft p-8 md:p-12">
-                <h2 className="font-syne text-3xl font-bold text-foreground mb-4">
+                <h2 className="font-sansation text-3xl font-bold text-foreground mb-4">
                   {t('privacy.title')}
                 </h2>
                 <p className="text-muted-foreground mb-8">
@@ -133,7 +133,7 @@ const Legal: React.FC = () => {
             
             <TabsContent value="cookies">
               <div className="bg-card rounded-3xl border shadow-soft p-8 md:p-12">
-                <h2 className="font-syne text-3xl font-bold text-foreground mb-4">
+                <h2 className="font-sansation text-3xl font-bold text-foreground mb-4">
                   {t('cookies.title')}
                 </h2>
                 <p className="text-muted-foreground mb-8">

@@ -27,7 +27,7 @@ const Pricing: React.FC = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="font-syne text-4xl md:text-5xl font-bold text-foreground mb-6">
+          <h1 className="font-sansation text-4xl md:text-5xl font-bold text-foreground mb-6">
             {t('title')}
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
@@ -85,7 +85,7 @@ const Pricing: React.FC = () => {
                 )}
                 
                 <div className="text-center mb-8">
-                  <h3 className="font-syne font-bold text-2xl text-foreground mb-2">
+                  <h3 className="font-sansation font-bold text-2xl text-foreground mb-2">
                     {plan.name}
                   </h3>
                   <p className="text-muted-foreground mb-6">
@@ -137,7 +137,7 @@ const Pricing: React.FC = () => {
 
         {/* FAQ Section */}
         <div className="max-w-3xl mx-auto mb-16">
-          <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground text-center mb-8">
+          <h2 className="font-sansation text-3xl md:text-4xl font-bold text-foreground text-center mb-8">
             {t('faq.title')}
           </h2>
           
@@ -161,7 +161,7 @@ const Pricing: React.FC = () => {
 
         {/* Enterprise Section */}
         <div className="bg-card rounded-3xl border shadow-soft p-8 md:p-12 text-center">
-          <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="font-sansation text-3xl md:text-4xl font-bold text-foreground mb-4">
             {t('enterprise.title')}
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">

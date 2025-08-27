@@ -88,7 +88,7 @@ const Contact: React.FC = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="font-syne text-4xl md:text-5xl font-bold text-foreground mb-6">
+          <h1 className="font-sansation text-4xl md:text-5xl font-bold text-foreground mb-6">
             {t('title')}
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -100,7 +100,7 @@ const Contact: React.FC = () => {
           {/* Contact Form */}
           <div>
             <div className="bg-card rounded-3xl border shadow-soft p-8">
-              <h2 className="font-syne text-2xl font-bold text-foreground mb-6">
+              <h2 className="font-sansation text-2xl font-bold text-foreground mb-6">
                 {t('form.title')}
               </h2>
               
@@ -205,7 +205,7 @@ const Contact: React.FC = () => {
           <div className="space-y-8">
             {/* Contact Information */}
             <div className="bg-card rounded-3xl border shadow-soft p-8">
-              <h2 className="font-syne text-2xl font-bold text-foreground mb-6">
+              <h2 className="font-sansation text-2xl font-bold text-foreground mb-6">
                 {t('info.title')}
               </h2>
               
@@ -235,7 +235,7 @@ const Contact: React.FC = () => {
 
             {/* Support Resources */}
             <div className="bg-card rounded-3xl border shadow-soft p-8">
-              <h2 className="font-syne text-2xl font-bold text-foreground mb-6">
+              <h2 className="font-sansation text-2xl font-bold text-foreground mb-6">
                 {t('support.title')}
               </h2>
               <p className="text-muted-foreground mb-6">

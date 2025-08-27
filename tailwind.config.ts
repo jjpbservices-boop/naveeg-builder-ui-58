@@ -83,11 +83,14 @@ export default {
 				}
 			},
 			fontFamily: {
-				sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+				sans: ['Raleway', 'system-ui', '-apple-system', 'sans-serif'],
+				body: ['Raleway', 'system-ui', '-apple-system', 'sans-serif'],
+				heading: ['Sansation', 'system-ui', '-apple-system', 'sans-serif'],
+				sansation: ['Sansation', 'system-ui', '-apple-system', 'sans-serif'],
+				raleway: ['Raleway', 'system-ui', '-apple-system', 'sans-serif'],
 				inter: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
 				lato: ['Lato', 'system-ui', '-apple-system', 'sans-serif'],
 				roboto: ['Roboto', 'system-ui', '-apple-system', 'sans-serif'],
-				syne: ['Syne', 'system-ui', '-apple-system', 'sans-serif'],
 				playfair: ['Playfair Display', 'Georgia', 'serif'],
 				montserrat: ['Montserrat', 'system-ui', '-apple-system', 'sans-serif']
 			},

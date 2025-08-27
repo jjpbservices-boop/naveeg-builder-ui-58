@@ -29,7 +29,7 @@ const Footer: React.FC = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="font-syne font-semibold text-foreground mb-4">{t('footer.product')}</h3>
+            <h3 className="font-sansation font-semibold text-foreground mb-4">{t('footer.product')}</h3>
             <ul className="space-y-2">
               <li><a href="/features" className="text-muted-foreground hover:text-foreground transition-colors">{t('footer.features')}</a></li>
               <li><a href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">{t('footer.pricing')}</a></li>
@@ -38,7 +38,7 @@ const Footer: React.FC = () => {
           </div>
           
           <div>
-            <h3 className="font-syne font-semibold text-foreground mb-4">{t('footer.company')}</h3>
+            <h3 className="font-sansation font-semibold text-foreground mb-4">{t('footer.company')}</h3>
             <ul className="space-y-2">
               <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t('footer.about')}</a></li>
               <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t('footer.blog')}</a></li>
@@ -47,7 +47,7 @@ const Footer: React.FC = () => {
           </div>
           
           <div>
-            <h3 className="font-syne font-semibold text-foreground mb-4">{t('footer.resources')}</h3>
+            <h3 className="font-sansation font-semibold text-foreground mb-4">{t('footer.resources')}</h3>
             <ul className="space-y-2">
               <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t('footer.help')}</a></li>
               <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">{t('footer.documentation')}</a></li>
@@ -56,7 +56,7 @@ const Footer: React.FC = () => {
           </div>
           
           <div>
-            <h3 className="font-syne font-semibold text-foreground mb-4">{t('footer.legal')}</h3>
+            <h3 className="font-sansation font-semibold text-foreground mb-4">{t('footer.legal')}</h3>
             <ul className="space-y-2">
               <li><a href="/legal" className="text-muted-foreground hover:text-foreground transition-colors">{t('footer.privacy')}</a></li>
               <li><a href="/legal" className="text-muted-foreground hover:text-foreground transition-colors">{t('footer.terms')}</a></li>

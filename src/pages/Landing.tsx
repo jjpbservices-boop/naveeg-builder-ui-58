@@ -60,7 +60,7 @@ const Landing: React.FC = () => {
           </div>
 
           {/* Hero Title */}
-          <h1 className="font-syne text-4xl md:text-6xl font-bold tracking-tight text-foreground mb-6 animate-slide-up">
+          <h1 className="font-sansation text-4xl md:text-6xl font-bold tracking-tight text-foreground mb-6 animate-slide-up">
             {t('heroTitle')}
           </h1>
 
@@ -106,7 +106,7 @@ const Landing: React.FC = () => {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-light rounded-2xl mb-4">
                 <feature.icon className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-syne font-semibold text-lg text-foreground mb-2">
+              <h3 className="font-sansation font-semibold text-lg text-foreground mb-2">
                 {feature.title}
               </h3>
               <p className="text-muted-foreground">

@@ -41,7 +41,7 @@ const Features: React.FC = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="font-syne text-4xl md:text-5xl font-bold text-foreground mb-6">
+          <h1 className="font-sansation text-4xl md:text-5xl font-bold text-foreground mb-6">
             {t('title')}
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -59,7 +59,7 @@ const Features: React.FC = () => {
               <div className="w-12 h-12 bg-primary-light rounded-2xl flex items-center justify-center mb-4">
                 <CheckCircle className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-syne font-semibold text-xl text-foreground mb-3">
+              <h3 className="font-sansation font-semibold text-xl text-foreground mb-3">
                 {t(`features.${key}.title`)}
               </h3>
               <p className="text-muted-foreground">
@@ -72,7 +72,7 @@ const Features: React.FC = () => {
         {/* Comparison Table */}
         <div className="mb-16">
           <div className="text-center mb-12">
-            <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <h2 className="font-sansation text-3xl md:text-4xl font-bold text-foreground mb-4">
               {t('comparison.title')}
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -85,11 +85,11 @@ const Features: React.FC = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b bg-muted/50">
-                    <th className="text-left p-4 font-syne font-semibold text-foreground">
+                    <th className="text-left p-4 font-sansation font-semibold text-foreground">
                       Features
                     </th>
                     {competitors.map((competitor, index) => (
-                      <th key={competitor} className="text-center p-4 font-syne font-semibold text-foreground">
+                      <th key={competitor} className="text-center p-4 font-sansation font-semibold text-foreground">
                         <div className={`${index === 0 ? 'text-primary' : ''}`}>
                           {competitor}
                         </div>
@@ -130,7 +130,7 @@ const Features: React.FC = () => {
         {/* CTA Section */}
         <div className="text-center">
           <div className="bg-gradient-primary rounded-3xl p-8 md:p-12 text-white">
-            <h2 className="font-syne text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="font-sansation text-3xl md:text-4xl font-bold mb-4">
               {t('cta.title', { defaultValue: 'Ready to experience the difference?' })}
             </h2>
             <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">

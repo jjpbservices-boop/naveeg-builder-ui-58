@@ -141,7 +141,7 @@ const Generate: React.FC = () => {
             <div className="w-16 h-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mx-auto mb-6">
               <AlertCircle className="h-8 w-8" />
             </div>
-            <h1 className="font-syne text-2xl md:text-3xl font-bold text-foreground mb-4">Generation Failed</h1>
+            <h1 className="font-sansation text-2xl md:text-3xl font-bold text-foreground mb-4">Generation Failed</h1>
             <p className="text-muted-foreground mb-6">{error || 'Something went wrong.'}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button variant="outline" onClick={handleGoBack} className="rounded-2xl">Go Back to Design</Button>
@@ -157,7 +157,7 @@ const Generate: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center py-8">
       <div className="container mx-auto px-4 max-w-2xl text-center">
         <div className="animate-slide-up">
-          <h1 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-6">Building Your Website</h1>
+          <h1 className="font-sansation text-3xl md:text-4xl font-bold text-foreground mb-6">Building Your Website</h1>
           <p className="text-lg text-muted-foreground mb-8">Please wait while we create your professional website.</p>
           <div className="bg-card rounded-3xl border shadow-soft p-8">
             <div className="mb-8">

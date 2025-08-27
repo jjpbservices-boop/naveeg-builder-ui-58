@@ -16,7 +16,7 @@ const FAQ: React.FC = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="font-syne text-4xl md:text-5xl font-bold text-foreground mb-6">
+          <h1 className="font-sansation text-4xl md:text-5xl font-bold text-foreground mb-6">
             {t('title')}
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -33,7 +33,7 @@ const FAQ: React.FC = () => {
                 value={`item-${index}`}
                 className="border rounded-2xl bg-card shadow-soft px-6"
               >
-                <AccordionTrigger className="text-left font-syne font-semibold text-lg py-6 hover:no-underline">
+                <AccordionTrigger className="text-left font-sansation font-semibold text-lg py-6 hover:no-underline">
                   {t(`questions.${index}.question`)}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground text-base leading-relaxed pb-6">
@@ -51,7 +51,7 @@ const FAQ: React.FC = () => {
               <MessageCircle className="h-8 w-8 text-primary" />
             </div>
             
-            <h2 className="font-syne text-2xl md:text-3xl font-bold text-foreground mb-4">
+            <h2 className="font-sansation text-2xl md:text-3xl font-bold text-foreground mb-4">
               {t('stillHaveQuestions.title')}
             </h2>
             <p className="text-muted-foreground mb-8 text-lg">

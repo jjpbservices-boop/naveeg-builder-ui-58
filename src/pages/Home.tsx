@@ -41,14 +41,14 @@ const Home: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Full-Screen Hero Section with Animation */}
-      <section className="relative h-screen overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background flex flex-col">
+      <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background flex flex-col">
         <HeroAnimation />
         
         {/* Main Hero Content - Centered */}
         <div className="flex-1 flex items-center justify-center relative z-10">
           <div className="container mx-auto px-4 py-8">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="font-syne text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground mb-4 leading-tight">
+              <h1 className="font-sansation text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground mb-4 leading-tight">
                 {t('hero.title')}
               </h1>
               
@@ -118,7 +118,7 @@ const Home: React.FC = () => {
       {/* How It Works */}
       <section className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="font-sansation text-3xl md:text-4xl font-bold text-foreground mb-4">
             {t('howItWorks.title')}
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -129,14 +129,10 @@ const Home: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
           {[0, 1, 2].map((index) => (
             <div key={index} className="text-center">
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
-                index === 0 ? 'bg-chart-1/10' : index === 1 ? 'bg-chart-2/10' : 'bg-chart-3/10'
-              }`}>
-                <span className={`text-2xl font-bold ${
-                  index === 0 ? 'text-chart-1' : index === 1 ? 'text-chart-2' : 'text-chart-3'
-                }`}>{index + 1}</span>
+              <div className="w-16 h-16 rounded-2xl bg-muted border flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-foreground">{index + 1}</span>
               </div>
-              <h3 className="font-syne font-semibold text-xl text-foreground mb-2">
+              <h3 className="font-sansation font-semibold text-xl text-foreground mb-2">
                 {t(`howItWorks.steps.${index}.title`)}
               </h3>
               <p className="text-muted-foreground">
@@ -150,7 +146,7 @@ const Home: React.FC = () => {
       {/* Features */}
       <section className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="font-sansation text-3xl md:text-4xl font-bold text-foreground mb-4">
             {t('features.title')}
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -168,20 +164,10 @@ const Home: React.FC = () => {
                 key={index}
                 className="p-6 rounded-2xl bg-card border shadow-soft hover:shadow-medium transition-all duration-300"
               >
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${
-                  index % 5 === 0 ? 'bg-chart-1/10' : 
-                  index % 5 === 1 ? 'bg-chart-2/10' : 
-                  index % 5 === 2 ? 'bg-chart-3/10' : 
-                  index % 5 === 3 ? 'bg-chart-4/10' : 'bg-chart-5/10'
-                }`}>
-                  <IconComponent className={`h-6 w-6 ${
-                    index % 5 === 0 ? 'text-chart-1' : 
-                    index % 5 === 1 ? 'text-chart-2' : 
-                    index % 5 === 2 ? 'text-chart-3' : 
-                    index % 5 === 3 ? 'text-chart-4' : 'text-chart-5'
-                  }`} />
+                <div className="w-12 h-12 rounded-2xl bg-muted border flex items-center justify-center mb-4">
+                  <IconComponent className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <h3 className="font-syne font-semibold text-xl text-foreground mb-2">
+                <h3 className="font-sansation font-semibold text-xl text-foreground mb-2">
                   {t(`features.cards.${index}.title`)}
                 </h3>
                 <p className="text-muted-foreground">
@@ -196,7 +182,7 @@ const Home: React.FC = () => {
       {/* Why Naveeg */}
       <section className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="font-sansation text-3xl md:text-4xl font-bold text-foreground mb-4">
             {t('whyNaveeg.title')}
           </h2>
         </div>
@@ -204,7 +190,7 @@ const Home: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {[0, 1, 2].map((index) => (
             <div key={index} className="text-center p-6">
-              <h3 className="font-syne font-semibold text-xl text-foreground mb-4">
+              <h3 className="font-sansation font-semibold text-xl text-foreground mb-4">
                 {t(`whyNaveeg.blocks.${index}.title`)}
               </h3>
               <p className="text-muted-foreground">
@@ -218,7 +204,7 @@ const Home: React.FC = () => {
       {/* Pricing Preview */}
       <section className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="font-sansation text-3xl md:text-4xl font-bold text-foreground mb-4">
             {t('pricing.title')}
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
@@ -244,7 +230,7 @@ const Home: React.FC = () => {
                   </div>
                 )}
                 <div className="text-center mb-6">
-                  <h3 className="font-syne font-semibold text-xl text-foreground mb-2">
+                  <h3 className="font-sansation font-semibold text-xl text-foreground mb-2">
                     {plan.name}
                   </h3>
                   <div className="flex items-center justify-center mb-2">
@@ -285,7 +271,7 @@ const Home: React.FC = () => {
       {/* Gallery Preview */}
       <section className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="font-sansation text-3xl md:text-4xl font-bold text-foreground mb-4">
             {t('gallery.title')}
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
@@ -318,7 +304,7 @@ const Home: React.FC = () => {
       {/* FAQ Preview */}
       <section className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h2 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="font-sansation text-3xl md:text-4xl font-bold text-foreground mb-4">
             {t('faq.title')}
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
@@ -349,7 +335,7 @@ const Home: React.FC = () => {
       {/* CTA Banner */}
       <section className="container mx-auto px-4 py-16">
         <div className="bg-gradient-primary rounded-3xl p-8 md:p-12 text-center text-white">
-          <h2 className="font-syne text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="font-sansation text-3xl md:text-4xl font-bold mb-4">
             {t('ctaBanner.title')}
           </h2>
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">

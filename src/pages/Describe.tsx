@@ -73,7 +73,7 @@ const Describe: React.FC = () => {
     <div className="min-h-screen py-8">
       <div className="container mx-auto px-4 max-w-2xl">
         <div className="text-center mb-8 animate-slide-up">
-          <h1 className="font-syne text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h1 className="font-sansation text-3xl md:text-4xl font-bold text-foreground mb-4">
             {t('describeTitle')}
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">

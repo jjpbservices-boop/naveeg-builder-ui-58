@@ -35,7 +35,7 @@ const Gallery: React.FC = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="font-syne text-4xl md:text-5xl font-bold text-foreground mb-6">
+          <h1 className="font-sansation text-4xl md:text-5xl font-bold text-foreground mb-6">
             {t('title')}
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -105,7 +105,7 @@ const Gallery: React.FC = () => {
               {/* Content */}
               <div className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-syne font-semibold text-xl text-foreground">
+                  <h3 className="font-sansation font-semibold text-xl text-foreground">
                     {site.name}
                   </h3>
                   <Badge variant="secondary" className="text-xs">
@@ -123,7 +123,7 @@ const Gallery: React.FC = () => {
         {/* CTA Section */}
         <div className="text-center">
           <div className="bg-gradient-primary rounded-3xl p-8 md:p-12 text-white">
-            <h2 className="font-syne text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="font-sansation text-3xl md:text-4xl font-bold mb-4">
               {t('cta.title')}
             </h2>
             <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
