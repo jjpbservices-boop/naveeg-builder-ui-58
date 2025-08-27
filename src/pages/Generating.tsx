@@ -249,7 +249,7 @@ export default function Generating() {
   if (error) {
     return (
       <div className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-card/90 backdrop-blur-sm border shadow-soft rounded-lg p-6">
+        <div className="w-full max-w-md bg-muted backdrop-blur-sm border shadow-soft rounded-lg p-6">
           <h2 className="text-xl font-bold text-destructive mb-4">Generation Failed</h2>
           <p className="text-muted-foreground mb-6">{error}</p>
           <div className="flex gap-2">

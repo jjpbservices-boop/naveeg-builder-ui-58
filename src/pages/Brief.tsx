@@ -220,7 +220,7 @@ export default function Brief() {
             </p>
           </div>
 
-          <Card className="bg-card/90 backdrop-blur-sm border shadow-soft rounded-2xl sm:rounded-3xl">
+          <Card className="bg-muted backdrop-blur-sm border shadow-soft rounded-2xl sm:rounded-3xl">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg sm:text-xl">Business Information</CardTitle>
             </CardHeader>

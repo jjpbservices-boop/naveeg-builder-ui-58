@@ -263,7 +263,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* 5. Quote Block */}
-      <section className="py-24 bg-card/30">
+      <section className="py-24 bg-muted/20">
         <div className="container mx-auto px-4">
           <ScrollReveal>
             <div className="max-w-5xl mx-auto text-center">

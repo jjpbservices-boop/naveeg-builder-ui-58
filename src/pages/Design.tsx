@@ -144,7 +144,7 @@ export default function Design() {
             {/* Design Controls */}
             <div className="space-y-4 sm:space-y-6">
               {/* Colors */}
-              <Card className="bg-card/90 backdrop-blur-sm border shadow-soft rounded-2xl sm:rounded-3xl">
+               <Card className="bg-muted backdrop-blur-sm border shadow-soft rounded-2xl sm:rounded-3xl">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                     <Palette className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -217,7 +217,7 @@ export default function Design() {
               </Card>
 
               {/* Typography */}
-              <Card className="bg-card/90 backdrop-blur-sm border shadow-soft rounded-2xl sm:rounded-3xl">
+              <Card className="bg-muted backdrop-blur-sm border shadow-soft rounded-2xl sm:rounded-3xl">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                     <Type className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -282,7 +282,7 @@ export default function Design() {
 
             {/* Preview */}
             <div className="space-y-6">
-              <Card className="bg-card/90 backdrop-blur-sm border shadow-soft">
+              <Card className="bg-muted backdrop-blur-sm border shadow-soft">
                 <CardHeader>
                   <CardTitle>Preview</CardTitle>
                 </CardHeader>
