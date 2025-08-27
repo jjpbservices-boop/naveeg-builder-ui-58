@@ -54,11 +54,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   // Check if current route is an onboarding page
   const currentPath = window.location.pathname;
-  const isOnboardingPage = currentPath.includes('/brief') || 
-                          currentPath.includes('/design') || 
+  const isOnboardingPage = currentPath.includes('/onboarding') || 
                           currentPath.includes('/generating') || 
                           currentPath.includes('/generate') || 
-                          currentPath.includes('/ready');
+                          currentPath.includes('/ready') ||
+                          currentPath.includes('/describe');
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -242,7 +242,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Main Content */}
       <main className={`flex-1 ${isOnboardingPage ? 'bg-gradient-to-br from-background via-muted/30 to-background pt-14 sm:pt-16 relative' : ''}`}>
-        {isOnboardingPage && <HeroAnimation />}
+        {isOnboardingPage && (
+          <div className="absolute inset-0 w-full h-full">
+            <HeroAnimation />
+          </div>
+        )}
         <div className={isOnboardingPage ? 'relative z-10' : ''}>
           {children}
         </div>

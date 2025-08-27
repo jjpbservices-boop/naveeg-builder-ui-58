@@ -7,6 +7,7 @@ export const useHeroAnimation = (canvasId: string) => {
       console.warn(`Canvas with id "${canvasId}" not found`)
       return
     }
+    console.log('Hero animation initializing on canvas:', canvasId)
     const ctx = canvas.getContext('2d', { alpha: true })
     if (!ctx) {
       console.warn('Unable to get 2d context from canvas')
@@ -80,6 +81,7 @@ export const useHeroAnimation = (canvasId: string) => {
         console.warn('Canvas parent element not found')
         return
       }
+      console.log('Canvas resizing - parent dimensions:', parent.getBoundingClientRect())
       const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2))
       const rect = parent.getBoundingClientRect()
       w = Math.max(1, rect.width | 0)
