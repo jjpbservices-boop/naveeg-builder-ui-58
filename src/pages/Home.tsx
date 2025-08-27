@@ -348,19 +348,6 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* 7. Trusted by... */}
-      <section className="py-24 bg-muted/20">
-        <div className="container mx-auto px-4">
-          <ScrollReveal>
-            <div className="max-w-5xl mx-auto text-center">
-              <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-12">
-                Trusted by Businesses Worldwide
-              </h2>
-              <TrustBadges />
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
 
       {/* Testimonial Carousel */}
       <TestimonialCarousel />
