@@ -148,9 +148,9 @@ const Home: React.FC = () => {
 
                       {/* Clean Icon */}
                       <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-6 flex items-center justify-center">
-                        {step.icon === "MessageSquare" && <MessageSquare className="w-12 h-12 md:w-16 md:h-16 text-primary" />}
-                        {step.icon === "Sparkles" && <Sparkles className="w-12 h-12 md:w-16 md:h-16 text-primary" />}
-                        {step.icon === "Rocket" && <Rocket className="w-12 h-12 md:w-16 md:h-16 text-primary" />}
+                        {step.icon === "MessageSquare" && <MessageSquare className="w-12 h-12 md:w-16 md:h-16 text-muted-foreground" />}
+                        {step.icon === "Sparkles" && <Sparkles className="w-12 h-12 md:w-16 md:h-16 text-muted-foreground" />}
+                        {step.icon === "Rocket" && <Rocket className="w-12 h-12 md:w-16 md:h-16 text-muted-foreground" />}
                       </div>
                       
                       <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-4">
@@ -246,7 +246,7 @@ const Home: React.FC = () => {
                 >
                   <div className="group p-8 rounded-3xl bg-card border shadow-soft hover:shadow-medium hover:scale-105 hover:border-primary/30 transition-all duration-500 h-full">
                     <div className="w-16 h-16 flex items-center justify-center mb-6">
-                      <IconComponent className="h-12 w-12 text-primary" />
+                      <IconComponent className="h-12 w-12 text-muted-foreground" />
                     </div>
                     <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-4">
                       {t(`features.cards.${index}.title`)}
@@ -326,7 +326,7 @@ const Home: React.FC = () => {
               >
                 <div className="group cursor-pointer hover:scale-105 transition-transform duration-300">
                   <div className="aspect-video bg-muted rounded-3xl mb-6 relative overflow-hidden shadow-soft group-hover:shadow-medium transition-shadow duration-300">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-muted/20 to-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="text-muted-foreground text-lg font-medium">Website Preview</span>
                     </div>
@@ -396,7 +396,7 @@ const Home: React.FC = () => {
                     <ul className="space-y-4 mb-8">
                       {plan.features?.map((feature: string, fIndex: number) => (
                         <li key={fIndex} className="flex items-start">
-                          <CheckCircle className="h-6 w-6 text-primary mr-3 flex-shrink-0 mt-0.5" />
+                          <CheckCircle className="h-6 w-6 text-muted-foreground mr-3 flex-shrink-0 mt-0.5" />
                           <span className="text-foreground text-lg">{feature}</span>
                         </li>
                       ))}
