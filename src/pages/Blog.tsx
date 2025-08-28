@@ -109,7 +109,7 @@ const Blog: React.FC = () => {
                 <p className="text-muted-foreground mb-4">
                   {article.excerpt}
                 </p>
-                <Button variant="ghost" size="sm" className="p-0 h-auto font-medium group-hover:text-primary">
+                <Button variant="ghost" size="xs" className="font-medium group-hover:text-primary">
                   Read More
                   <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
                 </Button>

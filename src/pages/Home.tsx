@@ -62,17 +62,17 @@ const Home: React.FC = () => {
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
                 <Button
-                  size="lg"
-                  className="h-12 px-8 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl touch-target text-base animate-pulse-glow"
+                  size="xl"
+                  className="bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl touch-target animate-pulse-glow"
                   onClick={handleStartOnboarding}
                 >
                   Create Your Website
-                  <ArrowRight className="ml-2 h-6 w-6" />
+                  <ArrowRight className="ml-2" />
                 </Button>
                 <Button 
                   variant="outline" 
-                  size="lg"
-                  className="h-12 px-8 rounded-xl touch-target text-base hover:bg-accent hover:text-accent-foreground hover:scale-105 transition-all duration-200"
+                  size="xl"
+                  className="rounded-xl touch-target hover:bg-accent hover:text-accent-foreground hover:scale-105 transition-all duration-200"
                   onClick={() => navigate({ to: '/gallery' })}
                 >
                   {t('hero.secondaryButton')}
@@ -275,15 +275,15 @@ const Home: React.FC = () => {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
                   <Button 
                     variant="secondary"
-                    size="lg" 
-                    className="px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+                    size="xl" 
+                    className="font-semibold shadow-lg hover:shadow-xl transition-all"
                     onClick={handleStartOnboarding}
                   >
                     Try for Free
                   </Button>
                   <Button 
                     variant="outline" 
-                    size="lg" 
+                    size="xl" 
                     onClick={() => navigate({ to: '/gallery' })}
                   >
                     See Live Demo
@@ -336,7 +336,7 @@ const Home: React.FC = () => {
           
           <ScrollReveal delay={600}>
             <div className="text-center mt-12">
-              <Button variant="outline" size="lg" className="text-sm md:text-base px-6 h-11 hover:bg-accent hover:text-accent-foreground" onClick={() => navigate({ to: '/gallery' })}>
+              <Button variant="outline" size="lg" className="hover:bg-accent hover:text-accent-foreground" onClick={() => navigate({ to: '/gallery' })}>
                 View All Examples
               </Button>
             </div>
@@ -411,7 +411,7 @@ const Home: React.FC = () => {
           
           <ScrollReveal delay={600}>
             <div className="text-center mt-12">
-              <Button variant="outline" size="lg" className="text-sm md:text-base px-6 h-11 hover:bg-accent hover:text-accent-foreground" onClick={() => navigate({ to: '/pricing' })}>
+              <Button variant="outline" size="lg" className="hover:bg-accent hover:text-accent-foreground" onClick={() => navigate({ to: '/pricing' })}>
                 {t('pricing.viewAll')}
               </Button>
             </div>
@@ -450,7 +450,7 @@ const Home: React.FC = () => {
           
           <ScrollReveal delay={600}>
             <div className="text-center mt-12">
-              <Button variant="outline" size="lg" className="text-sm md:text-base px-6 h-11 hover:bg-accent hover:text-accent-foreground" onClick={() => navigate({ to: '/faq' })}>
+              <Button variant="outline" size="lg" className="hover:bg-accent hover:text-accent-foreground" onClick={() => navigate({ to: '/faq' })}>
                 {t('faq.viewAll')}
               </Button>
             </div>

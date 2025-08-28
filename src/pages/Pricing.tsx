@@ -117,11 +117,7 @@ const Pricing: React.FC = () => {
                 </ul>
 
                 <Button 
-                  className={`w-full touch-target ${
-                    plan.popular 
-                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
-                      : 'bg-primary hover:bg-primary/90 text-primary-foreground'
-                  }`}
+                  className="w-full touch-target bg-primary hover:bg-primary/90 text-primary-foreground"
                   size="lg"
                 >
                   {index === 2 ? t('contactSales') : t('getStarted')}

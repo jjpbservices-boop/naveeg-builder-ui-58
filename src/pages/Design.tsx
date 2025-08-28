@@ -243,17 +243,17 @@ export default function Design() {
                   onClick={handleSave}
                   disabled={isSaving}
                   variant="outline"
-                  className="w-full h-10 sm:h-12 text-sm sm:text-base rounded-xl"
+                  className="w-full rounded-xl"
                   size="lg"
                 >
                   {isSaving ? (
                     <>
-                      <Loader2 className="mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin" />
+                      <Loader2 className="mr-2 animate-spin" />
                       Saving...
                     </>
                   ) : (
                     <>
-                      <Save className="mr-2 h-4 sm:h-5 w-4 sm:w-5" />
+                      <Save className="mr-2" />
                       Save
                     </>
                   )}
@@ -262,17 +262,17 @@ export default function Design() {
                 <Button
                   onClick={handleGenerate}
                   disabled={isLoading || !canGenerate}
-                  className="w-full text-sm sm:text-lg py-4 sm:py-6 h-12 sm:h-auto rounded-xl"
-                  size="lg"
+                  className="w-full rounded-xl"
+                  size="xl"
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin" />
+                      <Loader2 className="mr-2 animate-spin" />
                       Generating Website...
                     </>
                   ) : (
                     <>
-                      <Rocket className="mr-2 h-4 sm:h-5 w-4 sm:w-5" />
+                      <Rocket className="mr-2" />
                       Generate Website
                     </>
                   )}

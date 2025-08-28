@@ -98,9 +98,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {/* Language Selector */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-9 px-3">
-                    <Globe className="h-4 w-4 mr-2" />
-                    <span className="text-sm">{currentLanguage.name}</span>
+                  <Button variant="ghost" size="sm">
+                    <Globe className="mr-2" />
+                    <span>{currentLanguage.name}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
@@ -122,17 +122,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {/* Login Button */}
               <Button 
                 variant="ghost" 
-                size="sm" 
+                size="sm-icon" 
                 onClick={handleLoginClick}
-                className="h-9 w-9 p-0"
               >
-                <LogIn className="h-4 w-4" />
+                <LogIn />
               </Button>
 
               {/* Theme Toggle */}
-              <Button variant="ghost" size="sm" onClick={toggleTheme} className="h-9 w-9 p-0">
-                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <Button variant="ghost" size="sm-icon" onClick={toggleTheme}>
+                <Sun className="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               </Button>
 
               {/* CTA Button */}
@@ -140,7 +139,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 onClick={handleGenerateClick}
                 className="bg-primary hover:bg-primary/90 text-white font-semibold"
               >
-                <Sparkles className="h-4 w-4 mr-2" />
+                <Sparkles className="mr-2" />
                 Try Free
               </Button>
             </div>
@@ -148,16 +147,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             {/* Mobile Controls */}
             <div className="flex lg:hidden items-center space-x-2">
               {/* Theme Toggle */}
-              <Button variant="ghost" size="sm" onClick={toggleTheme} className="h-9 w-9 p-0">
-                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <Button variant="ghost" size="sm-icon" onClick={toggleTheme}>
+                <Sun className="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               </Button>
 
               {/* Mobile Menu */}
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
-                    <Menu className="h-5 w-5" />
+                  <Button variant="ghost" size="sm-icon">
+                    <Menu />
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-80">
@@ -218,7 +217,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       variant="outline"
                       className="w-full"
                     >
-                      <LogIn className="h-4 w-4 mr-2" />
+                      <LogIn className="mr-2" />
                       Login
                     </Button>
 
@@ -230,7 +229,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       }}
                       className="w-full bg-primary hover:bg-primary/90 text-white font-semibold"
                     >
-                      <Sparkles className="h-4 w-4 mr-2" />
+                      <Sparkles className="mr-2" />
                       Try Free
                     </Button>
                   </div>

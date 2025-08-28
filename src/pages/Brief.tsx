@@ -252,18 +252,18 @@ export default function Brief() {
                 <Button
                   onClick={handleAnalyze}
                   disabled={isLoading || !business_name?.trim() || !business_description?.trim()}
-                  className="w-full text-sm sm:text-lg py-4 sm:py-6 h-12 sm:h-auto rounded-xl"
-                  size="lg"
+                  className="w-full rounded-xl"
+                  size="xl"
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin" />
+                      <Loader2 className="mr-2 animate-spin" />
                       Analyzing & Creating Structure...
                     </>
                   ) : (
                     <>
                       Analyze & Create Structure
-                      <ChevronRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
+                      <ChevronRight className="ml-2" />
                     </>
                   )}
                 </Button>
@@ -275,11 +275,11 @@ export default function Brief() {
                   </div>
                   <Button
                     onClick={handleNextStep}
-                    className="w-full text-sm sm:text-lg py-4 sm:py-6 h-12 sm:h-auto rounded-xl"
-                    size="lg"
+                    className="w-full rounded-xl"
+                    size="xl"
                   >
                     Continue to Design
-                    <ChevronRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
+                    <ChevronRight className="ml-2" />
                   </Button>
                 </div>
               )}

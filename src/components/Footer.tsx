@@ -72,14 +72,14 @@ const Footer: React.FC = () => {
             <div className="flex items-center space-x-6">
               {/* Social Icons */}
               <div className="flex items-center space-x-4">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Twitter className="h-4 w-4" />
+                <Button variant="ghost" size="xs-icon">
+                  <Twitter />
                 </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Linkedin className="h-4 w-4" />
+                <Button variant="ghost" size="xs-icon">
+                  <Linkedin />
                 </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Github className="h-4 w-4" />
+                <Button variant="ghost" size="xs-icon">
+                  <Github />
                 </Button>
               </div>
 
@@ -92,7 +92,7 @@ const Footer: React.FC = () => {
                     className="touch-target"
                     aria-label={t('footer.languageSelector')}
                   >
-                    <Globe className="h-4 w-4 mr-2" />
+                    <Globe className="mr-2" />
                     {languages.find(lang => lang.code === i18n.language)?.name || 'Language'}
                   </Button>
                 </DropdownMenuTrigger>
