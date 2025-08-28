@@ -99,12 +99,12 @@ const Pricing: React.FC = () => {
                         {typeof price === 'string' ? price : `€${price}`}
                       </span>
                       {typeof price !== 'string' && (
-                        <span className="text-muted-foreground ml-2">/month TTC</span>
+                        <span className="text-muted-foreground ml-2">/month</span>
                       )}
                     </div>
                     {isAnnual && typeof price !== 'string' && (
                       <p className="text-sm text-muted-foreground mt-2">
-                        Billed annually
+                        €{price * 12} billed annually
                       </p>
                     )}
                   </div>
@@ -127,9 +127,11 @@ const Pricing: React.FC = () => {
                   {index === 2 ? t('contactSales') : t('getStarted')}
                 </Button>
                 
-                <p className="text-center text-sm text-muted-foreground mt-4">
-                  {t('noCredit')}
-                </p>
+                {index !== 2 && (
+                  <p className="text-center text-sm text-muted-foreground mt-4">
+                    {t('noCredit')}
+                  </p>
+                )}
               </div>
             );
           })}
