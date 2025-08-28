@@ -161,27 +161,30 @@ const Pricing: React.FC = () => {
           </Accordion>
         </div>
 
-        {/* Enterprise Section */}
-        <div className="bg-card rounded-3xl border shadow-soft p-8 md:p-12 text-center">
-          <h2 className="font-sansation text-3xl md:text-4xl font-bold text-foreground mb-4">
-            {t('enterprise.title')}
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            {t('enterprise.subtitle')}
-          </p>
+        {/* Final CTA Section */}
+        <div className="bg-gradient-to-br from-primary via-primary to-primary/90 rounded-3xl p-12 md:p-16 text-center text-white shadow-2xl overflow-hidden relative">
+          {/* Background decoration */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24" />
           
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-            {['Custom pricing', 'Dedicated infrastructure', 'Advanced security', 'Priority support', 'Custom integrations'].map((feature, index) => (
-              <div key={index} className="flex items-center justify-center">
-                <CheckCircle className="h-5 w-5 text-primary mr-2" />
-                <span className="text-foreground">{feature}</span>
-              </div>
-            ))}
+          <div className="relative z-10">
+            <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold mb-6 leading-tight">
+              Ready to Build Your Dream Website?
+            </h2>
+            <p className="text-lg md:text-xl mb-10 opacity-95 max-w-3xl mx-auto leading-relaxed">
+              Join thousands of businesses who've transformed their online presence with Naveeg. Start building today!
+            </p>
+            <Button 
+              size="lg" 
+              variant="secondary"
+              className="font-semibold px-10 h-14 text-lg rounded-xl hover:scale-105 transition-transform duration-200 shadow-lg"
+            >
+              Start Free Trial
+            </Button>
+            <p className="text-sm md:text-base mt-6 opacity-80">
+              7-day free trial • Cancel anytime • VAT included
+            </p>
           </div>
-          
-          <Button size="lg" className="bg-gradient-primary hover:bg-primary-hover text-white">
-            {t('enterprise.contact')}
-          </Button>
         </div>
       </div>
     </div>
