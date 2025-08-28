@@ -5,29 +5,32 @@
   "annually": "Annually",
   "save": "2 months free",
   "mostPopular": "Most Popular",
-  "getStarted": "Get Started",
+  "getStarted": "Start Free Trial",
   "contactSales": "Contact Sales",
   "freeTrial": "7-day free trial",
-  "noCredit": "Cancel anytime • VAT included",
+  "noCredit": "7-day free trial · Cancel anytime · VAT included",
   "plans": {
     "starter": {
       "name": "Starter",
-      "description": "Perfect for small businesses and personal projects",
+      "description": "Perfect for small businesses getting started",
       "price": {
         "monthly": 49,
         "annually": 41
       },
       "features": [
-        "AI Website Creation",
-        "Hosting + SSL",
+        "AI-generated website creation",
+        "Hosting + SSL included",
         "Up to 5 pages",
-        "1 domain (1 year)",
-        "Daily backups"
+        "1 free domain (first year)",
+        "Daily backups & 1-click restore",
+        "GDPR-compliant EU hosting",
+        "Intuitive dashboard (edit text & images)",
+        "Email/chat support (business hours)"
       ]
     },
     "pro": {
       "name": "Pro", 
-      "description": "Ideal for growing businesses that need more features",
+      "description": "For growing businesses needing more",
       "price": {
         "monthly": 99,
         "annually": 83
@@ -37,21 +40,30 @@
         "Everything in Starter",
         "Unlimited pages + blog",
         "AI Copilot for content edits",
-        "SEO, Analytics, Automations",
-        "Priority support"
+        "Built-in SEO and Analytics tools",
+        "Marketing Automations (emails, workflows)",
+        "Priority support (chat + extended hours)",
+        "Multi-language site setup",
+        "Advanced customization (fonts, layouts)",
+        "Mobile SEO suggestions"
       ]
     },
     "custom": {
       "name": "Custom",
-      "description": "For agencies and enterprises with advanced needs",
+      "description": "Advanced solutions for agencies or enterprises",
       "price": {
-        "monthly": "Contact us",
-        "annually": "Contact us"
+        "monthly": "Contact Us",
+        "annually": "Contact Us"
       },
       "features": [
-        "Multi-site solutions",
-        "Advanced integrations",
-        "Dedicated onboarding"
+        "Multi-site management",
+        "Advanced integrations (APIs, custom workflows)",
+        "Dedicated onboarding & training",
+        "SLA & enhanced security options",
+        "24/7 enterprise support",
+        "Custom infrastructure & scalability",
+        "Tailored feature roadmap",
+        "Account manager assigned"
       ]
     }
   },
@@ -60,23 +72,31 @@
     "questions": [
       {
         "question": "Can I change plans anytime?",
-        "answer": "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately."
+        "answer": "Yes — Upgrade or downgrade directly from your dashboard at any time."
       },
       {
-        "question": "What payment methods do you accept?",
-        "answer": "We accept all major credit cards, PayPal, and bank transfers for annual plans."
+        "question": "What payment methods are supported?",
+        "answer": "We accept credit cards and SEPA payments; billing is flexible (monthly or annual)."
       },
       {
         "question": "Is there a setup fee?",
-        "answer": "No, there are no setup fees or hidden costs. You only pay the monthly or annual subscription."
+        "answer": "No setup fee. Everything you need is included in your plan."
       },
       {
         "question": "Do you offer refunds?",
-        "answer": "We offer a 30-day money-back guarantee on all plans. No questions asked."
+        "answer": "No refunds. We offer a 7-day free trial so you can test risk-free."
       },
       {
-        "question": "What happens if I exceed my limits?",
-        "answer": "We'll notify you before you reach your limits and help you upgrade to a suitable plan."
+        "question": "What if I exceed plan limits?",
+        "answer": "We'll notify you and recommend proactive next steps, such as upgrading."
+      },
+      {
+        "question": "Can I export my site?",
+        "answer": "No. Naveeg is a fully managed platform—secure, hosted in the EU, GDPR-compliant."
+      },
+      {
+        "question": "Is my site GDPR compliant?",
+        "answer": "Yes—Secure hosting, SSL, and EU data storage are standard across all plans."
       }
     ]
   },

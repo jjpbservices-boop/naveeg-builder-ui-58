@@ -12,7 +12,8 @@ const Pricing: React.FC = () => {
 
   const plans = ['starter', 'pro', 'custom'];
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | string) => {
+    if (typeof price === 'string') return price;
     return new Intl.NumberFormat(i18n.language, {
       style: 'currency',
       currency: 'EUR',
@@ -38,7 +39,7 @@ const Pricing: React.FC = () => {
           <div className="max-w-2xl mx-auto mb-8">
             <div className="bg-primary-light border border-primary/20 rounded-2xl p-4 text-center">
               <p className="text-primary font-medium text-sm">
-                {t('trial', { defaultValue: '14-day free trial on a Naveeg subdomain. No credit card required.' })}
+                {t('freeTrial')} · Cancel anytime · VAT included
               </p>
             </div>
           </div>
@@ -95,11 +96,13 @@ const Pricing: React.FC = () => {
                   <div className="mb-6">
                     <div className="flex items-baseline justify-center">
                       <span className="text-5xl font-bold text-foreground">
-                        {formatPrice(price)}
+                        {typeof price === 'string' ? price : `€${price}`}
                       </span>
-                      <span className="text-muted-foreground ml-2">/month</span>
+                      {typeof price !== 'string' && (
+                        <span className="text-muted-foreground ml-2">/month TTC</span>
+                      )}
                     </div>
-                    {isAnnual && (
+                    {isAnnual && typeof price !== 'string' && (
                       <p className="text-sm text-muted-foreground mt-2">
                         Billed annually
                       </p>
@@ -117,14 +120,15 @@ const Pricing: React.FC = () => {
                 </ul>
 
                 <Button 
-                  className="w-full touch-target bg-primary hover:bg-primary/90 text-primary-foreground"
+                  className="w-full touch-target"
+                  variant={index === 2 ? 'outline' : 'default'}
                   size="lg"
                 >
                   {index === 2 ? t('contactSales') : t('getStarted')}
                 </Button>
                 
                 <p className="text-center text-sm text-muted-foreground mt-4">
-                  {t('freeTrial')} • {t('noCredit')}
+                  {t('noCredit')}
                 </p>
               </div>
             );
@@ -138,7 +142,7 @@ const Pricing: React.FC = () => {
           </h2>
           
           <Accordion type="single" collapsible className="space-y-4">
-            {faqQuestions.map((index) => (
+            {Array.from({ length: 7 }, (_, i) => i).map((index) => (
               <AccordionItem 
                 key={index} 
                 value={`item-${index}`}

@@ -390,19 +390,23 @@ const Home: React.FC = () => {
                       <p className="text-muted-foreground text-lg">{plan.description}</p>
                     </div>
                     <ul className="space-y-4 mb-8">
-                      {plan.features?.map((feature: string, fIndex: number) => (
+                      {plan.features?.slice(0, 5).map((feature: string, fIndex: number) => (
                         <li key={fIndex} className="flex items-start">
-                          <CheckCircle className="h-6 w-6 text-muted-foreground mr-3 flex-shrink-0 mt-0.5" />
+                          <CheckCircle className="h-6 w-6 text-primary mr-3 flex-shrink-0 mt-0.5" />
                           <span className="text-foreground text-lg">{feature}</span>
                         </li>
                       ))}
                     </ul>
                     <Button 
-                      className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground text-lg font-semibold rounded-xl hover:scale-105 transition-transform duration-200"
+                      className="w-full"
+                      variant={index === 2 ? 'outline' : 'default'}
                       size="lg"
                     >
-                      Get Started
+                      {index === 2 ? 'Contact Sales' : 'Start Free Trial'}
                     </Button>
+                    <p className="text-center text-sm text-muted-foreground mt-4">
+                      7-day free trial · Cancel anytime · VAT included
+                    </p>
                   </div>
                 </ScrollReveal>
               );
