@@ -14,7 +14,12 @@ import {
   User,
   Sun,
   Moon,
-  Languages
+  Languages,
+  Store,
+  Mail,
+  Zap,
+  Lock,
+  CreditCard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -38,15 +43,20 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
+import { usePlanStore } from '@/lib/stores/usePlanStore';
 
 const navigationItems = [
-  { title: 'Overview', icon: LayoutDashboard, id: 'overview' },
-  { title: 'Analytics', icon: BarChart3, id: 'analytics' },
-  { title: 'Design Studio', icon: Palette, id: 'design' },
-  { title: 'Domain & SSL', icon: Globe, id: 'domain' },
-  { title: 'Backups', icon: Archive, id: 'backups' },
-  { title: 'Security', icon: Shield, id: 'security' },
-  { title: 'Settings', icon: Settings, id: 'settings' },
+  { title: 'Overview', icon: LayoutDashboard, id: 'overview', requiredFeature: null },
+  { title: 'Analytics', icon: BarChart3, id: 'analytics', requiredFeature: 'analytics_advanced' },
+  { title: 'Design Studio', icon: Palette, id: 'design', requiredFeature: null },
+  { title: 'Domain & SSL', icon: Globe, id: 'domain', requiredFeature: null },
+  { title: 'Store', icon: Store, id: 'store', requiredFeature: 'store' },
+  { title: 'Forms & Leads', icon: Mail, id: 'forms', requiredFeature: 'forms_advanced' },
+  { title: 'Automations', icon: Zap, id: 'automations', requiredFeature: 'automations' },
+  { title: 'Backups', icon: Archive, id: 'backups', requiredFeature: null },
+  { title: 'Security', icon: Shield, id: 'security', requiredFeature: null },
+  { title: 'My Plan', icon: CreditCard, id: 'plans', requiredFeature: null },
+  { title: 'Settings', icon: Settings, id: 'settings', requiredFeature: null },
 ];
 
 interface AppSidebarProps {
@@ -62,6 +72,7 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { t, i18n } = useTranslation('common');
+  const { currentPlan, canAccessFeature, isTrialExpired } = usePlanStore();
 
   const languages = [
     { code: 'en', name: 'English' },
@@ -74,6 +85,22 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate({ to: '/' });
+  };
+
+  const isFeatureAccessible = (item: any) => {
+    if (!item.requiredFeature) return true;
+    if (isTrialExpired && currentPlan === 'trial') return false;
+    return canAccessFeature(item.requiredFeature);
+  };
+
+  const getPlanBadge = () => {
+    const planNames = {
+      trial: 'Trial',
+      starter: 'Starter',
+      pro: 'Pro',
+      custom: 'Custom'
+    };
+    return planNames[currentPlan] || 'Trial';
   };
 
   return (
@@ -114,22 +141,35 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
-              {navigationItems.map((item) => (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton
-                    onClick={() => onViewChange(item.id)}
-                    isActive={activeView === item.id}
-                    tooltip={collapsed ? item.title : undefined}
-                    className={cn(
-                      "h-10 w-full flex items-center",
-                      collapsed ? "justify-center px-2" : "justify-start px-3"
-                    )}
-                  >
-                    <item.icon className="h-4 w-4 shrink-0" />
-                    {!collapsed && <span className="ml-2">{item.title}</span>}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {navigationItems.map((item) => {
+                const isAccessible = isFeatureAccessible(item);
+                const isLocked = item.requiredFeature && !isAccessible;
+                
+                return (
+                  <SidebarMenuItem key={item.id}>
+                    <SidebarMenuButton
+                      onClick={() => onViewChange(item.id)}
+                      isActive={activeView === item.id}
+                      tooltip={collapsed ? item.title : undefined}
+                      className={cn(
+                        "h-10 w-full flex items-center relative",
+                        collapsed ? "justify-center px-2" : "justify-start px-3",
+                        isLocked && "text-muted-foreground"
+                      )}
+                    >
+                      <item.icon className={cn("h-4 w-4 shrink-0", isLocked && "opacity-50")} />
+                      {!collapsed && (
+                        <span className={cn("ml-2", isLocked && "opacity-50")}>
+                          {item.title}
+                        </span>
+                      )}
+                      {isLocked && !collapsed && (
+                        <Lock className="h-3 w-3 ml-auto text-muted-foreground opacity-50" />
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -206,6 +246,16 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
             )}
           </SidebarMenuItem>
         </SidebarMenu>
+
+        {/* Plan Badge */}
+        {!collapsed && (
+          <div className="px-3 mb-2">
+            <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+              <span className="text-xs font-medium text-muted-foreground">Plan</span>
+              <span className="text-xs font-bold text-primary">{getPlanBadge()}</span>
+            </div>
+          </div>
+        )}
 
         {/* User Account */}
         <SidebarMenu>

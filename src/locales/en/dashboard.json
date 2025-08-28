@@ -1,6 +1,27 @@
 {
   "title": "Website Management",
   "subtitle": "Manage your website settings, performance, and security from one place.",
+  "trial": {
+    "banner": "🎉 You are on a 7-day free trial. {days} day{plural} left until your website is deactivated unless you subscribe.",
+    "expired": "⏰ Your trial has ended",
+    "expiredSubtitle": "Subscribe now to keep your website live and unlock all features.",
+    "choosePlan": "Choose a Plan",
+    "subscribeNow": "Subscribe now"
+  },
+  "plans": {
+    "starter": "Starter",
+    "pro": "Pro", 
+    "custom": "Custom",
+    "upgradeTo": "Upgrade to {plan}",
+    "contactSales": "Contact Sales",
+    "bookCall": "Book a call",
+    "currentPlan": "Current Plan"
+  },
+  "locked": {
+    "title": "Unlock {feature}",
+    "description": "This feature is available on the {plan} plan.",
+    "domain": "Domain connection is available once you activate a subscription."
+  },
   "actions": {
     "regenerateWebsite": "Regenerate Website",
     "visitSite": "Visit Site",
@@ -22,5 +43,13 @@
     "active": "Active",
     "inactive": "Inactive",
     "maintenance": "Maintenance"
+  },
+  "features": {
+    "analytics": "Advanced Analytics",
+    "store": "Online Store",
+    "automations": "Marketing Automations",
+    "forms": "Advanced Forms",
+    "seo": "Advanced SEO",
+    "multisite": "Multi-site Management"
   }
 }
