@@ -208,7 +208,7 @@ export function Billing() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
-              {(!subscription || subscription.plan_id === 'trial' || subscription.plan_id === 'starter') && (
+              {(!subscription || subscription.status === 'trialing' || subscription.plan_id === 'starter') && (
                 <div className="space-y-2">
                   <h4 className="font-medium">Upgrade to Starter</h4>
                   <p className="text-sm text-muted-foreground">Perfect for getting started - {formatPrice(4900)}/month</p>

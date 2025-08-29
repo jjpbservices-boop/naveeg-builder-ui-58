@@ -72,7 +72,7 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { t, i18n } = useTranslation('common');
-  const { subscription, isSubscriptionActive, canConnectDomain, lastUpdate } = useSubscription();
+  const { plan } = useSubscription();
 
   const languages = [
     { code: 'en', name: 'English' },
@@ -90,27 +90,22 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
   const isFeatureAccessible = (item: any) => {
     if (!item.requiredFeature) return true;
     
-    const planId = subscription?.plan_id;
-    if (!isSubscriptionActive()) return false;
-    
     // Feature access by plan level
     switch (item.requiredFeature) {
       case 'store':
       case 'forms_advanced':
       case 'automations':
-        return planId === 'pro' || planId === 'custom';
+        return plan === 'pro' || plan === 'custom';
       case 'analytics_advanced':
-        return planId === 'starter' || planId === 'pro' || planId === 'custom';
+        return plan === 'starter' || plan === 'pro' || plan === 'custom';
       default:
         return true;
     }
   };
 
   const getPlanBadge = React.useMemo(() => {
-    console.log('[SIDEBAR] Computing plan badge:', { subscription, plan_id: subscription?.plan_id, lastUpdate });
-    if (!subscription) return 'Trial';
-    return subscription.plan_id.charAt(0).toUpperCase() + subscription.plan_id.slice(1);
-  }, [subscription?.plan_id, subscription?.status, lastUpdate]);
+    return plan === 'pro' ? 'Pro' : plan === 'starter' ? 'Starter' : 'Trial';
+  }, [plan]);
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border" style={{ '--sidebar-width': '240px', '--sidebar-width-icon': '64px' } as React.CSSProperties}>

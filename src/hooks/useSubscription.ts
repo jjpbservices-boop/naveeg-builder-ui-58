@@ -1,313 +1,137 @@
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { useCallback, useEffect, useState } from 'react'
+import { supabase } from '@/integrations/supabase/client'
 
-export interface Subscription {
-  id: string;
-  user_id: string;
-  site_id?: string;
-  plan_id: string;
-  status: string;
-  trial_end?: string;
-  current_period_end?: string;
-  stripe_customer_id?: string;
-  stripe_subscription_id?: string;
-  metadata?: any;
-  created_at: string;
-  updated_at: string;
+type Plan = 'starter' | 'pro' | 'custom'
+type Status = 'trialing' | 'active' | 'past_due' | 'canceled'
+
+export type Subscription = {
+  id: string
+  user_id: string
+  site_id: string | null
+  plan_id: Plan
+  status: Status
+  current_period_end: string | null
+  trial_end?: string
+  stripe_customer_id?: string
+  stripe_subscription_id?: string
+  created_at?: string
 }
 
-export const useSubscription = () => {
-  const { user } = useAuth();
-    const [subscription, setSubscription] = useState<Subscription | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [lastUpdate, setLastUpdate] = useState(Date.now());
+const getEffectivePlan = (s: Subscription | null): 'trial' | 'starter' | 'pro' | 'custom' =>
+  s && s.status === 'active' ? s.plan_id : 'trial'
 
-  // Fetch subscription by user_id, with fallback for site_id filtering
+export function useSubscription() {
+  const [subscription, setSubscription] = useState<Subscription | null>(null)
+  const [loading, setLoading] = useState(false)
+
   const fetchSubscription = useCallback(async (siteId?: string) => {
-    console.log('[SUBSCRIPTION] fetchSubscription called with siteId:', siteId);
+    setLoading(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { 
+      setSubscription(null)
+      setLoading(false)
+      return
+    }
+
+    let q = supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    if (siteId) q = q.eq('site_id', siteId)
+
+    const { data, error } = await q
+    if (error) console.error('[SUBSCRIPTION] fetch error', error)
     
-    if (!user) {
-      console.log('[SUBSCRIPTION] No user, clearing subscription');
-      setSubscription(null);
-      setLoading(false);
-      return;
-    }
+    // Always create new reference to ensure React re-renders
+    const newSubscription = data?.[0] ? {
+      ...data[0],
+      plan_id: data[0].plan_id as Plan,
+      status: data[0].status as Status
+    } : null
+    setSubscription(newSubscription)
+    setLoading(false)
+  }, [])
 
-    try {
-      console.log('[SUBSCRIPTION] Starting fetch for user:', user.id);
-      setLoading(true);
-      setError(null);
+  // Auto-fetch once user is known
+  useEffect(() => { 
+    fetchSubscription() 
+  }, [fetchSubscription])
 
-      // Add timeout to prevent infinite loading
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Subscription fetch timeout')), 5000)
-      );
-
-      // Fetch the most recent active subscription for the user
-      // Priority: subscription with matching site_id, then any active subscription
-      let query = supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .in('status', ['active', 'trialing', 'past_due'])
-        .order('created_at', { ascending: false });
-
-      if (siteId) {
-        query = query.eq('site_id', siteId);
-      }
-
-      const fetchPromise = query.limit(1);
-      const result = await Promise.race([fetchPromise, timeoutPromise]);
-      const { data, error: fetchError } = result as any;
-
-      if (fetchError) {
-        throw fetchError;
-      }
-
-      // If no subscription found for specific site, try without site filter as fallback
-      if (!data || data.length === 0) {
-        if (siteId) {
-          console.log('[SUBSCRIPTION] No subscription found for site, trying fallback without site_id');
-          const fallbackQuery = supabase
-            .from('subscriptions')
-            .select('*')
-            .eq('user_id', user.id)
-            .in('status', ['active', 'trialing', 'past_due'])
-            .order('created_at', { ascending: false })
-            .limit(1);
-
-          const fallbackResult = await Promise.race([fallbackQuery, timeoutPromise]);
-          const { data: fallbackData, error: fallbackError } = fallbackResult as any;
-
-          if (fallbackError) {
-            throw fallbackError;
-          }
-
-           console.log('[SUBSCRIPTION] Fallback subscription:', fallbackData?.[0] || null);
-           setSubscription(fallbackData?.[0] || null);
-           setLastUpdate(Date.now());
-        } else {
-          // When siteId is undefined, fetch any subscription for the user
-          console.log('[SUBSCRIPTION] No siteId provided, fetching any user subscription');
-          const anyQuery = supabase
-            .from('subscriptions')
-            .select('*')
-            .eq('user_id', user.id)
-            .in('status', ['active', 'trialing', 'past_due'])
-            .order('created_at', { ascending: false })
-            .limit(1);
-
-          const anyResult = await Promise.race([anyQuery, timeoutPromise]);
-          const { data: anyData, error: anyError } = anyResult as any;
-
-          if (anyError) {
-            throw anyError;
-          }
-
-           console.log('[SUBSCRIPTION] Any subscription found:', anyData?.[0] || null);
-           setSubscription(anyData?.[0] || null);
-           setLastUpdate(Date.now());
-        }
-      } else {
-         console.log('[SUBSCRIPTION] Found subscription:', data[0]);
-         setSubscription(data[0]);
-         setLastUpdate(Date.now());
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch subscription';
-      setError(errorMessage);
-      console.error('[SUBSCRIPTION] Error fetching subscription:', err);
-    } finally {
-      setLoading(false);
-      console.log('[SUBSCRIPTION] Fetch completed');
-    }
-  }, [user]);
-
-  // Client passes plan, not price IDs
-  const createCheckout = async (plan: 'starter' | 'pro', siteId: string) => {
-    console.log(`[CHECKOUT] Starting checkout for plan: ${plan}, siteId: ${siteId}`);
-    
-    if (!siteId) {
-      throw new Error('Site ID is required for checkout');
-    }
-
-    try {
-      const requestBody = { 
-        action: 'create-checkout', 
-        plan, 
-        site_id: siteId 
-      };
-      
-      console.log('[CHECKOUT] Request body:', requestBody);
-      
-      // POST JSON call to billing function
-      const { data, error } = await supabase.functions.invoke('billing', {
-        body: requestBody,
-      });
-
-      console.log('[CHECKOUT] Response:', { data, error });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        console.log('[CHECKOUT] Redirecting to:', data.url);
-        // Redirect in same tab to prevent popup blocking
-        window.location.assign(data.url);
-      } else {
-        throw new Error('No checkout URL received from server');
-      }
-
-      return { data, error: null };
-    } catch (err) {
-      console.error('[CHECKOUT] Error creating checkout:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create checkout';
-      throw new Error(errorMessage);
-    }
-  };
-
-  // Manual subscription sync function for fixing issues
-  const syncSubscription = async (siteId?: string) => {
-    if (!user) return;
-    
-    console.log('[SUBSCRIPTION] Manual sync requested', { siteId });
-    
-    try {
-      setLoading(true);
-      const { data, error } = await supabase.functions.invoke('sync-subscription', {
-        body: { site_id: siteId }
-      });
-
-      if (error) {
-        console.error('[SUBSCRIPTION] Sync error:', error);
-        throw error;
-      }
-
-      console.log('[SUBSCRIPTION] Sync response:', data);
-      
-      // Refetch subscription after sync
-      await fetchSubscription(siteId);
-      
-      return data;
-    } catch (err) {
-      console.error('[SUBSCRIPTION] Sync failed:', err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const createPortal = async () => {
-    try {
-      const requestBody = { action: 'create-portal' };
-      console.log('[PORTAL] Request body:', requestBody);
-      
-      // POST JSON call to billing function
-      const { data, error } = await supabase.functions.invoke('billing', {
-        body: requestBody,
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        // Redirect in same tab to prevent popup blocking
-        window.location.assign(data.url);
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create portal';
-      throw new Error(errorMessage);
-    }
-  };
-
-  const isTrialActive = () => {
-    if (!subscription || subscription.status !== 'trialing') return false;
-    if (!subscription.trial_end) return false;
-    return new Date(subscription.trial_end) > new Date();
-  };
-
-  const isSubscriptionActive = () => {
-    if (!subscription) return false;
-    return ['active', 'past_due'].includes(subscription.status);
-  };
-
-  // Domain connect locked until paid
-  const canConnectDomain = () => {
-    return isSubscriptionActive(); // status in active|past_due
-  };
-
-  const getTrialDaysLeft = () => {
-    if (!subscription || subscription.status !== 'trialing' || !subscription.trial_end) {
-      return 0;
-    }
-    
-    const trialEnd = new Date(subscription.trial_end);
-    const now = new Date();
-    const diffTime = trialEnd.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    return Math.max(0, diffDays);
-  };
-
+  // Realtime push on any change to this user's subscriptions
   useEffect(() => {
-    // Don't auto-fetch without site_id context
-    // Components should call fetchSubscription(siteId) explicitly
-  }, []);
-
-  // Real-time subscription updates
-  useEffect(() => {
-    if (!user) return;
-
-    console.log('[SUBSCRIPTION] Setting up real-time listener for user:', user.id);
-    
-    const channel = supabase
-      .channel('subscription-changes')
-      .on(
-        'postgres_changes',
-        {
+    let channel: any
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      channel = supabase
+        .channel('subs')
+        .on('postgres_changes', {
           event: '*',
           schema: 'public',
           table: 'subscriptions',
           filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          console.log('[SUBSCRIPTION] Real-time update received', { payload });
-          // Use a debounced approach to prevent infinite loops
-          setTimeout(() => {
-            console.log('[SUBSCRIPTION] Processing real-time update after delay');
-            // Directly update the subscription state from payload if it's an UPDATE
-            if (payload.eventType === 'UPDATE' && payload.new) {
-              console.log('[SUBSCRIPTION] Updating subscription from real-time data');
-              setSubscription(payload.new as Subscription);
-              setLastUpdate(Date.now());
-            } else {
-              // For INSERT/DELETE, refetch without site_id to get latest
-              console.log('[SUBSCRIPTION] Refetching subscription due to INSERT/DELETE');
-              fetchSubscription();
-            }
-          }, 100);
-        }
-      )
-      .subscribe();
+        }, (payload) => {
+          console.log('[SUBSCRIPTION] Real-time update:', payload)
+          const newSub = payload.new && typeof payload.new === 'object' ? {
+            ...payload.new,
+            plan_id: (payload.new as any).plan_id as Plan,
+            status: (payload.new as any).status as Status
+          } : null
+          setSubscription(newSub as Subscription)
+        })
+        .subscribe()
+    })
+    return () => { 
+      if (channel) supabase.removeChannel(channel) 
+    }
+  }, [])
 
-    return () => {
-      console.log('[SUBSCRIPTION] Cleaning up real-time listener');
-      supabase.removeChannel(channel);
-    };
-  }, [user]); // Only depend on user to prevent loops
+  // Legacy methods for compatibility
+  const createCheckout = async (plan: 'starter' | 'pro', siteId: string) => {
+    const { data, error } = await supabase.functions.invoke('billing', {
+      body: { action: 'create-checkout', plan, site_id: siteId }
+    })
+    if (error) throw error
+    if (data?.url) window.location.assign(data.url)
+    return { data, error: null }
+  }
+
+  const createPortal = async () => {
+    const { data, error } = await supabase.functions.invoke('billing', {
+      body: { action: 'create-portal' }
+    })
+    if (error) throw error
+    if (data?.url) window.location.assign(data.url)
+  }
+
+  const syncSubscription = async (siteId?: string) => {
+    const { data, error } = await supabase.functions.invoke('sync-subscription', {
+      body: { site_id: siteId }
+    })
+    if (error) throw error
+    await fetchSubscription(siteId)
+    return data
+  }
 
   return {
     subscription,
+    plan: getEffectivePlan(subscription),
+    isActive: subscription?.status === 'active',
     loading,
-    error,
     fetchSubscription,
     createCheckout,
     createPortal,
     syncSubscription,
-    isTrialActive,
-    isSubscriptionActive,
-    canConnectDomain,
-     getTrialDaysLeft,
-     lastUpdate,
-  };
-};
+    // Legacy compatibility
+    isSubscriptionActive: () => subscription?.status === 'active',
+    isTrialActive: () => subscription?.status === 'trialing' && subscription?.trial_end && new Date(subscription.trial_end) > new Date(),
+    canConnectDomain: () => subscription?.status === 'active',
+    getTrialDaysLeft: () => {
+      if (!subscription?.trial_end) return 0
+      const days = Math.ceil((new Date(subscription.trial_end).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+      return Math.max(0, days)
+    }
+  }
+}
