@@ -1,5 +1,11 @@
 import { useEffect, useCallback } from 'react'
 
+/**
+ * Drop-in replacement.
+ * - Theme-aware dots (light = white, dark = dark brand). Optional token: --hero-dot-rgb.
+ * - No layout thrash: CSS owns layout size; hook only updates backing store.
+ * - Batches ResizeObserver callbacks to one rAF.
+ */
 export const useHeroAnimation = (canvasId: string) => {
   const waitForReadyCanvas = useCallback((retryCount = 0): Promise<HTMLCanvasElement> => {
     return new Promise((resolve, reject) => {
@@ -34,8 +40,10 @@ export const useHeroAnimation = (canvasId: string) => {
       const ctx = canvas.getContext('2d', { alpha: true })
       if (!ctx) return
 
+      // One-time style: fill parent without affecting layout flow.
+      // Safer than mutating on each resize.
       canvas.style.position = 'absolute'
-      // @ts-ignore
+      // @ts-ignore older TS lib lacks "inset"
       canvas.style.inset = '0'
       canvas.style.width = '100%'
       canvas.style.height = '100%'
@@ -51,6 +59,7 @@ export const useHeroAnimation = (canvasId: string) => {
       const FPS = 30
       // -------------------
 
+      // Utils
       const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
       const hexToRgb = (hex: string) => {
         const h = hex.replace('#', '')
@@ -71,16 +80,22 @@ export const useHeroAnimation = (canvasId: string) => {
         return `rgba(${r},${g},${b},${a})`
       }
 
+      // Tokens
       const readCSS = () => getComputedStyle(document.documentElement)
       const css = readCSS()
       let primaryHex = css.getPropertyValue('--brand-hex').trim() || '#FF4A1C'
       if (!primaryHex.startsWith('#')) primaryHex = '#FF4A1C'
 
+      // Theme detection
       const isDark = () =>
         document.documentElement.classList.contains('dark') ||
         getComputedStyle(document.documentElement).getPropertyValue('color-scheme').trim() === 'dark' ||
         (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
+      // Optional explicit RGB token for dots.
+      // Example:
+      // :root { --hero-dot-rgb: 255,255,255 }
+      // .dark { --hero-dot-rgb: 18,18,18 }
       const getTokenDotRGB = () => {
         const v = readCSS().getPropertyValue('--hero-dot-rgb').trim()
         if (!v) return null
@@ -93,14 +108,13 @@ export const useHeroAnimation = (canvasId: string) => {
         const token = getTokenDotRGB()
         if (token) return `rgba(${token.r},${token.g},${token.b},${a})`
         if (isDark()) {
-          // Less black, more visible brand tint in dark mode
-          const darkBase = mix(primaryHex, '#000000', 0.55)
-          return hexToRGBA(darkBase, a * 1.5) // boost alpha by 1.5x
+          const darkBase = mix(primaryHex, '#000000', 0.88) // very dark brand-tinted
+          return hexToRGBA(darkBase, a)
         }
-        return `rgba(255,255,255,${a})`
+        return `rgba(255,255,255,${a})` // light mode
       }
 
-      // Gradients
+      // Gradient palette
       const primary700 = mix(primaryHex, '#000000', 0.35)
       const primary600 = mix(primaryHex, '#000000', 0.24)
       const primary400 = mix(primaryHex, '#FFFFFF', 0.28)
@@ -108,16 +122,17 @@ export const useHeroAnimation = (canvasId: string) => {
 
       type Dot = { x: number; y: number; r: number; phase: number; speed: number; base: number; amp: number }
       let dots: Dot[] = []
-      let w = 0, h = 0, last = 0, gPhase = 0
+      let w = 0, h = 0, last = 0, raf = 0, gPhase = 0
 
       function buildGrid() {
-        const cols = Math.ceil(w / SPACING)
-        const rows = Math.ceil(h / SPACING)
+        const margin = SPACING
+        const cols = Math.ceil((w + margin * 2) / SPACING)
+        const rows = Math.ceil((h + margin * 2) / SPACING)
         dots = []
         for (let y = 0; y < rows; y++) {
           for (let x = 0; x < cols; x++) {
-            const gx = x * SPACING + (y % 2 ? SPACING / 2 : 0)
-            const gy = y * SPACING
+            const gx = -margin + x * SPACING + (y % 2 ? SPACING / 2 : 0)
+            const gy = -margin + y * SPACING
             dots.push({
               x: gx,
               y: gy,
@@ -153,16 +168,17 @@ export const useHeroAnimation = (canvasId: string) => {
       }
 
       function step(ts: number) {
+        const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
         const interval = 1000 / FPS
-        if (ts - last < interval) { requestAnimationFrame(step); return }
+        if (ts - last < interval) { raf = requestAnimationFrame(step); return }
         last = ts
-        gPhase += 0.06
+        if (!reduce) gPhase += 0.06
 
         ctx.clearRect(0, 0, w, h)
         drawGradients()
 
         for (const d of dots) {
-          d.phase += d.speed
+          if (!reduce) d.phase += d.speed
           const a = Math.max(0, Math.min(1, d.base + Math.sin(d.phase + gPhase) * d.amp))
           ctx.fillStyle = computeDotRGBA(a)
           ctx.beginPath()
@@ -170,28 +186,50 @@ export const useHeroAnimation = (canvasId: string) => {
           ctx.fill()
         }
 
-        requestAnimationFrame(step)
+        raf = requestAnimationFrame(step)
       }
 
-      const ro = new ResizeObserver(() => {
-        const rect = canvas.parentElement!.getBoundingClientRect()
-        const nextW = Math.round(rect.width)
-        const nextH = Math.round(rect.height)
-        if (nextW === w && nextH === h) return
-        w = nextW; h = nextH
-        const dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1))
-        canvas.width = w * dpr
-        canvas.height = h * dpr
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-        buildGrid()
-      })
-      ro.observe(canvas.parentElement as Element, { box: 'border-box' as any })
+      // Resize management: batch RO to one rAF, only update backing store.
+      let pending = false
+      const onRO = () => {
+        if (pending) return
+        pending = true
+        requestAnimationFrame(() => {
+          pending = false
+          const parent = canvas.parentElement as HTMLElement | null
+          if (!parent) return
+          const rect = parent.getBoundingClientRect()
+          const nextW = Math.max(1, Math.round(rect.width))
+          const nextH = Math.max(1, Math.round(rect.height))
+          if (nextW === w && nextH === h) return
+          w = nextW; h = nextH
+          const dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1))
+          // Only backing store. Do NOT touch style.width/height here.
+          canvas.width = (w * dpr) | 0
+          canvas.height = (h * dpr) | 0
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+          buildGrid()
+        })
+      }
 
-      buildGrid()
-      requestAnimationFrame(step)
+      const ro = new ResizeObserver(onRO)
+      ro.observe(canvas.parentElement as Element, { box: 'border-box' as any })
+      onRO() // initial size
+
+      // React to theme flips (class or OS)
+      const mo = new MutationObserver(() => { /* no-op: computeDotRGBA reads fresh */ })
+      mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+      const media = window.matchMedia?.('(prefers-color-scheme: dark)')
+      const mediaHandler = () => { /* no-op, color read each frame */ }
+      media?.addEventListener?.('change', mediaHandler)
+
+      const startId = requestAnimationFrame(step)
 
       return () => {
+        cancelAnimationFrame(startId)
         ro.disconnect()
+        mo.disconnect()
+        media?.removeEventListener?.('change', mediaHandler)
       }
     } catch {
       return () => {}
