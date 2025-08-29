@@ -76,7 +76,7 @@ export default function Plans() {
         console.log('[PLANS] Current site ID resolved to:', siteId);
         
         // Fetch subscription for this specific site
-        fetchSubscription(siteId);
+        await fetchSubscription(siteId);
       } catch (error) {
         console.error('[PLANS] Error resolving site ID:', error);
         toast({
@@ -89,7 +89,13 @@ export default function Plans() {
       }
     };
 
-    resolveSiteId();
+    // Add timeout for entire resolution process
+    const timeoutId = setTimeout(() => {
+      console.warn('[PLANS] Site resolution timeout, forcing completion');
+      setLoadingSite(false);
+    }, 10000);
+
+    resolveSiteId().finally(() => clearTimeout(timeoutId));
   }, [toast, fetchSubscription]);
 
   const handleBack = () => {
@@ -208,6 +214,23 @@ export default function Plans() {
               <p className="text-sm text-primary font-medium">
                 🎉 You're currently on a 7-day free trial! Upgrade to continue using your website after the trial ends.
               </p>
+            </div>
+          )}
+          {(loading || loadingSite) && (
+            <div className="mt-4 p-4 bg-muted/10 border border-muted/20 rounded-lg max-w-md mx-auto">
+              <p className="text-sm text-muted-foreground">
+                Loading subscription information...
+              </p>
+              {loadingSite && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-2"
+                  onClick={() => window.location.reload()}
+                >
+                  Refresh if stuck
+                </Button>
+              )}
             </div>
           )}
         </div>

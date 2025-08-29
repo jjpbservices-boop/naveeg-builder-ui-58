@@ -22,10 +22,6 @@ export const useSubscription = () => {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Add execution guard to prevent infinite loops
-  const [isExecuting, setIsExecuting] = useState<Set<string>>(new Set());
-  const [lastFetchedSiteId, setLastFetchedSiteId] = useState<string | null>(null);
 
   // Fetch subscription by user_id, with fallback for site_id filtering
   const fetchSubscription = useCallback(async (siteId?: string) => {
@@ -38,18 +34,15 @@ export const useSubscription = () => {
       return;
     }
 
-    // Execution guard to prevent infinite loops
-    const executionKey = `${user.id}-${siteId || 'no-site'}`;
-    if (isExecuting.has(executionKey)) {
-      console.log('[SUBSCRIPTION] Already executing for:', executionKey);
-      return;
-    }
-
     try {
-      console.log('[SUBSCRIPTION] Starting fetch for:', executionKey);
-      setIsExecuting(prev => new Set(prev).add(executionKey));
+      console.log('[SUBSCRIPTION] Starting fetch for user:', user.id);
       setLoading(true);
       setError(null);
+
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Subscription fetch timeout')), 5000)
+      );
 
       // Fetch the most recent active subscription for the user
       // Priority: subscription with matching site_id, then any active subscription
@@ -64,7 +57,9 @@ export const useSubscription = () => {
         query = query.eq('site_id', siteId);
       }
 
-      const { data, error: fetchError } = await query.limit(1);
+      const fetchPromise = query.limit(1);
+      const result = await Promise.race([fetchPromise, timeoutPromise]);
+      const { data, error: fetchError } = result as any;
 
       if (fetchError) {
         throw fetchError;
@@ -74,13 +69,16 @@ export const useSubscription = () => {
       if (!data || data.length === 0) {
         if (siteId) {
           console.log('[SUBSCRIPTION] No subscription found for site, trying fallback without site_id');
-          const { data: fallbackData, error: fallbackError } = await supabase
+          const fallbackQuery = supabase
             .from('subscriptions')
             .select('*')
             .eq('user_id', user.id)
             .in('status', ['active', 'trialing', 'past_due'])
             .order('created_at', { ascending: false })
             .limit(1);
+
+          const fallbackResult = await Promise.race([fallbackQuery, timeoutPromise]);
+          const { data: fallbackData, error: fallbackError } = fallbackResult as any;
 
           if (fallbackError) {
             throw fallbackError;
@@ -101,15 +99,9 @@ export const useSubscription = () => {
       console.error('[SUBSCRIPTION] Error fetching subscription:', err);
     } finally {
       setLoading(false);
-      // Clear execution guard
-      setIsExecuting(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(executionKey);
-        return newSet;
-      });
-      console.log('[SUBSCRIPTION] Fetch completed for:', executionKey);
+      console.log('[SUBSCRIPTION] Fetch completed');
     }
-  }, [user, isExecuting]);
+  }, [user]);
 
   // Client passes plan, not price IDs
   const createCheckout = async (plan: 'starter' | 'pro', siteId: string) => {
