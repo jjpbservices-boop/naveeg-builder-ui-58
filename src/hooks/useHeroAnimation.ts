@@ -1,11 +1,5 @@
 import { useEffect, useCallback } from 'react'
 
-/**
- * Drop-in replacement.
- * - Theme-aware dots (light = white, dark = dark brand). Optional token: --hero-dot-rgb.
- * - No layout thrash: CSS owns layout size; hook only updates backing store.
- * - Batches ResizeObserver callbacks to one rAF.
- */
 export const useHeroAnimation = (canvasId: string) => {
   const waitForReadyCanvas = useCallback((retryCount = 0): Promise<HTMLCanvasElement> => {
     return new Promise((resolve, reject) => {
@@ -13,21 +7,21 @@ export const useHeroAnimation = (canvasId: string) => {
       if (!canvas) {
         if (retryCount < 10) {
           setTimeout(() => { waitForReadyCanvas(retryCount + 1).then(resolve).catch(reject) }, 50 * (retryCount + 1))
-        } else reject(new Error(`Canvas "${canvasId}" not found`))
+        } else reject(new Error(`Canvas with id "${canvasId}" not found after 10 retries`))
         return
       }
       const parent = canvas.parentElement
       if (!parent) {
         if (retryCount < 10) {
           setTimeout(() => { waitForReadyCanvas(retryCount + 1).then(resolve).catch(reject) }, 50 * (retryCount + 1))
-        } else reject(new Error('Canvas parent element not found'))
+        } else reject(new Error('Canvas parent element not found after 10 retries'))
         return
       }
       const rect = parent.getBoundingClientRect()
-      if (!rect.width || !rect.height) {
+      if (rect.width === 0 || rect.height === 0) {
         if (retryCount < 10) {
           setTimeout(() => { waitForReadyCanvas(retryCount + 1).then(resolve).catch(reject) }, 50 * (retryCount + 1))
-        } else reject(new Error('Canvas parent has zero dimensions'))
+        } else reject(new Error('Canvas parent has zero dimensions after 10 retries'))
         return
       }
       resolve(canvas)
@@ -40,16 +34,6 @@ export const useHeroAnimation = (canvasId: string) => {
       const ctx = canvas.getContext('2d', { alpha: true })
       if (!ctx) return
 
-      // One-time style: fill parent without affecting layout flow.
-      // Safer than mutating on each resize.
-      canvas.style.position = 'absolute'
-      // @ts-ignore older TS lib lacks "inset"
-      canvas.style.inset = '0'
-      canvas.style.width = '100%'
-      canvas.style.height = '100%'
-      canvas.style.display = 'block'
-      canvas.style.pointerEvents = 'none'
-
       // ---- Tunables ----
       const SPACING = 20
       const DOT_MIN = 0.9
@@ -59,7 +43,6 @@ export const useHeroAnimation = (canvasId: string) => {
       const FPS = 30
       // -------------------
 
-      // Utils
       const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
       const hexToRgb = (hex: string) => {
         const h = hex.replace('#', '')
@@ -81,40 +64,40 @@ export const useHeroAnimation = (canvasId: string) => {
       }
 
       // Tokens
-      const readCSS = () => getComputedStyle(document.documentElement)
-      const css = readCSS()
+      const css = getComputedStyle(document.documentElement)
       let primaryHex = css.getPropertyValue('--brand-hex').trim() || '#FF4A1C'
       if (!primaryHex.startsWith('#')) primaryHex = '#FF4A1C'
 
-      // Theme detection
+      // Theme helpers
       const isDark = () =>
         document.documentElement.classList.contains('dark') ||
         getComputedStyle(document.documentElement).getPropertyValue('color-scheme').trim() === 'dark' ||
-        (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        window.matchMedia?.('(prefers-color-scheme: dark)').matches
 
-      // Optional explicit RGB token for dots.
-      // Example:
-      // :root { --hero-dot-rgb: 255,255,255 }
-      // .dark { --hero-dot-rgb: 18,18,18 }
+      // Optional token override for dot base color (set both themes in CSS if you want)
+      // :root { --hero-dot-rgb: 255,255,255 } .dark { --hero-dot-rgb: 20,20,20 }
       const getTokenDotRGB = () => {
-        const v = readCSS().getPropertyValue('--hero-dot-rgb').trim()
+        const v = css.getPropertyValue('--hero-dot-rgb').trim()
         if (!v) return null
         const parts = v.split(',').map(s => parseInt(s.trim(), 10))
         if (parts.length !== 3 || parts.some(Number.isNaN)) return null
         return { r: parts[0], g: parts[1], b: parts[2] }
       }
 
+      // Derive dot base color by theme using tokens first, then fallbacks.
       const computeDotRGBA = (a: number) => {
-        const token = getTokenDotRGB()
-        if (token) return `rgba(${token.r},${token.g},${token.b},${a})`
+        const tokenRGB = getTokenDotRGB()
+        if (tokenRGB) return `rgba(${tokenRGB.r},${tokenRGB.g},${tokenRGB.b},${a})`
         if (isDark()) {
-          const darkBase = mix(primaryHex, '#000000', 0.88) // very dark brand-tinted
+          // Dark: dots become dark, derived from brand and near-black to respect your palette
+          const darkBase = mix(primaryHex, '#000000', 0.88) // very dark brand
           return hexToRGBA(darkBase, a)
         }
-        return `rgba(255,255,255,${a})` // light mode
+        // Light: crisp white
+        return `rgba(255,255,255,${a})`
       }
 
-      // Gradient palette
+      // Gradient palette (unchanged)
       const primary700 = mix(primaryHex, '#000000', 0.35)
       const primary600 = mix(primaryHex, '#000000', 0.24)
       const primary400 = mix(primaryHex, '#FFFFFF', 0.28)
@@ -168,7 +151,7 @@ export const useHeroAnimation = (canvasId: string) => {
       }
 
       function step(ts: number) {
-        const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
         const interval = 1000 / FPS
         if (ts - last < interval) { raf = requestAnimationFrame(step); return }
         last = ts
@@ -180,7 +163,7 @@ export const useHeroAnimation = (canvasId: string) => {
         for (const d of dots) {
           if (!reduce) d.phase += d.speed
           const a = Math.max(0, Math.min(1, d.base + Math.sin(d.phase + gPhase) * d.amp))
-          ctx.fillStyle = computeDotRGBA(a)
+          ctx.fillStyle = computeDotRGBA(a) // theme-aware dot color
           ctx.beginPath()
           ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2)
           ctx.fill()
@@ -189,52 +172,48 @@ export const useHeroAnimation = (canvasId: string) => {
         raf = requestAnimationFrame(step)
       }
 
-      // Resize management: batch RO to one rAF, only update backing store.
-      let pending = false
-      const onRO = () => {
-        if (pending) return
-        pending = true
-        requestAnimationFrame(() => {
-          pending = false
-          const parent = canvas.parentElement as HTMLElement | null
-          if (!parent) return
-          const rect = parent.getBoundingClientRect()
-          const nextW = Math.max(1, Math.round(rect.width))
-          const nextH = Math.max(1, Math.round(rect.height))
-          if (nextW === w && nextH === h) return
-          w = nextW; h = nextH
-          const dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1))
-          // Only backing store. Do NOT touch style.width/height here.
-          canvas.width = (w * dpr) | 0
-          canvas.height = (h * dpr) | 0
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-          buildGrid()
-        })
+      function resize() {
+        const parent = canvas.parentElement as HTMLElement | null
+        if (!parent) return
+        const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2))
+        const rect = parent.getBoundingClientRect()
+        w = Math.max(1, rect.width | 0)
+        h = Math.max(1, rect.height | 0)
+        canvas.style.width = `${w}px`
+        canvas.style.height = `${h}px`
+        canvas.width = (w * dpr) | 0
+        canvas.height = (h * dpr) | 0
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+        buildGrid()
       }
 
-      const ro = new ResizeObserver(onRO)
-      ro.observe(canvas.parentElement as Element, { box: 'border-box' as any })
-      onRO() // initial size
+      const ro = new ResizeObserver(resize)
+      const parent = canvas.parentElement
+      if (parent) ro.observe(parent)
 
-      // React to theme flips (class or OS)
-      const mo = new MutationObserver(() => { /* no-op: computeDotRGBA reads fresh */ })
+      // React to theme flips live
+      const mo = new MutationObserver(() => { /* class change like .dark */ })
       mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
       const media = window.matchMedia?.('(prefers-color-scheme: dark)')
-      const mediaHandler = () => { /* no-op, color read each frame */ }
+      const mediaHandler = () => { /* no-op, computeDotRGBA reads fresh each frame */ }
       media?.addEventListener?.('change', mediaHandler)
 
-      const startId = requestAnimationFrame(step)
+      const timeoutId = setTimeout(() => {
+        resize()
+        raf = requestAnimationFrame(step)
+      }, 100)
 
       return () => {
-        cancelAnimationFrame(startId)
         ro.disconnect()
         mo.disconnect()
         media?.removeEventListener?.('change', mediaHandler)
+        cancelAnimationFrame(raf)
+        clearTimeout(timeoutId)
       }
     } catch {
       return () => {}
     }
-  }, [waitForReadyCanvas])
+  }, [canvasId, waitForReadyCanvas])
 
   useEffect(() => {
     let cleanup: (() => void) | undefined
