@@ -58,14 +58,17 @@ serve(async (req) => {
       // Map plan to price ID from database if plan is provided
       let priceId = price_id;
       if (plan) {
+        logStep("Looking up price for plan", { plan });
         const { data: priceData, error: priceError } = await supabaseService
           .from('stripe_prices')
           .select('price_id')
           .eq('plan_id', plan)
           .single();
         
+        logStep("Price lookup result", { priceData, priceError });
+        
         if (priceError || !priceData) {
-          throw new Error(`Invalid plan: ${plan}`);
+          throw new Error(`Invalid plan: ${plan}. Error: ${priceError?.message}`);
         }
         priceId = priceData.price_id;
       }

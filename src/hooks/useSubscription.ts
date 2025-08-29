@@ -64,6 +64,8 @@ export const useSubscription = () => {
   }, [user]);
 
   const createCheckout = async (plan: 'starter' | 'pro', siteId: string) => {
+    console.log(`[CHECKOUT] Starting checkout for plan: ${plan}, siteId: ${siteId}`);
+    
     if (!siteId) {
       throw new Error('Site ID is required for checkout');
     }
@@ -80,15 +82,21 @@ export const useSubscription = () => {
         },
       });
 
+      console.log('[CHECKOUT] Response:', { data, error });
+
       if (error) throw error;
 
       if (data?.url) {
+        console.log('[CHECKOUT] Redirecting to:', data.url);
         // Redirect in same tab to prevent popup blocking
         window.location.assign(data.url);
+      } else {
+        throw new Error('No checkout URL received from server');
       }
 
       return { data, error: null };
     } catch (err) {
+      console.error('[CHECKOUT] Error creating checkout:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to create checkout';
       throw new Error(errorMessage);
     }

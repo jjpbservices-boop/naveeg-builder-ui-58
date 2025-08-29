@@ -35,26 +35,34 @@ export default function Plans() {
   useEffect(() => {
     const getSiteId = async () => {
       try {
+        console.log('[PLANS] Getting site ID...');
         // Get site ID from URL or fetch user's first site
         const urlParams = new URLSearchParams(window.location.search);
         let siteId = urlParams.get('site_id') || localStorage.getItem('currentSiteId');
         
         if (!siteId) {
+          console.log('[PLANS] No site ID found, fetching from database...');
           const { data: sites, error } = await supabase
             .from('sites')
             .select('id')
             .limit(1);
           
-          if (error) throw error;
+          if (error) {
+            console.error('[PLANS] Error fetching sites:', error);
+            throw error;
+          }
+          console.log('[PLANS] Sites found:', sites);
           if (sites && sites.length > 0) {
             siteId = sites[0].id;
             localStorage.setItem('currentSiteId', siteId);
+            console.log('[PLANS] Set site ID:', siteId);
           }
         }
         
         setCurrentSiteId(siteId);
+        console.log('[PLANS] Current site ID set to:', siteId);
       } catch (error) {
-        console.error('Error getting site ID:', error);
+        console.error('[PLANS] Error getting site ID:', error);
         toast({
           title: "Error",
           description: "Could not load site information",
@@ -73,8 +81,19 @@ export default function Plans() {
   };
 
   const handlePlanSelect = async (plan: 'starter' | 'pro' | 'custom') => {
+    console.log('[PLANS] Plan selected:', plan, 'Current site ID:', currentSiteId, 'Loading site:', loadingSite);
+    
     if (plan === 'custom') {
       window.open('mailto:sales@naveeg.com?subject=Custom Plan Inquiry', '_blank');
+      return;
+    }
+
+    if (loadingSite) {
+      toast({
+        title: "Loading",
+        description: "Please wait while we load your site information.",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -90,7 +109,7 @@ export default function Plans() {
     try {
       await createCheckout(plan, currentSiteId);
     } catch (error) {
-      console.error('Failed to create checkout:', error);
+      console.error('[PLANS] Failed to create checkout:', error);
       toast({
         title: "Checkout Error",
         description: error instanceof Error ? error.message : "Failed to create checkout session. Please try again.",
