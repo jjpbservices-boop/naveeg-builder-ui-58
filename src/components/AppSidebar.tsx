@@ -72,7 +72,7 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { t, i18n } = useTranslation('common');
-  const { subscription, isSubscriptionActive, canConnectDomain } = useSubscription();
+  const { subscription, isSubscriptionActive, canConnectDomain, lastUpdate } = useSubscription();
 
   const languages = [
     { code: 'en', name: 'English' },
@@ -107,9 +107,10 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
   };
 
   const getPlanBadge = React.useMemo(() => {
+    console.log('[SIDEBAR] Computing plan badge:', { subscription, plan_id: subscription?.plan_id, lastUpdate });
     if (!subscription) return 'Trial';
     return subscription.plan_id.charAt(0).toUpperCase() + subscription.plan_id.slice(1);
-  }, [subscription?.plan_id]);
+  }, [subscription?.plan_id, subscription?.status, lastUpdate]);
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border" style={{ '--sidebar-width': '240px', '--sidebar-width-icon': '64px' } as React.CSSProperties}>
