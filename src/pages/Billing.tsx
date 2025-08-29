@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export function Billing() {
   const navigate = useNavigate();
@@ -26,46 +27,48 @@ export function Billing() {
 
   const handleUpgradeToStarter = async () => {
     try {
-      // We need to get the site ID first
-      const currentSiteId = localStorage.getItem('currentSiteId');
-      if (!currentSiteId) {
-        toast({
-          title: "Error", 
-          description: "No site found. Please create a site first.",
-          variant: "destructive",
-        });
-        return;
+      // Get current site ID for checkout
+      const { data: sites, error } = await supabase
+        .from('sites')
+        .select('id')
+        .limit(1)
+        .single();
+
+      if (error || !sites?.id) {
+        throw new Error('No site found. Please create a site first.');
       }
-      
-      await createCheckout('starter', currentSiteId);
-    } catch (err) {
+
+      await createCheckout('starter', sites.id);
+    } catch (error) {
+      console.error('Error upgrading to starter:', error);
       toast({
-        title: "Error",
-        description: err instanceof Error ? err.message : "Failed to create checkout session",
-        variant: "destructive",
+        title: "Upgrade Error",
+        description: error instanceof Error ? error.message : "Failed to start upgrade process",
+        variant: "destructive"
       });
     }
   };
 
   const handleUpgradeToPro = async () => {
     try {
-      // We need to get the site ID first
-      const currentSiteId = localStorage.getItem('currentSiteId');
-      if (!currentSiteId) {
-        toast({
-          title: "Error",
-          description: "No site found. Please create a site first.",
-          variant: "destructive",
-        });
-        return;
+      // Get current site ID for checkout
+      const { data: sites, error } = await supabase
+        .from('sites')
+        .select('id')
+        .limit(1)
+        .single();
+
+      if (error || !sites?.id) {
+        throw new Error('No site found. Please create a site first.');
       }
-      
-      await createCheckout('pro', currentSiteId);
-    } catch (err) {
+
+      await createCheckout('pro', sites.id);
+    } catch (error) {
+      console.error('Error upgrading to pro:', error);
       toast({
-        title: "Error", 
-        description: err instanceof Error ? err.message : "Failed to create checkout session",
-        variant: "destructive",
+        title: "Upgrade Error",
+        description: error instanceof Error ? error.message : "Failed to start upgrade process",
+        variant: "destructive"
       });
     }
   };
@@ -73,11 +76,12 @@ export function Billing() {
   const handleManageSubscription = async () => {
     try {
       await createPortal();
-    } catch (err) {
+    } catch (error) {
+      console.error('Error opening portal:', error);
       toast({
-        title: "Error",
-        description: err instanceof Error ? err.message : "Failed to open billing portal",
-        variant: "destructive",
+        title: "Portal Error",
+        description: error instanceof Error ? error.message : "Failed to open subscription portal",
+        variant: "destructive"
       });
     }
   };

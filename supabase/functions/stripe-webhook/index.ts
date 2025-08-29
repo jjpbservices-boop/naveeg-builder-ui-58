@@ -2,22 +2,12 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
-
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
   try {
     logStep("Webhook received");
 
@@ -30,148 +20,166 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     
-    // Get raw body and signature
     const body = await req.text();
-    const signature = req.headers.get('stripe-signature');
-    
+    const signature = req.headers.get("stripe-signature");
+
     if (!signature) {
-      throw new Error("Missing stripe-signature header");
+      throw new Error("No Stripe signature found");
     }
 
-    logStep("Verifying webhook signature");
-    
     // Verify webhook signature
-    let event: Stripe.Event;
-    try {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-      logStep("Webhook signature verified", { type: event.type });
-    } catch (err) {
-      logStep("Webhook signature verification failed", { error: err.message });
-      return new Response(`Webhook signature verification failed: ${err.message}`, { status: 400 });
-    }
+    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    logStep("Event verified", { type: event.type, id: event.id });
 
-    // Initialize Supabase client with service role
-    const supabaseClient = createClient(
+    // Create service role client for database operations
+    const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
 
-    logStep("Processing webhook event", { type: event.type, id: event.id });
-
-    // Handle different event types
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        logStep("Processing checkout session completed", { 
-          sessionId: session.id,
-          customerId: session.customer,
-          subscriptionId: session.subscription 
-        });
+        logStep("Processing checkout.session.completed", { sessionId: session.id });
 
-        // Get subscription details
-        if (session.subscription && typeof session.subscription === 'string') {
-          const subscription = await stripe.subscriptions.retrieve(session.subscription);
-          const priceId = subscription.items.data[0]?.price.id;
-          
-          // Get plan_id from stripe_prices table
-          const { data: priceData } = await supabaseClient
+        if (session.mode === 'subscription' && session.subscription) {
+          // Fetch the subscription details
+          const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+          const metadata = session.metadata || {};
+          const { user_id, site_id } = metadata;
+
+          if (!user_id || !site_id) {
+            logStep("Missing required metadata", { metadata });
+            break;
+          }
+
+          // Get plan_id from price_id via stripe_prices table
+          const priceId = subscription.items.data[0].price.id;
+          const { data: priceData, error: priceError } = await supabase
             .from('stripe_prices')
             .select('plan_id')
             .eq('price_id', priceId)
             .single();
 
-          if (priceData) {
-            // Get user_id and site_id from session metadata
-            const userId = session.metadata?.user_id;
-            const siteId = session.metadata?.site_id;
+          if (priceError || !priceData) {
+            logStep("Error finding plan for price", { priceId, error: priceError });
+            break;
+          }
 
-            logStep("Upserting subscription", {
-              userId,
-              siteId,
-              planId: priceData.plan_id,
-              status: subscription.status
-            });
+          const subscriptionData = {
+            user_id,
+            site_id,
+            plan_id: priceData.plan_id,
+            status: subscription.status,
+            stripe_subscription_id: subscription.id,
+            stripe_customer_id: subscription.customer as string,
+            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            trial_end: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+            metadata: session.metadata,
+            updated_at: new Date().toISOString(),
+          };
 
-            // Upsert subscription
-            const { error } = await supabaseClient
-              .from('subscriptions')
-              .upsert({
-                user_id: userId,
-                site_id: siteId,
-                plan_id: priceData.plan_id,
-                status: subscription.status,
-                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                stripe_customer_id: session.customer as string,
-                stripe_subscription_id: subscription.id,
-                metadata: session.metadata || {}
-              }, { onConflict: 'stripe_subscription_id' });
+          // Upsert subscription by stripe_subscription_id
+          const { error: upsertError } = await supabase
+            .from('subscriptions')
+            .upsert(subscriptionData, { onConflict: 'stripe_subscription_id' });
 
-            if (error) {
-              logStep("Error upserting subscription", { error: error.message });
-              throw error;
-            }
+          if (upsertError) {
+            logStep("Error upserting subscription", { error: upsertError });
+          } else {
+            logStep("Subscription upserted successfully", { subscriptionId: subscription.id });
           }
         }
         break;
       }
 
       case 'customer.subscription.created':
-      case 'customer.subscription.updated':
-      case 'customer.subscription.deleted': {
+      case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
-        const priceId = subscription.items.data[0]?.price.id;
-        
-        logStep("Processing subscription event", {
-          subscriptionId: subscription.id,
-          status: subscription.status,
-          priceId
-        });
+        logStep(`Processing ${event.type}`, { subscriptionId: subscription.id });
 
-        // Get plan_id from stripe_prices table
-        const { data: priceData } = await supabaseClient
+        // Find existing subscription record to get user_id and site_id
+        const { data: existingSubscription, error: findError } = await supabase
+          .from('subscriptions')
+          .select('user_id, site_id')
+          .eq('stripe_subscription_id', subscription.id)
+          .single();
+
+        if (findError && findError.code !== 'PGRST116') {
+          logStep("Error finding existing subscription", { error: findError });
+          break;
+        }
+
+        if (!existingSubscription) {
+          logStep("No existing subscription found, skipping", { subscriptionId: subscription.id });
+          break;
+        }
+
+        // Get plan_id from price_id
+        const priceId = subscription.items.data[0].price.id;
+        const { data: priceData, error: priceError } = await supabase
           .from('stripe_prices')
           .select('plan_id')
           .eq('price_id', priceId)
           .single();
 
-        if (priceData) {
-          // Update subscription status
-          const updateData = {
-            plan_id: priceData.plan_id,
-            status: subscription.status,
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            stripe_customer_id: subscription.customer as string,
-            stripe_subscription_id: subscription.id
-          };
+        if (priceError || !priceData) {
+          logStep("Error finding plan for price", { priceId, error: priceError });
+          break;
+        }
 
-          if (subscription.trial_end) {
-            updateData.trial_end = new Date(subscription.trial_end * 1000).toISOString();
-          }
+        const subscriptionData = {
+          user_id: existingSubscription.user_id,
+          site_id: existingSubscription.site_id,
+          plan_id: priceData.plan_id,
+          status: subscription.status,
+          stripe_subscription_id: subscription.id,
+          stripe_customer_id: subscription.customer as string,
+          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+          trial_end: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+          updated_at: new Date().toISOString(),
+        };
 
-          logStep("Updating subscription", updateData);
+        const { error: upsertError } = await supabase
+          .from('subscriptions')
+          .upsert(subscriptionData, { onConflict: 'stripe_subscription_id' });
 
-          const { error } = await supabaseClient
-            .from('subscriptions')
-            .update(updateData)
-            .eq('stripe_subscription_id', subscription.id);
+        if (upsertError) {
+          logStep("Error upserting subscription", { error: upsertError });
+        } else {
+          logStep("Subscription updated successfully", { subscriptionId: subscription.id });
+        }
+        break;
+      }
 
-          if (error) {
-            logStep("Error updating subscription", { error: error.message });
-            throw error;
-          }
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as Stripe.Subscription;
+        logStep("Processing customer.subscription.deleted", { subscriptionId: subscription.id });
+
+        // Update subscription status to canceled
+        const { error: updateError } = await supabase
+          .from('subscriptions')
+          .update({ 
+            status: 'canceled',
+            updated_at: new Date().toISOString()
+          })
+          .eq('stripe_subscription_id', subscription.id);
+
+        if (updateError) {
+          logStep("Error updating subscription to canceled", { error: updateError });
+        } else {
+          logStep("Subscription marked as canceled", { subscriptionId: subscription.id });
         }
         break;
       }
 
       default:
-        logStep("Unhandled webhook event type", { type: event.type });
+        logStep("Unhandled event type", { type: event.type });
     }
 
-    logStep("Webhook processed successfully");
-
     return new Response(JSON.stringify({ received: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
       status: 200,
     });
 
@@ -180,8 +188,8 @@ serve(async (req) => {
     logStep("ERROR in webhook", { message: errorMessage });
     
     return new Response(JSON.stringify({ error: errorMessage }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
+      headers: { "Content-Type": "application/json" },
+      status: 400,
     });
   }
 });

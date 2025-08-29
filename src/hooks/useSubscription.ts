@@ -23,6 +23,7 @@ export const useSubscription = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Fetch subscription by user_id AND site_id
   const fetchSubscription = useCallback(async (siteId?: string) => {
     if (!user) {
       setSubscription(null);
@@ -39,7 +40,7 @@ export const useSubscription = () => {
         .select('*')
         .eq('user_id', user.id);
 
-      // Filter by site_id if provided
+      // Filter by site_id if provided (required for proper filtering)
       if (siteId) {
         query = query.eq('site_id', siteId);
       }
@@ -63,6 +64,7 @@ export const useSubscription = () => {
     }
   }, [user]);
 
+  // Client passes plan, not price IDs
   const createCheckout = async (plan: 'starter' | 'pro', siteId: string) => {
     console.log(`[CHECKOUT] Starting checkout for plan: ${plan}, siteId: ${siteId}`);
     
@@ -71,6 +73,7 @@ export const useSubscription = () => {
     }
 
     try {
+      // POST JSON call to billing function
       const { data, error } = await supabase.functions.invoke('billing', {
         body: { 
           action: 'create-checkout', 
@@ -104,6 +107,7 @@ export const useSubscription = () => {
 
   const createPortal = async () => {
     try {
+      // POST JSON call to billing function
       const { data, error } = await supabase.functions.invoke('billing', {
         body: { 
           action: 'create-portal'
@@ -136,8 +140,9 @@ export const useSubscription = () => {
     return ['active', 'past_due'].includes(subscription.status);
   };
 
+  // Domain connect locked until paid
   const canConnectDomain = () => {
-    return isSubscriptionActive();
+    return isSubscriptionActive(); // status in active|past_due
   };
 
   const getTrialDaysLeft = () => {
@@ -157,7 +162,7 @@ export const useSubscription = () => {
     fetchSubscription();
   }, [fetchSubscription]);
 
-  // Set up real-time subscription for subscription changes
+  // Real-time subscription with both user_id and site_id filters
   useEffect(() => {
     if (!user) return;
 
@@ -172,8 +177,9 @@ export const useSubscription = () => {
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          // Refetch subscription when changes occur
+          // Refetch subscription when changes occur, filtered by site_id if available
           const siteId = (payload.new as any)?.site_id || (payload.old as any)?.site_id;
+          console.log('[SUBSCRIPTION] Real-time update received', { payload, siteId });
           fetchSubscription(siteId);
         }
       )

@@ -43,7 +43,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
-import { usePlanStore } from '@/lib/stores/usePlanStore';
+import { useSubscription } from '@/hooks/useSubscription';
 
 const navigationItems = [
   { title: 'Overview', icon: LayoutDashboard, id: 'overview', requiredFeature: null },
@@ -72,7 +72,7 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { t, i18n } = useTranslation('common');
-  const { currentPlan, canAccessFeature, isTrialExpired } = usePlanStore();
+  const { subscription, isSubscriptionActive, canConnectDomain } = useSubscription();
 
   const languages = [
     { code: 'en', name: 'English' },
@@ -89,18 +89,14 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
 
   const isFeatureAccessible = (item: any) => {
     if (!item.requiredFeature) return true;
-    if (isTrialExpired && currentPlan === 'trial') return false;
-    return canAccessFeature(item.requiredFeature);
+    // For now, allow domain access based on subscription status
+    if (item.id === 'domain') return canConnectDomain();
+    return isSubscriptionActive();
   };
 
   const getPlanBadge = () => {
-    const planNames = {
-      trial: 'Trial',
-      starter: 'Starter',
-      pro: 'Pro',
-      custom: 'Custom'
-    };
-    return planNames[currentPlan] || 'Trial';
+    if (!subscription) return 'Trial';
+    return subscription.plan_id.charAt(0).toUpperCase() + subscription.plan_id.slice(1);
   };
 
   return (

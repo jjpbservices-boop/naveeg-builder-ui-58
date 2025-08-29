@@ -18,6 +18,14 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Only accept POST requests
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 405,
+    });
+  }
+
   try {
     logStep("Billing function started");
 
@@ -44,7 +52,8 @@ serve(async (req) => {
     
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { action, plan, site_id, price_id } = await req.json().catch(() => ({}));
+    // Parse JSON body
+    const { action, plan, site_id, customer_id } = await req.json().catch(() => ({}));
     const appUrl = Deno.env.get("APP_URL") || "http://localhost:3000";
 
     // Create service role client for database queries
@@ -55,27 +64,26 @@ serve(async (req) => {
     );
 
     if (action === 'create-checkout') {
-      // Map plan to price ID from database if plan is provided
-      let priceId = price_id;
-      if (plan) {
-        logStep("Looking up price for plan", { plan });
-        const { data: priceData, error: priceError } = await supabaseService
-          .from('stripe_prices')
-          .select('price_id')
-          .eq('plan_id', plan)
-          .single();
-        
-        logStep("Price lookup result", { priceData, priceError });
-        
-        if (priceError || !priceData) {
-          throw new Error(`Invalid plan: ${plan}. Error: ${priceError?.message}`);
-        }
-        priceId = priceData.price_id;
+      if (!plan || !site_id) {
+        throw new Error("plan and site_id parameters are required");
+      }
+
+      logStep("Creating checkout session", { plan, site_id });
+
+      // Map plan to price ID from database
+      const { data: priceData, error: priceError } = await supabaseService
+        .from('stripe_prices')
+        .select('price_id')
+        .eq('plan_id', plan)
+        .single();
+      
+      logStep("Price lookup result", { priceData, priceError });
+      
+      if (priceError || !priceData) {
+        throw new Error(`Invalid plan: ${plan}. Error: ${priceError?.message}`);
       }
       
-      if (!priceId) throw new Error("price_id or plan parameter is required");
-
-      logStep("Creating checkout session", { priceId, plan, site_id });
+      const priceId = priceData.price_id;
 
       // Check if customer exists
       const customers = await stripe.customers.list({ email: user.email, limit: 1 });
@@ -83,11 +91,6 @@ serve(async (req) => {
       if (customers.data.length > 0) {
         customerId = customers.data[0].id;
         logStep("Found existing customer", { customerId });
-      }
-
-      // Ensure site_id is provided
-      if (!site_id) {
-        throw new Error("site_id is required for checkout");
       }
 
       const session = await stripe.checkout.sessions.create({
@@ -117,8 +120,8 @@ serve(async (req) => {
       });
 
     } else if (action === 'create-portal') {
-      // Create customer portal session - no need to get from URL since we use JSON body
-      let customerId = '';
+      // Create customer portal session
+      let customerId = customer_id;
       if (!customerId) {
         // Find customer by email
         const customers = await stripe.customers.list({ email: user.email, limit: 1 });

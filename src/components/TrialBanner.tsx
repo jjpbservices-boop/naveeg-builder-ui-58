@@ -9,7 +9,8 @@ export function TrialBanner() {
   const navigate = useNavigate();
   const { subscription, isTrialActive, getTrialDaysLeft } = useSubscription();
 
-  if (!subscription || !isTrialActive()) return null;
+  // Show only when status='trialing'
+  if (!subscription || subscription.status !== 'trialing') return null;
 
   const trialDaysLeft = getTrialDaysLeft();
 

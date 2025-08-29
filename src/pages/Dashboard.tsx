@@ -16,7 +16,7 @@ import { TrialBanner } from '@/components/TrialBanner';
 import { TrialExpiredScreen } from '@/components/TrialExpiredScreen';
 import { LockedFeature } from '@/components/LockedFeature';
 import { UpgradeModal } from '@/components/UpgradeModal';
-import { usePlanStore } from '@/lib/stores/usePlanStore';
+import { useSubscription } from '@/hooks/useSubscription';
 
 
 export default function Dashboard() {
@@ -33,19 +33,14 @@ export default function Dashboard() {
   const [upgradeType, setUpgradeType] = useState<'starter-to-pro' | 'pro-to-custom'>('starter-to-pro');
 
   const { 
-    currentPlan, 
-    trialDaysLeft, 
-    isTrialExpired, 
-    checkTrialExpiry, 
-    canAccessFeature,
-    hasFeature 
-  } = usePlanStore();
+    subscription,
+    isTrialActive,
+    isSubscriptionActive,
+    canConnectDomain,
+    getTrialDaysLeft
+  } = useSubscription();
 
   useEffect(() => {
-    // Check trial expiry on component mount and set up interval
-    checkTrialExpiry();
-    const interval = setInterval(checkTrialExpiry, 60000); // Check every minute
-    
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, session?.user?.id);
@@ -76,9 +71,8 @@ export default function Dashboard() {
 
     return () => {
       subscription.unsubscribe();
-      clearInterval(interval);
     };
-  }, [navigate, checkTrialExpiry]);
+  }, [navigate]);
 
   const loadUserWebsites = async (userId: string) => {
     try {
@@ -142,7 +136,7 @@ export default function Dashboard() {
 
     const requiredFeature = featureMap[view as keyof typeof featureMap];
     
-    if (requiredFeature && !canAccessFeature(requiredFeature as any)) {
+    if (requiredFeature && !isSubscriptionActive()) {
       const requiredPlan = getRequiredPlan(requiredFeature);
       setUpgradeType(requiredPlan === 'custom' ? 'pro-to-custom' : 'starter-to-pro');
       setUpgradeModalOpen(true);
@@ -212,7 +206,7 @@ export default function Dashboard() {
 
     const requiredFeature = featureRequirements[activeView as keyof typeof featureRequirements];
     
-    if (requiredFeature && !canAccessFeature(requiredFeature as any)) {
+    if (requiredFeature && !isSubscriptionActive()) {
       const requiredPlan = getRequiredPlan(requiredFeature);
       const planName = requiredPlan === 'custom' ? 'Custom' : 'Pro';
       
@@ -331,13 +325,13 @@ export default function Dashboard() {
               <div className="text-center py-8">
                 <Archive className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground mb-4">
-                  {hasFeature('backups_self_restore') 
+                  {subscription?.plan_id === 'pro' 
                     ? 'Self-restore backups and staging environment' 
                     : 'Daily automated backups'
                   }
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {hasFeature('backups_self_restore')
+                  {subscription?.plan_id === 'pro'
                     ? 'Restore previous versions and manage staging sites.'
                     : 'Automated daily backups are protecting your website. Contact support for restores.'
                   }
@@ -359,13 +353,13 @@ export default function Dashboard() {
               <div className="text-center py-8">
                 <Shield className="h-12 w-12 text-green-600 mx-auto mb-4" />
                 <p className="text-muted-foreground mb-4">
-                  {hasFeature('security_advanced') 
+                  {subscription?.plan_id === 'pro' 
                     ? 'Advanced security with firewall and 2FA' 
                     : 'Basic security protection active'
                   }
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {hasFeature('security_advanced')
+                  {subscription?.plan_id === 'pro'
                     ? 'SSL certificate, firewall protection, malware scanning, and two-factor authentication.'
                     : 'SSL certificate active and core security updates applied.'
                   }
@@ -425,10 +419,7 @@ export default function Dashboard() {
   };
 
 
-  // Show trial expired screen if trial has ended
-  if (isTrialExpired && currentPlan === 'trial') {
-    return <TrialExpiredScreen />;
-  }
+  // Remove trial expired check - handled by TrialBanner now
 
   return (
     <ErrorBoundary>

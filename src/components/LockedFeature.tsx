@@ -2,7 +2,7 @@ import React from 'react';
 import { Lock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { usePlanStore, PlanType } from '@/lib/stores/usePlanStore';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface LockedFeatureProps {
   featureName: string;
@@ -12,7 +12,7 @@ interface LockedFeatureProps {
 }
 
 export function LockedFeature({ featureName, description, requiredPlan, onUpgrade }: LockedFeatureProps) {
-  const { currentPlan } = usePlanStore();
+  const { subscription } = useSubscription();
 
   const getPlanDisplayName = (plan: string) => {
     return plan.charAt(0).toUpperCase() + plan.slice(1);

@@ -32,37 +32,41 @@ export default function Plans() {
   const [currentSiteId, setCurrentSiteId] = useState<string | null>(null);
   const [loadingSite, setLoadingSite] = useState(true);
 
+  // Site context - resolve non-null currentSiteId
   useEffect(() => {
-    const getSiteId = async () => {
+    const resolveSiteId = async () => {
       try {
-        console.log('[PLANS] Getting site ID...');
-        // Get site ID from URL or fetch user's first site
+        console.log('[PLANS] Resolving site ID...');
+        
+        // 1. Check router params or localStorage first
         const urlParams = new URLSearchParams(window.location.search);
         let siteId = urlParams.get('site_id') || localStorage.getItem('currentSiteId');
         
         if (!siteId) {
-          console.log('[PLANS] No site ID found, fetching from database...');
+          console.log('[PLANS] No cached site ID, fetching from database...');
+          // 2. Fetch user's first site
           const { data: sites, error } = await supabase
             .from('sites')
             .select('id')
-            .limit(1);
+            .limit(1)
+            .single();
           
           if (error) {
             console.error('[PLANS] Error fetching sites:', error);
             throw error;
           }
-          console.log('[PLANS] Sites found:', sites);
-          if (sites && sites.length > 0) {
-            siteId = sites[0].id;
+          
+          if (sites?.id) {
+            siteId = sites.id;
             localStorage.setItem('currentSiteId', siteId);
-            console.log('[PLANS] Set site ID:', siteId);
+            console.log('[PLANS] Cached new site ID:', siteId);
           }
         }
         
         setCurrentSiteId(siteId);
-        console.log('[PLANS] Current site ID set to:', siteId);
+        console.log('[PLANS] Current site ID resolved to:', siteId);
       } catch (error) {
-        console.error('[PLANS] Error getting site ID:', error);
+        console.error('[PLANS] Error resolving site ID:', error);
         toast({
           title: "Error",
           description: "Could not load site information",
@@ -73,7 +77,7 @@ export default function Plans() {
       }
     };
 
-    getSiteId();
+    resolveSiteId();
   }, [toast]);
 
   const handleBack = () => {
@@ -120,23 +124,19 @@ export default function Plans() {
 
   const getCurrentPlanId = () => {
     if (!subscription || !subscription.plan_id) return null;
-    // Map Stripe price IDs back to plan names
-    const planMap: Record<string, string> = {
-      'price_1QQSj3JnQl0NMBaKSXgkdpT8': 'starter',
-      'price_1QQSiuJnQl0NMBaKgCOY4c6A': 'pro'
-    };
-    return planMap[subscription.plan_id] || null;
+    return subscription.plan_id; // Now using actual plan_id from database
   };
 
   const getPlanCTA = (plan: string) => {
     if (loading || loadingSite) return 'Loading...';
     const currentPlanId = getCurrentPlanId();
+    const isActive = subscription && ['active', 'past_due'].includes(subscription.status);
     
     switch (plan) {
       case 'starter':
-        return currentPlanId === 'starter' ? 'Current Plan' : 'Choose Starter';
+        return (currentPlanId === 'starter' && isActive) ? 'Current Plan' : 'Choose Starter';
       case 'pro':
-        return currentPlanId === 'pro' ? 'Current Plan' : 'Choose Pro';
+        return (currentPlanId === 'pro' && isActive) ? 'Current Plan' : 'Choose Pro';
       case 'custom':
         return 'Contact Sales';
       default:
@@ -147,7 +147,8 @@ export default function Plans() {
   const isPlanDisabled = (plan: string) => {
     if (loading || loadingSite) return true;
     const currentPlanId = getCurrentPlanId();
-    return currentPlanId === plan;
+    const isActive = subscription && ['active', 'past_due'].includes(subscription.status);
+    return currentPlanId === plan && isActive;
   };
 
   const renderFeatureValue = (value: any) => {
