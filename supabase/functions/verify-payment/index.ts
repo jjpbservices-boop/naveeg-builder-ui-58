@@ -93,51 +93,7 @@ serve(async (req) => {
         { auth: { persistSession: false } }
       );
 
-      // Cancel any existing active subscriptions for this user to prevent duplicates
-      logStep("Checking for existing active subscriptions");
-      const { data: existingSubscriptions, error: existingError } = await supabaseService
-        .from('subscriptions')
-        .select('id, stripe_subscription_id')
-        .eq('user_id', user.id)
-        .in('status', ['active', 'trialing'])
-        .neq('stripe_subscription_id', subscription.id);
-
-      if (existingError) {
-        logStep("Error checking existing subscriptions", { error: existingError });
-      } else if (existingSubscriptions && existingSubscriptions.length > 0) {
-        logStep("Found existing subscriptions to cancel", { count: existingSubscriptions.length });
-        
-        // Cancel existing subscriptions in Stripe first
-        for (const existingSub of existingSubscriptions) {
-          if (existingSub.stripe_subscription_id) {
-            try {
-              await stripe.subscriptions.cancel(existingSub.stripe_subscription_id);
-              logStep("Canceled subscription in Stripe", { subscriptionId: existingSub.stripe_subscription_id });
-            } catch (cancelError) {
-              logStep("Warning: Could not cancel subscription in Stripe", { 
-                subscriptionId: existingSub.stripe_subscription_id, 
-                error: cancelError instanceof Error ? cancelError.message : String(cancelError)
-              });
-            }
-          }
-        }
-
-        // Update existing subscriptions to canceled status in database
-        const { error: updateError } = await supabaseService
-          .from('subscriptions')
-          .update({ status: 'canceled', updated_at: new Date().toISOString() })
-          .eq('user_id', user.id)
-          .in('status', ['active', 'trialing'])
-          .neq('stripe_subscription_id', subscription.id);
-
-        if (updateError) {
-          logStep("Error updating existing subscriptions", { error: updateError });
-        } else {
-          logStep("Successfully canceled existing subscriptions in database");
-        }
-      }
-
-      // Get plan_id from price_id
+      // Get plan_id from price_id first
       const priceId = subscription.items.data[0].price.id;
       const { data: priceData, error: priceError } = await supabaseService
         .from('stripe_prices')
@@ -148,6 +104,19 @@ serve(async (req) => {
       if (priceError || !priceData) {
         logStep("Error finding plan for price", { priceId, error: priceError });
         throw new Error(`Could not find plan for price ${priceId}`);
+      }
+
+      // Check for existing subscriptions for this user
+      logStep("Checking for existing subscriptions for user");
+      const { data: existingSubscriptions, error: existingError } = await supabaseService
+        .from('subscriptions')
+        .select('id, stripe_subscription_id, status')
+        .eq('user_id', user.id)
+        .in('status', ['active', 'trialing']);
+
+      if (existingError) {
+        logStep("Error checking existing subscriptions", { error: existingError });
+        throw new Error(`Error checking existing subscriptions: ${existingError.message}`);
       }
 
       // Prepare subscription data
@@ -167,18 +136,62 @@ serve(async (req) => {
         updated_at: new Date().toISOString(),
       };
 
-      logStep("Upserting subscription", subscriptionData);
+      let upsertData;
+      
+      if (existingSubscriptions && existingSubscriptions.length > 0) {
+        // User has existing subscription(s) - update the first one found
+        logStep("Found existing subscription, updating it", { 
+          existingCount: existingSubscriptions.length,
+          existingId: existingSubscriptions[0].id 
+        });
 
-      // Upsert subscription by stripe_subscription_id
-      const { data: upsertData, error: upsertError } = await supabaseService
-        .from('subscriptions')
-        .upsert(subscriptionData, { onConflict: 'stripe_subscription_id' })
-        .select()
-        .single();
+        // Cancel any other existing subscriptions in Stripe (but not the current one)
+        for (const existingSub of existingSubscriptions) {
+          if (existingSub.stripe_subscription_id && existingSub.stripe_subscription_id !== subscription.id) {
+            try {
+              await stripe.subscriptions.cancel(existingSub.stripe_subscription_id);
+              logStep("Canceled old subscription in Stripe", { subscriptionId: existingSub.stripe_subscription_id });
+            } catch (cancelError) {
+              logStep("Warning: Could not cancel old subscription in Stripe", { 
+                subscriptionId: existingSub.stripe_subscription_id, 
+                error: cancelError instanceof Error ? cancelError.message : String(cancelError)
+              });
+            }
+          }
+        }
 
-      if (upsertError) {
-        logStep("Error upserting subscription", { error: upsertError });
-        throw new Error(`Failed to update subscription: ${upsertError.message}`);
+        // Update the existing subscription record
+        const { data: updateData, error: updateError } = await supabaseService
+          .from('subscriptions')
+          .update(subscriptionData)
+          .eq('id', existingSubscriptions[0].id)
+          .select()
+          .single();
+
+        if (updateError) {
+          logStep("Error updating existing subscription", { error: updateError });
+          throw new Error(`Failed to update existing subscription: ${updateError.message}`);
+        }
+
+        upsertData = updateData;
+        logStep("Successfully updated existing subscription");
+      } else {
+        // No existing subscription - create new one
+        logStep("No existing subscription found, creating new one");
+        
+        const { data: insertData, error: insertError } = await supabaseService
+          .from('subscriptions')
+          .insert(subscriptionData)
+          .select()
+          .single();
+
+        if (insertError) {
+          logStep("Error inserting new subscription", { error: insertError });
+          throw new Error(`Failed to create new subscription: ${insertError.message}`);
+        }
+
+        upsertData = insertData;
+        logStep("Successfully created new subscription");
       }
 
       logStep("Subscription updated successfully", { subscriptionId: subscription.id });
