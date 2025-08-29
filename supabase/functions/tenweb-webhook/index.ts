@@ -6,63 +6,102 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-webhook-secret',
 }
 
+// Rate limiting store to prevent duplicate calls
+const rateLimitStore = new Map<string, number>();
+
 // Helper function to create trial subscription for published site
 async function createTrialSubscriptionForSite(supabase: any, siteId: string) {
+  const rateKey = `trial_${siteId}`;
+  const now = Date.now();
+  
+  // Rate limiting: max 1 trial creation per site per hour
+  if (rateLimitStore.has(rateKey)) {
+    const lastCreation = rateLimitStore.get(rateKey)!;
+    const hourInMs = 60 * 60 * 1000;
+    if (now - lastCreation < hourInMs) {
+      console.log(`Rate limited: Trial creation for site ${siteId} attempted too recently`);
+      return;
+    }
+  }
+  
+  console.log(`Processing trial subscription for site: ${siteId}`);
+  
   try {
-    console.log(`Creating trial subscription for site ${siteId}`)
-    
-    // Get site information to find user_id
+    // Get site details to find the user
     const { data: site, error: siteError } = await supabase
       .from('sites')
       .select('user_id')
       .eq('id', siteId)
-      .single()
+      .single();
 
-    if (siteError || !site?.user_id) {
-      console.error('Error getting site user_id:', siteError)
-      return
+    if (siteError) {
+      console.error('Error fetching site:', siteError);
+      return;
     }
 
-    // Check if trial already exists for this user and site - enhanced duplicate check
-    const { data: existingSubscriptions } = await supabase
+    if (!site?.user_id) {
+      console.error('Site has no user_id:', siteId);
+      return;
+    }
+
+    // Enhanced duplicate checking - check for ANY subscription for this site
+    const { data: existingSubscriptions, error: subscriptionError } = await supabase
       .from('subscriptions')
       .select('id, status, created_at')
-      .eq('user_id', site.user_id)
       .eq('site_id', siteId)
+      .eq('user_id', site.user_id);
+
+    if (subscriptionError) {
+      console.error('Error checking existing subscriptions:', subscriptionError);
+      return;
+    }
 
     if (existingSubscriptions && existingSubscriptions.length > 0) {
-      console.log(`Trial subscription already exists for site ${siteId} - found ${existingSubscriptions.length} existing subscriptions`)
-      return
+      console.log(`Subscription already exists for site ${siteId}:`, existingSubscriptions);
+      return;
     }
 
-    // Additional rate limiting - check for any recent trial creation (last 5 minutes)
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
-    const { data: recentTrials } = await supabase
+    // Enhanced abuse prevention - check for multiple recent trials across all sites
+    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+    const { data: recentTrials, error: recentTrialsError } = await supabase
       .from('subscriptions')
-      .select('id')
+      .select('id, site_id')
       .eq('user_id', site.user_id)
-      .gte('created_at', fiveMinutesAgo)
+      .eq('status', 'trialing')
+      .gte('created_at', sixHoursAgo.toISOString());
 
-    if (recentTrials && recentTrials.length > 0) {
-      console.log(`Rate limiting: Recent trial created for user ${site.user_id} within last 5 minutes`)
-      return
+    if (recentTrialsError) {
+      console.error('Error checking recent trials:', recentTrialsError);
+      return;
     }
 
-    // Create trial subscription using the database function
-    const { data: trialId, error: trialError } = await supabase
+    if (recentTrials && recentTrials.length >= 3) {
+      console.log(`User ${site.user_id} has created ${recentTrials.length} trials in the last 6 hours, blocking`);
+      return;
+    }
+
+    // Set rate limit before creation attempt
+    rateLimitStore.set(rateKey, now);
+    
+    // Create trial subscription using the RPC function
+    const { data: subscriptionId, error: createError } = await supabase
       .rpc('create_trial_subscription', {
         p_user_id: site.user_id,
         p_site_id: siteId
-      })
+      });
 
-    if (trialError) {
-      console.error('Error creating trial subscription:', trialError)
-      return
+    if (createError) {
+      console.error('Error creating trial subscription:', createError);
+      // Remove rate limit on failure
+      rateLimitStore.delete(rateKey);
+      return;
     }
 
-    console.log(`Successfully created trial subscription ${trialId} for site ${siteId}`)
+    console.log(`Successfully created trial subscription: ${subscriptionId} for site: ${siteId}`);
   } catch (error) {
-    console.error('Error in createTrialSubscriptionForSite:', error)
+    console.error('Unexpected error in createTrialSubscriptionForSite:', error);
+    // Remove rate limit on error
+    rateLimitStore.delete(rateKey);
   }
 }
 
