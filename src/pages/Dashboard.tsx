@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { DashboardSkeleton } from '@/components/LoadingStates';
 import { DashboardOverview } from '@/components/dashboard/DashboardOverview';
@@ -24,8 +25,8 @@ import { useSubscription } from '@/hooks/useSubscription';
 export default function Dashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
   
-  const [user, setUser] = useState<any>(null);
   const [websites, setWebsites] = useState<any[]>([]);
   const [currentWebsite, setCurrentWebsite] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -60,23 +61,19 @@ export default function Dashboard() {
     }
   }, [currentWebsite?.id]); // Removed fetchSubscription dependency to prevent infinite loop
 
-  // Removed useTrialFallback and usePaymentSuccess to prevent infinite refresh loops
-
+  // Load websites when user is available from AuthProvider
   useEffect(() => {
-    // Get initial session only - auth state is managed by AuthProvider
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Dashboard initial session check:', session?.user?.id);
-      if (!session) {
-        console.log('No initial session, redirecting to auth');
-        navigate({ to: '/auth' });
-        return;
-      }
-      setUser(session.user);
-      if (session.user?.id) {
-        loadUserWebsites(session.user.id);
-      }
-    });
-  }, [navigate]);
+    if (!authLoading && !user) {
+      console.log('[DASHBOARD] No user found, redirecting to auth');
+      navigate({ to: '/auth' });
+      return;
+    }
+    
+    if (user?.id) {
+      console.log('[DASHBOARD] Loading websites for user:', user.id);
+      loadUserWebsites(user.id);
+    }
+  }, [user, authLoading, navigate]);
 
   const loadUserWebsites = async (userId: string) => {
     try {
@@ -106,7 +103,7 @@ export default function Dashboard() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    navigate({ to: '/' });
+    // AuthProvider will handle the state change and redirect
   };
 
   const handleCopyUrl = async (url: string) => {
@@ -170,10 +167,8 @@ export default function Dashboard() {
     }
   };
 
-  // Note: Removed auto-refresh to prevent constant UI updates.
-  // Users can manually refresh when needed.
-
-  if (isLoading) {
+  // Show loading while auth is resolving or while loading websites
+  if (authLoading || isLoading) {
     return (
       <ErrorBoundary>
         <SidebarProvider defaultOpen={true}>
@@ -189,8 +184,12 @@ export default function Dashboard() {
               <header className="flex h-16 shrink-0 items-center gap-4 px-6">
                 <SidebarTrigger className="h-6 w-6" />
                 <div className="flex-1">
-                  <h1 className="text-xl font-semibold">Loading...</h1>
-                  <p className="text-sm text-muted-foreground">Please wait</p>
+                  <h1 className="text-xl font-semibold">
+                    {authLoading ? 'Authenticating...' : 'Loading...'}
+                  </h1>
+                  <p className="text-sm text-muted-foreground">
+                    {authLoading ? 'Verifying your session' : 'Loading your websites'}
+                  </p>
                 </div>
               </header>
 
