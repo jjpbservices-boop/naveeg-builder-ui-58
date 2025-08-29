@@ -8,10 +8,12 @@ import { Separator } from '@/components/ui/separator';
 import { Loader2, Mail, Lock, User, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Auth() {
   const navigate = useNavigate();
   const search = useSearch({ strict: false });
+  const { user } = useAuth();
   const [mode, setMode] = useState<'signin' | 'signup'>('signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,23 +21,12 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Check if user is already authenticated
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        const redirectTo = search?.context === 'generation' ? '/generating' : '/dashboard';
-        navigate({ to: redirectTo });
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        const redirectTo = search?.context === 'generation' ? '/generating' : '/dashboard';
-        navigate({ to: redirectTo });
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate, search]);
+    // Redirect if already authenticated
+    if (user) {
+      const redirectTo = search?.context === 'generation' ? '/generating' : '/dashboard';
+      navigate({ to: redirectTo });
+    }
+  }, [user, navigate, search]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

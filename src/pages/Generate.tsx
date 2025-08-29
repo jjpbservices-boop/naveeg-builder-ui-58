@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 const steps = [
   'Creating website structure',
@@ -66,12 +66,12 @@ const Generate: React.FC = () => {
     updateApiData, setError, error
   } = useOnboardingStore();
 
+  // Use centralized auth from useAuth hook
+  const { user: authUser } = useAuth();
+  
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setUser(session?.user || null);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+    setUser(authUser);
+  }, [authUser]);
 
   useEffect(() => {
     if (!website_id || !unique_id) {

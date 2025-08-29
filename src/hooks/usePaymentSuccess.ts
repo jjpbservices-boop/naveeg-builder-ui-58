@@ -27,11 +27,11 @@ export const usePaymentSuccess = (siteId?: string) => {
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
 
-      // Single retry to ensure webhook processing
-      setTimeout(() => {
-        console.log(`[PAYMENT_SUCCESS] Retrying subscription fetch after 3s`);
-        fetchSubscription(siteId);
-      }, 3000);
+      // Temporarily disabled to prevent auth cycling issues
+      // setTimeout(() => {
+      //   console.log(`[PAYMENT_SUCCESS] Retrying subscription fetch after 3s`);
+      //   fetchSubscription(siteId);
+      // }, 3000);
     }
   }, []); // Removed dependencies to prevent re-runs
 };

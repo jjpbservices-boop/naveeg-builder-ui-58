@@ -8,6 +8,7 @@ import { api, updateDesign } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { EnhancedLoading } from '@/components/EnhancedLoading';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 const generationSteps = [
   { name: 'Creating website structure', description: 'Building the foundation of your website' },
@@ -238,35 +239,18 @@ export default function Generating() {
     }
   };
 
+  const { user: authUser } = useAuth();
+
   useEffect(() => {
-    // Check auth state
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user || null);
-      if (event === 'SIGNED_IN' && showAuthModal && session?.user) {
-        setShowAuthModal(false);
-        setIsGenerating(true);
-        
-        // Create database record first if not already created
-        if (!database_id) {
-          await createDatabaseRecord(session.user);
-        }
-        
-        // Complete website generation and publishing with authenticated user
-        await completeWebsiteGeneration(session.user);
-      }
-    });
+    setUser(authUser);
+  }, [authUser]);
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-    });
-
+  useEffect(() => {
     if (!website_id || !unique_id) {
       navigate({ to: '/brief' });
       return;
     }
     generateWebsite();
-
-    return () => subscription.unsubscribe();
   }, [website_id, unique_id]);
 
   const handleRetry = () => {

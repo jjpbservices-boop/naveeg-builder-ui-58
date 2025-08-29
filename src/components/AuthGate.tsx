@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { supabase } from '@/integrations/supabase/client';
-import { User } from '@supabase/supabase-js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Lock, User as UserIcon } from 'lucide-react';
 import { HeroAnimation } from '@/components/HeroAnimation';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AuthGateProps {
   children: React.ReactNode;
@@ -19,24 +18,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
   message = 'Sign in to continue accessing this feature'
 }) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const { user, loading } = useAuth();
 
   const handleSignIn = () => {
     navigate({ to: redirectTo });

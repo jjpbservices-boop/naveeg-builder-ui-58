@@ -17,8 +17,8 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Ready() {
   const navigate = useNavigate();
@@ -36,18 +36,11 @@ export default function Ready() {
     reset: resetStore
   } = useOnboardingStore();
 
+  const { user: authUser } = useAuth();
+  
   useEffect(() => {
-    // Check auth state
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user || null);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+    setUser(authUser);
+  }, [authUser]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
