@@ -17,6 +17,7 @@ import { TrialExpiredScreen } from '@/components/TrialExpiredScreen';
 import { LockedFeature } from '@/components/LockedFeature';
 import { UpgradeModal } from '@/components/UpgradeModal';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useTrialFallback } from '@/hooks/useTrialFallback';
 
 
 export default function Dashboard() {
@@ -39,6 +40,9 @@ export default function Dashboard() {
     canConnectDomain,
     getTrialDaysLeft
   } = useSubscription();
+
+  // Create missing trial subscription as fallback
+  useTrialFallback(user, websites, subscription);
 
   useEffect(() => {
     // Set up auth state listener first

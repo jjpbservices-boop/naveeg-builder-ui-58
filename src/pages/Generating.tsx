@@ -248,10 +248,7 @@ export default function Generating() {
         
         // Create database record first if not already created
         if (!database_id) {
-          const createdSite = await createDatabaseRecord(session.user);
-          if (createdSite?.id) {
-            await createTrialSubscription(session.user.id, createdSite.id);
-          }
+          await createDatabaseRecord(session.user);
         }
         
         // Complete website generation and publishing with authenticated user

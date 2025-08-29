@@ -6,6 +6,54 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-webhook-secret',
 }
 
+// Helper function to create trial subscription for published site
+async function createTrialSubscriptionForSite(supabase: any, siteId: string) {
+  try {
+    console.log(`Creating trial subscription for site ${siteId}`)
+    
+    // Get site information to find user_id
+    const { data: site, error: siteError } = await supabase
+      .from('sites')
+      .select('user_id')
+      .eq('id', siteId)
+      .single()
+
+    if (siteError || !site?.user_id) {
+      console.error('Error getting site user_id:', siteError)
+      return
+    }
+
+    // Check if trial already exists for this user and site
+    const { data: existingSubscription } = await supabase
+      .from('subscriptions')
+      .select('id')
+      .eq('user_id', site.user_id)
+      .eq('site_id', siteId)
+      .single()
+
+    if (existingSubscription) {
+      console.log(`Trial subscription already exists for site ${siteId}`)
+      return
+    }
+
+    // Create trial subscription using the database function
+    const { data: trialId, error: trialError } = await supabase
+      .rpc('create_trial_subscription', {
+        p_user_id: site.user_id,
+        p_site_id: siteId
+      })
+
+    if (trialError) {
+      console.error('Error creating trial subscription:', trialError)
+      return
+    }
+
+    console.log(`Successfully created trial subscription ${trialId} for site ${siteId}`)
+  } catch (error) {
+    console.error('Error in createTrialSubscriptionForSite:', error)
+  }
+}
+
 serve(async (req) => {
   console.log(`[Webhook v1.1] ${req.method} ${req.url}`);
   // Handle CORS preflight requests
@@ -109,6 +157,11 @@ serve(async (req) => {
       }
 
       console.log(`Updated site ${site_id} with status: ${status}`)
+
+      // Create trial subscription after successful site publication
+      if (status === 'published' && data?.site_url) {
+        await createTrialSubscriptionForSite(supabase, site_id)
+      }
     }
 
     return new Response(JSON.stringify({ 
