@@ -20,78 +20,59 @@ serve(async (req) => {
   try {
     logStep("Domain gate check started");
 
-    // Initialize Supabase client with anon key for user auth
+    // Initialize Supabase client with service role
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
     );
 
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
+    const { site_id, user_id } = await req.json();
     
-    const user = userData.user;
-    if (!user) throw new Error("User not authenticated");
-    
-    logStep("User authenticated", { userId: user.id });
-
-    const url = new URL(req.url);
-    const siteId = url.searchParams.get('site_id');
-    
-    if (!siteId) {
-      throw new Error("site_id parameter is required");
+    if (!site_id || !user_id) {
+      throw new Error("site_id and user_id are required");
     }
+
+    logStep("Checking subscription status", { site_id, user_id });
 
     // Check if user has active subscription for this site
-    const { data: subscription, error: subError } = await supabaseClient
+    const { data: subscription, error } = await supabaseClient
       .from('subscriptions')
       .select('status, plan_id')
-      .eq('user_id', user.id)
-      .eq('site_id', siteId)
-      .order('created_at', { ascending: false })
-      .limit(1)
+      .eq('user_id', user_id)
+      .eq('site_id', site_id)
       .maybeSingle();
 
-    if (subError) {
-      throw subError;
+    if (error) {
+      logStep("Error fetching subscription", { error: error.message });
+      throw error;
     }
 
-    logStep("Subscription check", { subscription });
-
-    // Check if subscription is active
-    const isActive = subscription && ['active', 'past_due'].includes(subscription.status);
+    const hasActiveSubscription = subscription && ['active', 'past_due'].includes(subscription.status);
     
-    if (!isActive) {
-      logStep("Domain access blocked - inactive subscription", { 
-        status: subscription?.status || 'none',
-        siteId 
-      });
-      
+    logStep("Subscription check result", { 
+      hasSubscription: !!subscription, 
+      status: subscription?.status,
+      hasActiveSubscription 
+    });
+
+    if (!hasActiveSubscription) {
+      logStep("Domain access denied - no active subscription");
       return new Response(JSON.stringify({ 
         allowed: false, 
-        reason: 'Subscription required for domain access',
-        status: subscription?.status || 'none'
+        reason: 'Active subscription required for domain connection' 
       }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 403,
       });
     }
 
-    logStep("Domain access allowed", { 
-      status: subscription.status,
-      plan: subscription.plan_id,
-      siteId 
-    });
-
+    logStep("Domain access granted");
     return new Response(JSON.stringify({ 
       allowed: true, 
-      plan: subscription.plan_id,
-      status: subscription.status
+      plan: subscription.plan_id 
     }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
@@ -103,7 +84,7 @@ serve(async (req) => {
       allowed: false, 
       error: errorMessage 
     }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });
   }

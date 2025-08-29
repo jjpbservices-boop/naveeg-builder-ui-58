@@ -37,21 +37,17 @@ export default function Plans() {
     if (plan === 'custom') {
       window.open('mailto:sales@naveeg.com?subject=Custom Plan Inquiry', '_blank');
     } else {
-      // Map plan to environment-based price IDs
-      const getPriceId = (planType: string) => {
-        if (planType === 'starter') {
-          return 'price_1QdQZ3IcdxHKDXbGZ5VHOqDM'; // Real Stripe starter price ID
-        } else if (planType === 'pro') {
-          return 'price_1QdQbGIcdxHKDXbGIf2DsGJo'; // Real Stripe pro price ID
-        }
-        throw new Error(`Unknown plan: ${planType}`);
+      // Map plan to actual Stripe price IDs
+      const priceMap = {
+        starter: 'price_1QQSj3JnQl0NMBaKSXgkdpT8',
+        pro: 'price_1QQSiuJnQl0NMBaKgCOY4c6A'
       };
       
-      const priceId = getPriceId(plan);
+      const priceId = priceMap[plan];
       
-      // Get current site ID from URL params or context
-      const url = new URL(window.location.href);
-      const currentSiteId = url.searchParams.get('site_id') || ''; // Pass actual site ID
+      // Get current site ID from URL params or local storage
+      const urlParams = new URLSearchParams(window.location.search);
+      const currentSiteId = urlParams.get('site_id') || localStorage.getItem('currentSiteId');
       
       try {
         await createCheckout(priceId, currentSiteId);

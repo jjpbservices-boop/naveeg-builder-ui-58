@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
@@ -23,7 +23,7 @@ export const useSubscription = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSubscription = async (siteId?: string) => {
+  const fetchSubscription = useCallback(async (siteId?: string) => {
     if (!user) {
       setSubscription(null);
       setLoading(false);
@@ -61,7 +61,7 @@ export const useSubscription = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const createCheckout = async (priceId: string, siteId?: string) => {
     try {
@@ -150,7 +150,7 @@ export const useSubscription = () => {
 
   useEffect(() => {
     fetchSubscription();
-  }, [user]);
+  }, [fetchSubscription]);
 
   // Set up real-time subscription for subscription changes
   useEffect(() => {
@@ -167,13 +167,9 @@ export const useSubscription = () => {
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          // Only refetch if this change affects current site or is site-agnostic
-          const siteId = new URL(window.location.href).searchParams.get('site_id');
-          const changedSiteId = (payload.new as any)?.site_id || (payload.old as any)?.site_id;
-          
-          if (!siteId || !changedSiteId || siteId === changedSiteId) {
-            fetchSubscription(siteId || undefined);
-          }
+          // Refetch subscription when changes occur
+          const siteId = (payload.new as any)?.site_id || (payload.old as any)?.site_id;
+          fetchSubscription(siteId);
         }
       )
       .subscribe();
@@ -181,7 +177,7 @@ export const useSubscription = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, fetchSubscription]);
 
   return {
     subscription,

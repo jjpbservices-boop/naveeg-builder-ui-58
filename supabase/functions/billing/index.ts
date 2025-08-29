@@ -63,7 +63,7 @@ serve(async (req) => {
         logStep("Found existing customer", { customerId });
       }
 
-      // Get current site_id (you might want to pass this as a parameter)
+      // Get current site_id
       const siteId = url.searchParams.get('site_id');
 
       const session = await stripe.checkout.sessions.create({
@@ -94,7 +94,7 @@ serve(async (req) => {
 
     } else if (action === 'create-portal') {
       // Create customer portal session
-      let customerId = url.searchParams.get('customer_id');
+      let customerId = url.searchParams.get('customer_id') || '';
       if (!customerId) {
         // Find customer by email
         const customers = await stripe.customers.list({ email: user.email, limit: 1 });
