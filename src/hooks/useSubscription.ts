@@ -19,9 +19,10 @@ export interface Subscription {
 
 export const useSubscription = () => {
   const { user } = useAuth();
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+    const [subscription, setSubscription] = useState<Subscription | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [lastUpdate, setLastUpdate] = useState(Date.now());
 
   // Fetch subscription by user_id, with fallback for site_id filtering
   const fetchSubscription = useCallback(async (siteId?: string) => {
@@ -84,8 +85,9 @@ export const useSubscription = () => {
             throw fallbackError;
           }
 
-          console.log('[SUBSCRIPTION] Fallback subscription:', fallbackData?.[0] || null);
-          setSubscription(fallbackData?.[0] || null);
+           console.log('[SUBSCRIPTION] Fallback subscription:', fallbackData?.[0] || null);
+           setSubscription(fallbackData?.[0] || null);
+           setLastUpdate(Date.now());
         } else {
           // When siteId is undefined, fetch any subscription for the user
           console.log('[SUBSCRIPTION] No siteId provided, fetching any user subscription');
@@ -104,12 +106,14 @@ export const useSubscription = () => {
             throw anyError;
           }
 
-          console.log('[SUBSCRIPTION] Any subscription found:', anyData?.[0] || null);
-          setSubscription(anyData?.[0] || null);
+           console.log('[SUBSCRIPTION] Any subscription found:', anyData?.[0] || null);
+           setSubscription(anyData?.[0] || null);
+           setLastUpdate(Date.now());
         }
       } else {
-        console.log('[SUBSCRIPTION] Found subscription:', data[0]);
-        setSubscription(data[0]);
+         console.log('[SUBSCRIPTION] Found subscription:', data[0]);
+         setSubscription(data[0]);
+         setLastUpdate(Date.now());
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch subscription';
@@ -275,6 +279,7 @@ export const useSubscription = () => {
             if (payload.eventType === 'UPDATE' && payload.new) {
               console.log('[SUBSCRIPTION] Updating subscription from real-time data');
               setSubscription(payload.new as Subscription);
+              setLastUpdate(Date.now());
             } else {
               // For INSERT/DELETE, refetch without site_id to get latest
               console.log('[SUBSCRIPTION] Refetching subscription due to INSERT/DELETE');
@@ -302,6 +307,7 @@ export const useSubscription = () => {
     isTrialActive,
     isSubscriptionActive,
     canConnectDomain,
-    getTrialDaysLeft,
+     getTrialDaysLeft,
+     lastUpdate,
   };
 };

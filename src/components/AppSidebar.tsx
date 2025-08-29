@@ -72,7 +72,29 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { t, i18n } = useTranslation('common');
-  const { subscription, isSubscriptionActive, canConnectDomain } = useSubscription();
+  const { subscription, isSubscriptionActive, canConnectDomain, fetchSubscription, lastUpdate } = useSubscription();
+  
+  // Force re-render when subscription changes
+  const [renderKey, setRenderKey] = React.useState(0);
+  
+  // Debug subscription state changes
+  React.useEffect(() => {
+    console.log('[SIDEBAR] Subscription state changed:', {
+      subscription,
+      plan_id: subscription?.plan_id,
+      status: subscription?.status,
+      lastUpdate,
+      renderKey
+    });
+    setRenderKey(prev => prev + 1);
+  }, [subscription?.plan_id, subscription?.status, subscription?.id, lastUpdate]);
+  
+  // Manual refresh function for debugging
+  const handleRefreshSubscription = async () => {
+    console.log('[SIDEBAR] Manual refresh triggered');
+    await fetchSubscription();
+    setRenderKey(prev => prev + 1);
+  };
 
   const languages = [
     { code: 'en', name: 'English' },
@@ -94,7 +116,15 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
     return isSubscriptionActive();
   };
 
-  const getPlanBadge = () => {
+  const getPlanBadge = React.useMemo(() => {
+    console.log('[SIDEBAR] Computing plan badge with subscription:', {
+      subscription,
+      plan_id: subscription?.plan_id,
+      status: subscription?.status,
+      lastUpdate,
+      renderKey
+    });
+    
     if (!subscription) {
       console.log('[SIDEBAR] No subscription found, showing Trial badge');
       return 'Trial';
@@ -103,7 +133,7 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
     const badge = subscription.plan_id.charAt(0).toUpperCase() + subscription.plan_id.slice(1);
     console.log('[SIDEBAR] Subscription found, showing badge:', badge, 'Status:', subscription.status);
     return badge;
-  };
+  }, [subscription?.plan_id, subscription?.status, subscription?.id, lastUpdate, renderKey]);
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border" style={{ '--sidebar-width': '240px', '--sidebar-width-icon': '64px' } as React.CSSProperties}>
@@ -254,7 +284,18 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
           <div className="px-3 mb-2">
             <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
               <span className="text-xs font-medium text-muted-foreground">Plan</span>
-              <span className="text-xs font-bold text-primary">{getPlanBadge()}</span>
+              <div className="flex items-center gap-1">
+                <span className="text-xs font-bold text-primary" key={renderKey}>
+                  {getPlanBadge}
+                </span>
+                <button 
+                  onClick={handleRefreshSubscription}
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                  title="Refresh subscription"
+                >
+                  🔄
+                </button>
+              </div>
             </div>
           </div>
         )}
