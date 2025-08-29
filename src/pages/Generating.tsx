@@ -94,10 +94,8 @@ export default function Generating() {
       // Create or update database record now that we have a valid website_id
       const createdSite = await createDatabaseRecord(session.user);
       
-      // Create 7-day trial subscription for the user
-      if (createdSite?.id) {
-        await createTrialSubscription(session.user.id, createdSite.id);
-      }
+      // Note: Trial subscription will be created by 10Web webhook when site is published
+      // Removed duplicate trial creation to prevent conflicts
       
       // Continue with publishing if already authenticated
       await completeWebsiteGeneration(session.user);
@@ -152,30 +150,8 @@ export default function Generating() {
     }
   };
 
-  const createTrialSubscription = async (userId: string, siteId: string) => {
-    try {
-      console.log('Creating trial subscription for user:', userId, 'site:', siteId);
-      
-      const { data, error } = await supabase.rpc('create_trial_subscription', {
-        p_user_id: userId,
-        p_site_id: siteId
-      });
-
-      if (error) {
-        console.error('Failed to create trial subscription:', error);
-        // Don't throw, just log - the website generation can continue
-      } else {
-        console.log('Trial subscription created successfully:', data);
-        toast({
-          title: 'Welcome! 🎉',
-          description: 'Your 7-day free trial has started. Enjoy exploring all features!'
-        });
-      }
-    } catch (error) {
-      console.error('Error creating trial subscription:', error);
-      // Don't throw, just log - the website generation can continue
-    }
-  };
+  // Removed createTrialSubscription function - trial creation is now handled exclusively by 10Web webhook
+  // This eliminates the race condition between client-side and webhook trial creation
 
   const completeWebsiteGeneration = async (user: any) => {
     try {
@@ -229,6 +205,10 @@ export default function Generating() {
         description: 'Your website is ready for preview.'
       });
 
+      // Clear onboarding store to prevent re-triggering
+      const { reset } = useOnboardingStore.getState();
+      reset();
+
       setIsGenerating(false);
       setTimeout(() => navigate({ to: '/dashboard' }), 1000);
 
@@ -250,7 +230,11 @@ export default function Generating() {
       navigate({ to: '/brief' });
       return;
     }
-    generateWebsite();
+
+    // Check if generation has already started to prevent multiple executions
+    if (isGenerating && currentStep === 0) {
+      generateWebsite();
+    }
   }, [website_id, unique_id]);
 
   const handleRetry = () => {

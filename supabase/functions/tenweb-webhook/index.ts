@@ -23,16 +23,28 @@ async function createTrialSubscriptionForSite(supabase: any, siteId: string) {
       return
     }
 
-    // Check if trial already exists for this user and site
-    const { data: existingSubscription } = await supabase
+    // Check if trial already exists for this user and site - enhanced duplicate check
+    const { data: existingSubscriptions } = await supabase
+      .from('subscriptions')
+      .select('id, status, created_at')
+      .eq('user_id', site.user_id)
+      .eq('site_id', siteId)
+
+    if (existingSubscriptions && existingSubscriptions.length > 0) {
+      console.log(`Trial subscription already exists for site ${siteId} - found ${existingSubscriptions.length} existing subscriptions`)
+      return
+    }
+
+    // Additional rate limiting - check for any recent trial creation (last 5 minutes)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+    const { data: recentTrials } = await supabase
       .from('subscriptions')
       .select('id')
       .eq('user_id', site.user_id)
-      .eq('site_id', siteId)
-      .single()
+      .gte('created_at', fiveMinutesAgo)
 
-    if (existingSubscription) {
-      console.log(`Trial subscription already exists for site ${siteId}`)
+    if (recentTrials && recentTrials.length > 0) {
+      console.log(`Rate limiting: Recent trial created for user ${site.user_id} within last 5 minutes`)
       return
     }
 

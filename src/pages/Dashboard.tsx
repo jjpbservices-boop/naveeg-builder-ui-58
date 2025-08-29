@@ -18,8 +18,7 @@ import { TrialExpiredScreen } from '@/components/TrialExpiredScreen';
 import { LockedFeature } from '@/components/LockedFeature';
 import { UpgradeModal } from '@/components/UpgradeModal';
 import { useSubscription } from '@/hooks/useSubscription';
-// import { useTrialFallback } from '@/hooks/useTrialFallback';
-// import { usePaymentSuccess } from '@/hooks/usePaymentSuccess';
+import { usePaymentSuccess } from '@/hooks/usePaymentSuccess';
 
 
 export default function Dashboard() {
@@ -52,14 +51,11 @@ export default function Dashboard() {
     }
   }, [currentWebsite?.id]); // Removed fetchSubscription from dependencies to prevent infinite loop
 
-  // Create stable callback for trial creation to prevent dependency loop
-  const handleTrialCreated = React.useCallback(() => {
-    console.log('[DASHBOARD] Trial created, refetching subscription');
-    // Refetch subscription instead of page reload
-    if (currentWebsite?.id) {
-      fetchSubscription(currentWebsite.id);
-    }
-  }, [currentWebsite?.id]); // Removed fetchSubscription dependency to prevent infinite loop
+  // Use payment success hook for subscription refresh after successful payments
+  usePaymentSuccess(currentWebsite?.id);
+
+  // Removed useTrialFallback completely - trial creation is now handled exclusively by 10Web webhook
+  // This eliminates the infinite refresh loop caused by competing trial creation mechanisms
 
   // Load websites when user is available from AuthProvider
   useEffect(() => {
