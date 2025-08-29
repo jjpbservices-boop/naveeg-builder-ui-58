@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Check, X, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { usePlanStore } from '@/lib/stores/usePlanStore';
 import { useSubscription } from '@/hooks/useSubscription';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const planFeatures = [
   { name: 'Pages', starter: '5 max', pro: 'Unlimited', custom: 'Unlimited + multi-site' },
@@ -26,8 +27,46 @@ const planFeatures = [
 
 export default function Plans() {
   const navigate = useNavigate();
-  const { currentPlan, setPlan } = usePlanStore();
-  const { createCheckout } = useSubscription();
+  const { subscription, createCheckout, loading } = useSubscription();
+  const { toast } = useToast();
+  const [currentSiteId, setCurrentSiteId] = useState<string | null>(null);
+  const [loadingSite, setLoadingSite] = useState(true);
+
+  useEffect(() => {
+    const getSiteId = async () => {
+      try {
+        // Get site ID from URL or fetch user's first site
+        const urlParams = new URLSearchParams(window.location.search);
+        let siteId = urlParams.get('site_id') || localStorage.getItem('currentSiteId');
+        
+        if (!siteId) {
+          const { data: sites, error } = await supabase
+            .from('sites')
+            .select('id')
+            .limit(1);
+          
+          if (error) throw error;
+          if (sites && sites.length > 0) {
+            siteId = sites[0].id;
+            localStorage.setItem('currentSiteId', siteId);
+          }
+        }
+        
+        setCurrentSiteId(siteId);
+      } catch (error) {
+        console.error('Error getting site ID:', error);
+        toast({
+          title: "Error",
+          description: "Could not load site information",
+          variant: "destructive"
+        });
+      } finally {
+        setLoadingSite(false);
+      }
+    };
+
+    getSiteId();
+  }, [toast]);
 
   const handleBack = () => {
     navigate({ to: '/dashboard' });
@@ -36,33 +75,57 @@ export default function Plans() {
   const handlePlanSelect = async (plan: 'starter' | 'pro' | 'custom') => {
     if (plan === 'custom') {
       window.open('mailto:sales@naveeg.com?subject=Custom Plan Inquiry', '_blank');
-    } else {
-      // Map plan to actual Stripe price IDs
-      const priceMap = {
-        starter: 'price_1QQSj3JnQl0NMBaKSXgkdpT8',
-        pro: 'price_1QQSiuJnQl0NMBaKgCOY4c6A'
-      };
-      
-      const priceId = priceMap[plan];
-      
-      // Get current site ID from URL params or local storage
-      const urlParams = new URLSearchParams(window.location.search);
-      const currentSiteId = urlParams.get('site_id') || localStorage.getItem('currentSiteId');
-      
-      try {
-        await createCheckout(priceId, currentSiteId);
-      } catch (error) {
-        console.error('Failed to create checkout:', error);
-      }
+      return;
+    }
+
+    if (!currentSiteId) {
+      toast({
+        title: "Error",
+        description: "No site found. Please create a site first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Map plan to actual Stripe price IDs
+    const priceMap = {
+      starter: 'price_1QQSj3JnQl0NMBaKSXgkdpT8',
+      pro: 'price_1QQSiuJnQl0NMBaKgCOY4c6A'
+    };
+    
+    const priceId = priceMap[plan];
+    
+    try {
+      await createCheckout(priceId, currentSiteId);
+    } catch (error) {
+      console.error('Failed to create checkout:', error);
+      toast({
+        title: "Checkout Error",
+        description: "Failed to create checkout session. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
+  const getCurrentPlanId = () => {
+    if (!subscription || !subscription.plan_id) return null;
+    // Map Stripe price IDs back to plan names
+    const planMap: Record<string, string> = {
+      'price_1QQSj3JnQl0NMBaKSXgkdpT8': 'starter',
+      'price_1QQSiuJnQl0NMBaKgCOY4c6A': 'pro'
+    };
+    return planMap[subscription.plan_id] || null;
+  };
+
   const getPlanCTA = (plan: string) => {
+    if (loading || loadingSite) return 'Loading...';
+    const currentPlanId = getCurrentPlanId();
+    
     switch (plan) {
       case 'starter':
-        return currentPlan === 'starter' ? 'Current Plan' : 'Choose Starter';
+        return currentPlanId === 'starter' ? 'Current Plan' : 'Choose Starter';
       case 'pro':
-        return currentPlan === 'pro' ? 'Current Plan' : 'Choose Pro';
+        return currentPlanId === 'pro' ? 'Current Plan' : 'Choose Pro';
       case 'custom':
         return 'Contact Sales';
       default:
@@ -71,7 +134,9 @@ export default function Plans() {
   };
 
   const isPlanDisabled = (plan: string) => {
-    return currentPlan === plan;
+    if (loading || loadingSite) return true;
+    const currentPlanId = getCurrentPlanId();
+    return currentPlanId === plan;
   };
 
   const renderFeatureValue = (value: any) => {
@@ -113,8 +178,8 @@ export default function Plans() {
         {/* Plan Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {/* Starter */}
-          <Card className={`relative ${currentPlan === 'starter' ? 'border-primary bg-primary-light' : ''}`}>
-            {currentPlan === 'starter' && (
+          <Card className={`relative ${getCurrentPlanId() === 'starter' ? 'border-primary bg-primary-light' : ''}`}>
+            {getCurrentPlanId() === 'starter' && (
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                 <Badge className="bg-primary text-primary-foreground">
                   Current Plan
@@ -131,7 +196,7 @@ export default function Plans() {
                 onClick={() => handlePlanSelect('starter')}
                 className="w-full mb-6"
                 disabled={isPlanDisabled('starter')}
-                variant={currentPlan === 'starter' ? 'outline' : 'default'}
+                variant={getCurrentPlanId() === 'starter' ? 'outline' : 'default'}
               >
                 {getPlanCTA('starter')}
               </Button>
@@ -139,8 +204,8 @@ export default function Plans() {
           </Card>
 
           {/* Pro */}
-          <Card className={`relative ${currentPlan === 'pro' ? 'border-primary bg-primary-light' : 'border-primary/50 scale-105'}`}>
-            {currentPlan === 'pro' ? (
+          <Card className={`relative ${getCurrentPlanId() === 'pro' ? 'border-primary bg-primary-light' : 'border-primary/50 scale-105'}`}>
+            {getCurrentPlanId() === 'pro' ? (
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                 <Badge className="bg-primary text-primary-foreground">
                   Current Plan
@@ -163,7 +228,7 @@ export default function Plans() {
                 onClick={() => handlePlanSelect('pro')}
                 className="w-full mb-6"
                 disabled={isPlanDisabled('pro')}
-                variant={currentPlan === 'pro' ? 'outline' : 'default'}
+                variant={getCurrentPlanId() === 'pro' ? 'outline' : 'default'}
               >
                 {getPlanCTA('pro')}
               </Button>
@@ -171,8 +236,8 @@ export default function Plans() {
           </Card>
 
           {/* Custom */}
-          <Card className={`relative ${currentPlan === 'custom' ? 'border-primary bg-primary-light' : ''}`}>
-            {currentPlan === 'custom' && (
+          <Card className={`relative ${getCurrentPlanId() === 'custom' ? 'border-primary bg-primary-light' : ''}`}>
+            {getCurrentPlanId() === 'custom' && (
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                 <Badge className="bg-primary text-primary-foreground">
                   Current Plan
