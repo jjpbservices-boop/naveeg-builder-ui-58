@@ -1,25 +1,27 @@
 import { useEffect, useCallback } from 'react'
 
-/** Subtle + futuristic: dark-mode toned down, light-mode unchanged */
 export const useHeroAnimation = (canvasId: string) => {
   const waitForReadyCanvas = useCallback((retryCount = 0): Promise<HTMLCanvasElement> => {
     return new Promise((resolve, reject) => {
       const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null
       if (!canvas) {
-        if (retryCount < 10) setTimeout(() => { waitForReadyCanvas(retryCount + 1).then(resolve).catch(reject) }, 50 * (retryCount + 1))
-        else reject(new Error(`Canvas "${canvasId}" not found`))
+        if (retryCount < 10) {
+          setTimeout(() => { waitForReadyCanvas(retryCount + 1).then(resolve).catch(reject) }, 50 * (retryCount + 1))
+        } else reject(new Error(`Canvas "${canvasId}" not found`))
         return
       }
       const parent = canvas.parentElement
       if (!parent) {
-        if (retryCount < 10) setTimeout(() => { waitForReadyCanvas(retryCount + 1).then(resolve).catch(reject) }, 50 * (retryCount + 1))
-        else reject(new Error('Canvas parent element not found'))
+        if (retryCount < 10) {
+          setTimeout(() => { waitForReadyCanvas(retryCount + 1).then(resolve).catch(reject) }, 50 * (retryCount + 1))
+        } else reject(new Error('Canvas parent element not found'))
         return
       }
       const rect = parent.getBoundingClientRect()
       if (!rect.width || !rect.height) {
-        if (retryCount < 10) setTimeout(() => { waitForReadyCanvas(retryCount + 1).then(resolve).catch(reject) }, 50 * (retryCount + 1))
-        else reject(new Error('Canvas parent has zero dimensions'))
+        if (retryCount < 10) {
+          setTimeout(() => { waitForReadyCanvas(retryCount + 1).then(resolve).catch(reject) }, 50 * (retryCount + 1))
+        } else reject(new Error('Canvas parent has zero dimensions'))
         return
       }
       resolve(canvas)
@@ -49,16 +51,6 @@ export const useHeroAnimation = (canvasId: string) => {
       const FPS = 30
       // -------------------
 
-      // Dark-mode softness controls (subtle, not overwhelming)
-      const DARK = {
-        mixK: 0.7,          // blend brand -> black (higher = darker)
-        alphaBoost: 1.2,    // slight lift vs light
-        baseScale: 1.15,    // base brightness scale
-        ampScale: 0.9,      // reduce twinkle amplitude
-        gradBoost: 1.12,    // gentle gradient strength
-        maxAlpha: 0.22      // hard cap to keep dots subtle
-      }
-
       const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
       const hexToRgb = (hex: string) => {
         const h = hex.replace('#', '')
@@ -76,10 +68,11 @@ export const useHeroAnimation = (canvasId: string) => {
       }
       const hexToRGBA = (hex: string, a: number) => {
         const { r, g, b } = hexToRgb(hex)
-        return `rgba(${r},${g},${b},${clamp01(a)})`
+        return `rgba(${r},${g},${b},${a})`
       }
 
-      const css = getComputedStyle(document.documentElement)
+      const readCSS = () => getComputedStyle(document.documentElement)
+      const css = readCSS()
       let primaryHex = css.getPropertyValue('--brand-hex').trim() || '#FF4A1C'
       if (!primaryHex.startsWith('#')) primaryHex = '#FF4A1C'
 
@@ -89,7 +82,7 @@ export const useHeroAnimation = (canvasId: string) => {
         (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
       const getTokenDotRGB = () => {
-        const v = getComputedStyle(document.documentElement).getPropertyValue('--hero-dot-rgb').trim()
+        const v = readCSS().getPropertyValue('--hero-dot-rgb').trim()
         if (!v) return null
         const parts = v.split(',').map(s => parseInt(s.trim(), 10))
         if (parts.length !== 3 || parts.some(Number.isNaN)) return null
@@ -100,9 +93,9 @@ export const useHeroAnimation = (canvasId: string) => {
         const token = getTokenDotRGB()
         if (token) return `rgba(${token.r},${token.g},${token.b},${a})`
         if (isDark()) {
-          const darkBase = mix(primaryHex, '#000000', DARK.mixK)
-          const boosted = Math.min(DARK.maxAlpha, a * DARK.alphaBoost)
-          return hexToRGBA(darkBase, boosted)
+          // Less black, more visible brand tint in dark mode
+          const darkBase = mix(primaryHex, '#000000', 0.55)
+          return hexToRGBA(darkBase, a * 1.5) // boost alpha by 1.5x
         }
         return `rgba(255,255,255,${a})`
       }
@@ -112,7 +105,6 @@ export const useHeroAnimation = (canvasId: string) => {
       const primary600 = mix(primaryHex, '#000000', 0.24)
       const primary400 = mix(primaryHex, '#FFFFFF', 0.28)
       const amberSoft = mix(primaryHex, '#FFD39A', 0.55)
-      const GRAD = isDark() ? DARK.gradBoost : 1
 
       type Dot = { x: number; y: number; r: number; phase: number; speed: number; base: number; amp: number }
       let dots: Dot[] = []
@@ -121,7 +113,6 @@ export const useHeroAnimation = (canvasId: string) => {
       function buildGrid() {
         const cols = Math.ceil(w / SPACING)
         const rows = Math.ceil(h / SPACING)
-        const dark = isDark()
         dots = []
         for (let y = 0; y < rows; y++) {
           for (let x = 0; x < cols; x++) {
@@ -133,8 +124,8 @@ export const useHeroAnimation = (canvasId: string) => {
               r: DOT_MIN + Math.random() * (DOT_MAX - DOT_MIN),
               phase: Math.random() * Math.PI * 2,
               speed: 0.012 + Math.random() * 0.018,
-              base: BASE_ALPHA * (0.85 + Math.random() * 0.3) * (dark ? DARK.baseScale : 1),
-              amp: TWINKLE_AMP * (0.6 + Math.random() * 0.8) * (dark ? DARK.ampScale : 1),
+              base: BASE_ALPHA * (0.85 + Math.random() * 0.3),
+              amp: TWINKLE_AMP * (0.6 + Math.random() * 0.8),
             })
           }
         }
@@ -142,20 +133,20 @@ export const useHeroAnimation = (canvasId: string) => {
 
       function drawGradients() {
         let g = ctx.createRadialGradient(w * 0.15, h * 0.15, 0, w * 0.15, h * 0.15, Math.hypot(w, h) * 0.35)
-        g.addColorStop(0, hexToRGBA(primary700, 0.35 * GRAD))
+        g.addColorStop(0, hexToRGBA(primary700, 0.35))
         g.addColorStop(1, 'rgba(0,0,0,0)')
         ctx.fillStyle = g
         ctx.fillRect(0, 0, w, h)
 
         g = ctx.createRadialGradient(w * 0.85, h * 0.18, 0, w * 0.85, h * 0.18, Math.hypot(w, h) * 0.35)
-        g.addColorStop(0, hexToRGBA(primary400, 0.24 * GRAD)) // slightly reduced from 0.28
+        g.addColorStop(0, hexToRGBA(primary400, 0.28))
         g.addColorStop(1, 'rgba(0,0,0,0)')
         ctx.fillStyle = g
         ctx.fillRect(0, 0, w, h)
 
         g = ctx.createRadialGradient(w * 0.5, h * 0.95, 0, w * 0.5, h * 0.95, Math.hypot(w, h) * 0.25)
-        g.addColorStop(0, hexToRGBA(primary600, 0.16 * GRAD)) // slightly reduced
-        g.addColorStop(0.6, hexToRGBA(amberSoft, 0.07 * GRAD))
+        g.addColorStop(0, hexToRGBA(primary600, 0.18))
+        g.addColorStop(0.6, hexToRGBA(amberSoft, 0.08))
         g.addColorStop(1, 'rgba(0,0,0,0)')
         ctx.fillStyle = g
         ctx.fillRect(0, 0, w, h)
@@ -172,7 +163,7 @@ export const useHeroAnimation = (canvasId: string) => {
 
         for (const d of dots) {
           d.phase += d.speed
-          const a = clamp01(d.base + Math.sin(d.phase + gPhase) * d.amp)
+          const a = Math.max(0, Math.min(1, d.base + Math.sin(d.phase + gPhase) * d.amp))
           ctx.fillStyle = computeDotRGBA(a)
           ctx.beginPath()
           ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2)
@@ -184,8 +175,8 @@ export const useHeroAnimation = (canvasId: string) => {
 
       const ro = new ResizeObserver(() => {
         const rect = canvas.parentElement!.getBoundingClientRect()
-        const nextW = Math.max(1, Math.round(rect.width))
-        const nextH = Math.max(1, Math.round(rect.height))
+        const nextW = Math.round(rect.width)
+        const nextH = Math.round(rect.height)
         if (nextW === w && nextH === h) return
         w = nextW; h = nextH
         const dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1))
@@ -199,8 +190,12 @@ export const useHeroAnimation = (canvasId: string) => {
       buildGrid()
       requestAnimationFrame(step)
 
-      return () => { ro.disconnect() }
-    } catch { return () => {} }
+      return () => {
+        ro.disconnect()
+      }
+    } catch {
+      return () => {}
+    }
   }, [waitForReadyCanvas])
 
   useEffect(() => {
