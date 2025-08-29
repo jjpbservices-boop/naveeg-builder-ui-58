@@ -27,7 +27,7 @@ export const useSubscription = () => {
   const [isExecuting, setIsExecuting] = useState<Set<string>>(new Set());
   const [lastFetchedSiteId, setLastFetchedSiteId] = useState<string | null>(null);
 
-  // Fetch subscription by user_id AND site_id (mandatory filtering)
+  // Fetch subscription by user_id, with fallback for site_id filtering
   const fetchSubscription = useCallback(async (siteId?: string) => {
     console.log('[SUBSCRIPTION] fetchSubscription called with siteId:', siteId);
     
@@ -58,30 +58,49 @@ export const useSubscription = () => {
       setError(null);
       setLastFetchedSiteId(siteId || null);
 
-      // ALWAYS filter by both user_id AND site_id for proper per-site subscriptions
+      // First try to fetch subscription for specific site
       let query = supabase
         .from('subscriptions')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .in('status', ['active', 'trialing', 'past_due'])
+        .order('created_at', { ascending: false });
 
-      // site_id is mandatory for proper filtering
       if (siteId) {
         query = query.eq('site_id', siteId);
-      } else {
-        console.warn('[SUBSCRIPTION] No site_id provided for subscription fetch');
       }
 
-      const { data, error: fetchError } = await query
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const { data, error: fetchError } = await query.limit(1);
 
       if (fetchError) {
         throw fetchError;
       }
 
-      console.log('[SUBSCRIPTION] Fetched subscription:', data);
-      setSubscription(data);
+      // If no subscription found for specific site, try without site filter as fallback
+      if (!data || data.length === 0) {
+        if (siteId) {
+          console.log('[SUBSCRIPTION] No subscription found for site, trying fallback');
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('subscriptions')
+            .select('*')
+            .eq('user_id', user.id)
+            .in('status', ['active', 'trialing', 'past_due'])
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          if (fallbackError) {
+            throw fallbackError;
+          }
+
+          console.log('[SUBSCRIPTION] Fallback subscription:', fallbackData?.[0] || null);
+          setSubscription(fallbackData?.[0] || null);
+        } else {
+          setSubscription(null);
+        }
+      } else {
+        console.log('[SUBSCRIPTION] Found subscription:', data[0]);
+        setSubscription(data[0]);
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch subscription';
       setError(errorMessage);

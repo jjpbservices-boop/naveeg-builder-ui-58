@@ -129,6 +129,33 @@ serve(async (req) => {
           break;
         }
 
+        // Cancel any existing active subscriptions for this customer
+        const customerId = subscription.customer as string;
+        const { data: customerSubs, error: customerSubsError } = await supabase
+          .from('subscriptions')
+          .select('id, stripe_subscription_id, user_id')
+          .eq('stripe_customer_id', customerId)
+          .in('status', ['active', 'trialing'])
+          .neq('stripe_subscription_id', subscription.id);
+
+        if (customerSubs && customerSubs.length > 0) {
+          logStep("Canceling existing subscriptions for customer", { 
+            customerId, 
+            existingCount: customerSubs.length 
+          });
+          
+          const { error: cancelError } = await supabase
+            .from('subscriptions')
+            .update({ status: 'canceled', updated_at: new Date().toISOString() })
+            .eq('stripe_customer_id', customerId)
+            .in('status', ['active', 'trialing'])
+            .neq('stripe_subscription_id', subscription.id);
+
+          if (cancelError) {
+            logStep("Error canceling existing subscriptions", { error: cancelError });
+          }
+        }
+
         const subscriptionData = {
           user_id: existingSubscription.user_id,
           site_id: existingSubscription.site_id,

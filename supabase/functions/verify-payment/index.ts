@@ -106,6 +106,47 @@ serve(async (req) => {
         throw new Error(`Could not find plan for price ${priceId}`);
       }
 
+      // Cancel any existing active subscriptions for this user
+      logStep("Checking for existing active subscriptions");
+      const { data: existingSubscriptions, error: existingError } = await supabaseService
+        .from('subscriptions')
+        .select('id, stripe_subscription_id')
+        .eq('user_id', user.id)
+        .in('status', ['active', 'trialing']);
+
+      if (existingSubscriptions && existingSubscriptions.length > 0) {
+        logStep("Found existing subscriptions, canceling them", { count: existingSubscriptions.length });
+        
+        // Cancel old subscriptions in database
+        const { error: cancelError } = await supabaseService
+          .from('subscriptions')
+          .update({ status: 'canceled', updated_at: new Date().toISOString() })
+          .eq('user_id', user.id)
+          .in('status', ['active', 'trialing'])
+          .neq('stripe_subscription_id', subscription.id);
+
+        if (cancelError) {
+          logStep("Error canceling existing subscriptions", { error: cancelError });
+        } else {
+          logStep("Successfully canceled existing subscriptions");
+        }
+
+        // Cancel old subscriptions in Stripe (ignore errors for trial subscriptions without stripe_subscription_id)
+        for (const oldSub of existingSubscriptions) {
+          if (oldSub.stripe_subscription_id && oldSub.stripe_subscription_id !== subscription.id) {
+            try {
+              await stripe.subscriptions.cancel(oldSub.stripe_subscription_id);
+              logStep("Canceled old Stripe subscription", { subscriptionId: oldSub.stripe_subscription_id });
+            } catch (stripeError) {
+              logStep("Warning: Could not cancel old Stripe subscription", { 
+                subscriptionId: oldSub.stripe_subscription_id, 
+                error: stripeError instanceof Error ? stripeError.message : String(stripeError) 
+              });
+            }
+          }
+        }
+      }
+
       // Prepare subscription data
       const subscriptionData = {
         user_id: user.id,
