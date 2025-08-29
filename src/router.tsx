@@ -22,6 +22,7 @@ import Dashboard from '@/pages/Dashboard';
 import Workspace from '@/pages/Workspace';
 import Settings from '@/pages/Settings';
 import Plans from '@/pages/Plans';
+import { Billing } from '@/pages/Billing';
 import Auth from '@/pages/Auth';
 import NotFound from '@/pages/NotFound';
 
@@ -173,8 +174,14 @@ const settingsRoute = createRoute({
 
 const plansRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/dashboard/plans',
+  path: '/plans',
   component: Plans,
+});
+
+const billingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/billing',
+  component: Billing,
 });
 
 const authRoute = createRoute({
@@ -222,6 +229,7 @@ const routeTree = rootRoute.addChildren([
   workspaceRoute,
   settingsRoute,
   plansRoute,
+  billingRoute,
 ]);
 
 // Create router

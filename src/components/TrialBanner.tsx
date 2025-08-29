@@ -1,21 +1,21 @@
 import React from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Clock, AlertTriangle } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { usePlanStore } from '@/lib/stores/usePlanStore';
+import { useSubscription } from '@/hooks/useSubscription';
 
 export function TrialBanner() {
   const navigate = useNavigate();
-  const { currentPlan, trialDaysLeft, isTrialExpired } = usePlanStore();
+  const { subscription, isTrialActive, getTrialDaysLeft } = useSubscription();
 
-  if (currentPlan !== 'trial') return null;
+  if (!subscription || !isTrialActive()) return null;
+
+  const trialDaysLeft = getTrialDaysLeft();
 
   const handleChoosePlan = () => {
-    navigate({ to: '/dashboard/plans' });
+    navigate({ to: '/plans' });
   };
-
-  if (isTrialExpired) return null; // Don't show banner if trial expired (full screen will be shown)
 
   return (
     <Card className="mx-6 mt-4 mb-2 border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800/30">

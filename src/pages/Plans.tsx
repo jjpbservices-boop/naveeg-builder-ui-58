@@ -35,9 +35,8 @@ export default function Plans() {
     if (plan === 'custom') {
       window.open('mailto:sales@naveeg.com?subject=Custom Plan Inquiry', '_blank');
     } else {
-      // Here you would typically integrate with payment system
-      setPlan(plan);
-      navigate({ to: '/dashboard' });
+      // Navigate to billing page for checkout
+      navigate({ to: '/billing' });
     }
   };
 
