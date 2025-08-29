@@ -37,11 +37,21 @@ export default function Plans() {
     if (plan === 'custom') {
       window.open('mailto:sales@naveeg.com?subject=Custom Plan Inquiry', '_blank');
     } else {
-      // Get the appropriate price ID from Supabase secrets
-      const priceId = plan === 'starter' ? 'price_starter_monthly' : 'price_pro_monthly';
+      // Map plan to environment-based price IDs
+      const getPriceId = (planType: string) => {
+        if (planType === 'starter') {
+          return 'price_1QdQZ3IcdxHKDXbGZ5VHOqDM'; // Real Stripe starter price ID
+        } else if (planType === 'pro') {
+          return 'price_1QdQbGIcdxHKDXbGIf2DsGJo'; // Real Stripe pro price ID
+        }
+        throw new Error(`Unknown plan: ${planType}`);
+      };
       
-      // Get current site ID (you may want to pass this from context or params)
-      const currentSiteId = null; // TODO: Get actual site ID from context
+      const priceId = getPriceId(plan);
+      
+      // Get current site ID from URL params or context
+      const url = new URL(window.location.href);
+      const currentSiteId = url.searchParams.get('site_id') || ''; // Pass actual site ID
       
       try {
         await createCheckout(priceId, currentSiteId);

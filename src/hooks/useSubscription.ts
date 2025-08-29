@@ -166,9 +166,14 @@ export const useSubscription = () => {
           table: 'subscriptions',
           filter: `user_id=eq.${user.id}`,
         },
-        () => {
-          // Refetch subscription when changes occur
-          fetchSubscription();
+        (payload) => {
+          // Only refetch if this change affects current site or is site-agnostic
+          const siteId = new URL(window.location.href).searchParams.get('site_id');
+          const changedSiteId = (payload.new as any)?.site_id || (payload.old as any)?.site_id;
+          
+          if (!siteId || !changedSiteId || siteId === changedSiteId) {
+            fetchSubscription(siteId || undefined);
+          }
         }
       )
       .subscribe();

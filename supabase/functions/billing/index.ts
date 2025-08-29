@@ -5,6 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 const logStep = (step: string, details?: any) => {
@@ -93,7 +94,7 @@ serve(async (req) => {
 
     } else if (action === 'create-portal') {
       // Create customer portal session
-      const customerId = url.searchParams.get('customer_id');
+      let customerId = url.searchParams.get('customer_id');
       if (!customerId) {
         // Find customer by email
         const customers = await stripe.customers.list({ email: user.email, limit: 1 });
