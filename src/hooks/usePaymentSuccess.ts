@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useSubscription } from './useSubscription';
 import { useToast } from './use-toast';
+import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
 export const usePaymentSuccess = (siteId?: string) => {
   const { fetchSubscription } = useSubscription();
   const { toast } = useToast();
+  const { user, loading } = useAuth();
   const [isVerifying, setIsVerifying] = useState(false);
+  const [pendingVerification, setPendingVerification] = useState<{sessionId: string, siteId?: string} | null>(null);
 
   const verifyPayment = async (sessionId: string, siteId?: string) => {
     if (isVerifying) return;
@@ -58,13 +61,14 @@ export const usePaymentSuccess = (siteId?: string) => {
     }
   };
 
+  // Effect to detect payment success and store verification details
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('session_id');
     const success = urlParams.get('success');
 
     if (sessionId && success === 'true') {
-      console.log('[PAYMENT_SUCCESS] Payment success detected, verifying with Stripe');
+      console.log('[PAYMENT_SUCCESS] Payment success detected, waiting for user authentication');
       
       // Show initial success message
       toast({
@@ -72,14 +76,23 @@ export const usePaymentSuccess = (siteId?: string) => {
         description: 'Verifying your payment and activating subscription...',
       });
 
-      // Verify the payment with Stripe
-      verifyPayment(sessionId, siteId);
+      // Store verification details to process when user is authenticated
+      setPendingVerification({ sessionId, siteId });
 
       // Clean up URL parameters immediately
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     }
-  }, []); // Removed dependencies to prevent re-runs
+  }, []); // Run only once on mount
+
+  // Effect to verify payment when user is authenticated and verification is pending
+  useEffect(() => {
+    if (!loading && user && pendingVerification) {
+      console.log('[PAYMENT_SUCCESS] User authenticated, proceeding with payment verification');
+      verifyPayment(pendingVerification.sessionId, pendingVerification.siteId);
+      setPendingVerification(null);
+    }
+  }, [loading, user, pendingVerification]); // Watch for auth state changes
 
   return { isVerifying };
 };
