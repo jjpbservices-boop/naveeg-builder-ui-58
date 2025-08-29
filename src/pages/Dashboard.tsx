@@ -60,11 +60,7 @@ export default function Dashboard() {
     }
   }, [currentWebsite?.id]); // Removed fetchSubscription dependency to prevent infinite loop
 
-  // Removed useTrialFallback to prevent infinite refresh loops
-  // useTrialFallback(user, websites, subscription, handleTrialCreated);
-
-  // Temporarily disabled to prevent refresh loops
-  // usePaymentSuccess(currentWebsite?.id);
+  // Removed useTrialFallback and usePaymentSuccess to prevent infinite refresh loops
 
   useEffect(() => {
     // Set up auth state listener first

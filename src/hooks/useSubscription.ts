@@ -22,18 +22,41 @@ export const useSubscription = () => {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Add execution guard to prevent infinite loops
+  const [isExecuting, setIsExecuting] = useState<Set<string>>(new Set());
+  const [lastFetchedSiteId, setLastFetchedSiteId] = useState<string | null>(null);
 
   // Fetch subscription by user_id AND site_id (mandatory filtering)
   const fetchSubscription = useCallback(async (siteId?: string) => {
+    console.log('[SUBSCRIPTION] fetchSubscription called with siteId:', siteId);
+    
     if (!user) {
+      console.log('[SUBSCRIPTION] No user, clearing subscription');
       setSubscription(null);
       setLoading(false);
       return;
     }
 
+    // Execution guard to prevent infinite loops
+    const executionKey = `${user.id}-${siteId || 'no-site'}`;
+    if (isExecuting.has(executionKey)) {
+      console.log('[SUBSCRIPTION] Already executing for:', executionKey);
+      return;
+    }
+
+    // Prevent redundant calls for same siteId
+    if (siteId === lastFetchedSiteId && subscription) {
+      console.log('[SUBSCRIPTION] Already fetched for siteId:', siteId);
+      return;
+    }
+
     try {
+      console.log('[SUBSCRIPTION] Starting fetch for:', executionKey);
+      setIsExecuting(prev => new Set(prev).add(executionKey));
       setLoading(true);
       setError(null);
+      setLastFetchedSiteId(siteId || null);
 
       // ALWAYS filter by both user_id AND site_id for proper per-site subscriptions
       let query = supabase
@@ -65,8 +88,15 @@ export const useSubscription = () => {
       console.error('[SUBSCRIPTION] Error fetching subscription:', err);
     } finally {
       setLoading(false);
+      // Clear execution guard
+      setIsExecuting(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(executionKey);
+        return newSet;
+      });
+      console.log('[SUBSCRIPTION] Fetch completed for:', executionKey);
     }
-  }, [user]);
+  }, [user, subscription, lastFetchedSiteId, isExecuting]);
 
   // Client passes plan, not price IDs
   const createCheckout = async (plan: 'starter' | 'pro', siteId: string) => {
