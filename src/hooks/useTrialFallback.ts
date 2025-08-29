@@ -1,14 +1,22 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export const useTrialFallback = (user: any, sites: any[], subscription: any) => {
+export const useTrialFallback = (user: any, sites: any[], subscription: any, onTrialCreated?: () => void) => {
   const { toast } = useToast();
+  const processingRef = useRef(false);
+  const createdTrialRef = useRef(false);
 
   useEffect(() => {
     const createMissingTrial = async () => {
+      // Prevent multiple simultaneous executions
+      if (processingRef.current || createdTrialRef.current) return;
+      
       // Only proceed if user has sites but no subscription
       if (!user?.id || !sites?.length || subscription) return;
+
+      // Rate limiting: only run once per component lifecycle
+      processingRef.current = true;
 
       try {
         // Get the first site (most recent)
@@ -28,21 +36,26 @@ export const useTrialFallback = (user: any, sites: any[], subscription: any) => 
         }
 
         console.log('Successfully created fallback trial:', trialId);
+        createdTrialRef.current = true;
         
         toast({
           title: '🎉 Welcome to your 7-day free trial!',
           description: 'Your trial has been activated. Enjoy all features for free.',
         });
 
-        // Refresh the page to update subscription state
-        window.location.reload();
+        // Instead of page reload, trigger subscription refetch
+        if (onTrialCreated) {
+          onTrialCreated();
+        }
       } catch (error) {
         console.error('Error in trial fallback:', error);
+      } finally {
+        processingRef.current = false;
       }
     };
 
     // Delay to ensure other subscription checks have completed
     const timer = setTimeout(createMissingTrial, 2000);
     return () => clearTimeout(timer);
-  }, [user?.id, sites?.length, subscription, toast]);
+  }, [user?.id, sites?.length, subscription, toast, onTrialCreated]);
 };

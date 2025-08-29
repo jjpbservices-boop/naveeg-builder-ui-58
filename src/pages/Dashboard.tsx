@@ -35,14 +35,28 @@ export default function Dashboard() {
 
   const { 
     subscription,
+    fetchSubscription,
     isTrialActive,
     isSubscriptionActive,
     canConnectDomain,
     getTrialDaysLeft
   } = useSubscription();
 
+  // Fetch subscription when currentWebsite changes
+  useEffect(() => {
+    if (currentWebsite?.id) {
+      console.log('[DASHBOARD] Fetching subscription for site:', currentWebsite.id);
+      fetchSubscription(currentWebsite.id);
+    }
+  }, [currentWebsite?.id, fetchSubscription]);
+
   // Create missing trial subscription as fallback
-  useTrialFallback(user, websites, subscription);
+  useTrialFallback(user, websites, subscription, () => {
+    // Refetch subscription instead of page reload
+    if (currentWebsite?.id) {
+      fetchSubscription(currentWebsite.id);
+    }
+  });
 
   useEffect(() => {
     // Set up auth state listener first
