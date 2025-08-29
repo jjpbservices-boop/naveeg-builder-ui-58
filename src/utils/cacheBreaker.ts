@@ -21,7 +21,7 @@ export const clearAppCache = () => {
 
 // Version check to ensure we're running latest code
 export const checkCodeVersion = () => {
-  const currentVersion = '2025-01-27-v2'; // Update this when making changes
+  const currentVersion = '2025-08-29-production-fix'; // Updated to force production cache clear
   const storedVersion = localStorage.getItem('app_version');
   
   if (storedVersion !== currentVersion) {
@@ -30,6 +30,23 @@ export const checkCodeVersion = () => {
     
     // Clear any cached trial creation logic
     clearAppCache();
+    
+    // Force additional cache clearing for production
+    if (import.meta.env.PROD) {
+      // Clear session storage as well
+      sessionStorage.clear();
+      
+      // Clear any service worker cache if present
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          registrations.forEach(registration => registration.unregister());
+        });
+      }
+      
+      // Force a hard reload to bypass all caches
+      window.location.reload();
+    }
+    
     return false; // Indicates cache was cleared
   }
   
