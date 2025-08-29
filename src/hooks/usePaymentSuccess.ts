@@ -36,7 +36,8 @@ export const usePaymentSuccess = (siteId?: string) => {
           description: 'Your subscription has been activated successfully.',
         });
         
-        // Refresh subscription data
+        // Refresh subscription data - handle undefined siteId gracefully
+        console.log('[PAYMENT_SUCCESS] Refreshing subscription with siteId:', siteId);
         await fetchSubscription(siteId);
       } else {
         console.log('[PAYMENT_SUCCESS] Payment not yet completed', data);

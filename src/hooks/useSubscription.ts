@@ -87,7 +87,25 @@ export const useSubscription = () => {
           console.log('[SUBSCRIPTION] Fallback subscription:', fallbackData?.[0] || null);
           setSubscription(fallbackData?.[0] || null);
         } else {
-          setSubscription(null);
+          // When siteId is undefined, fetch any subscription for the user
+          console.log('[SUBSCRIPTION] No siteId provided, fetching any user subscription');
+          const anyQuery = supabase
+            .from('subscriptions')
+            .select('*')
+            .eq('user_id', user.id)
+            .in('status', ['active', 'trialing', 'past_due'])
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          const anyResult = await Promise.race([anyQuery, timeoutPromise]);
+          const { data: anyData, error: anyError } = anyResult as any;
+
+          if (anyError) {
+            throw anyError;
+          }
+
+          console.log('[SUBSCRIPTION] Any subscription found:', anyData?.[0] || null);
+          setSubscription(anyData?.[0] || null);
         }
       } else {
         console.log('[SUBSCRIPTION] Found subscription:', data[0]);
