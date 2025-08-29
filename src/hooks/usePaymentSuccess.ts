@@ -42,6 +42,12 @@ export const usePaymentSuccess = (siteId?: string) => {
         // Refresh subscription data - handle undefined siteId gracefully
         console.log('[PAYMENT_SUCCESS] Refreshing subscription with siteId:', siteId);
         await fetchSubscription(siteId);
+        
+        // Add a small delay and refresh again to ensure UI updates
+        setTimeout(async () => {
+          console.log('[PAYMENT_SUCCESS] Secondary refresh for UI consistency');
+          await fetchSubscription(siteId);
+        }, 1000);
       } else {
         console.log('[PAYMENT_SUCCESS] Payment not yet completed', data);
         toast({

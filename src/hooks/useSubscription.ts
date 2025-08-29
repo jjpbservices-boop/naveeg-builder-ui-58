@@ -250,10 +250,12 @@ export const useSubscription = () => {
     // Components should call fetchSubscription(siteId) explicitly
   }, []);
 
-  // Real-time subscription with both user_id and site_id filters
+  // Real-time subscription updates
   useEffect(() => {
     if (!user) return;
 
+    console.log('[SUBSCRIPTION] Setting up real-time listener for user:', user.id);
+    
     const channel = supabase
       .channel('subscription-changes')
       .on(
@@ -265,19 +267,29 @@ export const useSubscription = () => {
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          // Refetch subscription when changes occur, filtered by site_id if available
-          const siteId = (payload.new as any)?.site_id || (payload.old as any)?.site_id;
-          console.log('[SUBSCRIPTION] Real-time update received', { payload, siteId });
-          // Don't call fetchSubscription here to prevent loops
-          // Let components handle subscription refetch explicitly
+          console.log('[SUBSCRIPTION] Real-time update received', { payload });
+          // Use a debounced approach to prevent infinite loops
+          setTimeout(() => {
+            console.log('[SUBSCRIPTION] Processing real-time update after delay');
+            // Directly update the subscription state from payload if it's an UPDATE
+            if (payload.eventType === 'UPDATE' && payload.new) {
+              console.log('[SUBSCRIPTION] Updating subscription from real-time data');
+              setSubscription(payload.new as Subscription);
+            } else {
+              // For INSERT/DELETE, refetch without site_id to get latest
+              console.log('[SUBSCRIPTION] Refetching subscription due to INSERT/DELETE');
+              fetchSubscription();
+            }
+          }, 100);
         }
       )
       .subscribe();
 
     return () => {
+      console.log('[SUBSCRIPTION] Cleaning up real-time listener');
       supabase.removeChannel(channel);
     };
-  }, [user]); // Removed fetchSubscription from dependencies to prevent infinite loop
+  }, [user]); // Only depend on user to prevent loops
 
   return {
     subscription,

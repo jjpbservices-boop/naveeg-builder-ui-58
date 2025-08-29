@@ -95,8 +95,14 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
   };
 
   const getPlanBadge = () => {
-    if (!subscription) return 'Trial';
-    return subscription.plan_id.charAt(0).toUpperCase() + subscription.plan_id.slice(1);
+    if (!subscription) {
+      console.log('[SIDEBAR] No subscription found, showing Trial badge');
+      return 'Trial';
+    }
+    
+    const badge = subscription.plan_id.charAt(0).toUpperCase() + subscription.plan_id.slice(1);
+    console.log('[SIDEBAR] Subscription found, showing badge:', badge, 'Status:', subscription.status);
+    return badge;
   };
 
   return (
