@@ -52,9 +52,33 @@ serve(async (req) => {
     
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Parse JSON body
-    const { action, plan, site_id, customer_id } = await req.json().catch(() => ({}));
+    // Parse JSON body with proper error handling
+    let requestBody;
+    try {
+      const rawBody = await req.text();
+      logStep("Raw request body", { body: rawBody });
+      
+      if (!rawBody) {
+        throw new Error("Empty request body");
+      }
+      
+      requestBody = JSON.parse(rawBody);
+      logStep("Parsed request body", requestBody);
+    } catch (parseError) {
+      const errorMsg = `Failed to parse JSON body: ${parseError instanceof Error ? parseError.message : String(parseError)}`;
+      logStep("JSON parsing error", { error: errorMsg });
+      throw new Error(errorMsg);
+    }
+    
+    const { action, plan, site_id, customer_id } = requestBody;
     const appUrl = Deno.env.get("APP_URL") || "http://localhost:3000";
+    
+    // Validate required action parameter
+    if (!action) {
+      throw new Error("Missing required 'action' parameter in request body");
+    }
+    
+    logStep("Request parameters", { action, plan, site_id, customer_id });
 
     // Create service role client for database queries
     const supabaseService = createClient(
