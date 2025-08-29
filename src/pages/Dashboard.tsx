@@ -17,8 +17,8 @@ import { TrialExpiredScreen } from '@/components/TrialExpiredScreen';
 import { LockedFeature } from '@/components/LockedFeature';
 import { UpgradeModal } from '@/components/UpgradeModal';
 import { useSubscription } from '@/hooks/useSubscription';
-import { useTrialFallback } from '@/hooks/useTrialFallback';
-import { usePaymentSuccess } from '@/hooks/usePaymentSuccess';
+// import { useTrialFallback } from '@/hooks/useTrialFallback';
+// import { usePaymentSuccess } from '@/hooks/usePaymentSuccess';
 
 
 export default function Dashboard() {
@@ -63,8 +63,8 @@ export default function Dashboard() {
   // Removed useTrialFallback to prevent infinite refresh loops
   // useTrialFallback(user, websites, subscription, handleTrialCreated);
 
-  // Handle payment success and refresh subscription
-  usePaymentSuccess(currentWebsite?.id);
+  // Temporarily disabled to prevent refresh loops
+  // usePaymentSuccess(currentWebsite?.id);
 
   useEffect(() => {
     // Set up auth state listener first
@@ -154,7 +154,7 @@ export default function Dashboard() {
   const handleViewChange = (view: string) => {
     // Handle special navigation cases
     if (view === 'plans') {
-      navigate({ to: '/dashboard/plans' });
+      navigate({ to: '/plans' });
       return;
     }
 
