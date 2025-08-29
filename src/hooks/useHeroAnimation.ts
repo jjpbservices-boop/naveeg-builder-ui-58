@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react'
 
-/** Hero animation with darker-mode visibility and stronger dark gradients */
+/** Subtle + futuristic: dark-mode toned down, light-mode unchanged */
 export const useHeroAnimation = (canvasId: string) => {
   const waitForReadyCanvas = useCallback((retryCount = 0): Promise<HTMLCanvasElement> => {
     return new Promise((resolve, reject) => {
@@ -32,7 +32,6 @@ export const useHeroAnimation = (canvasId: string) => {
       const ctx = canvas.getContext('2d', { alpha: true })
       if (!ctx) return
 
-      // Fill parent without affecting layout flow
       canvas.style.position = 'absolute'
       // @ts-ignore
       canvas.style.inset = '0'
@@ -50,6 +49,16 @@ export const useHeroAnimation = (canvasId: string) => {
       const FPS = 30
       // -------------------
 
+      // Dark-mode softness controls (subtle, not overwhelming)
+      const DARK = {
+        mixK: 0.7,          // blend brand -> black (higher = darker)
+        alphaBoost: 1.2,    // slight lift vs light
+        baseScale: 1.15,    // base brightness scale
+        ampScale: 0.9,      // reduce twinkle amplitude
+        gradBoost: 1.12,    // gentle gradient strength
+        maxAlpha: 0.22      // hard cap to keep dots subtle
+      }
+
       const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
       const hexToRgb = (hex: string) => {
         const h = hex.replace('#', '')
@@ -57,7 +66,7 @@ export const useHeroAnimation = (canvasId: string) => {
         return { r: parseInt(b.slice(0, 2), 16), g: parseInt(b.slice(2, 4), 16), b: parseInt(b.slice(4, 6), 16) }
       }
       const rgbToHex = ({ r, g, b }: { r: number; g: number; b: number }) =>
-        '#' + [r, g, b].map(v => v.toString(16)).map(s => s.padStart(2, '0')).join('')
+        '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')
       const mix = (aHex: string, bHex: string, t: number) => {
         const a = hexToRgb(aHex), b = hexToRgb(bHex)
         const r = Math.round(a.r + (b.r - a.r) * clamp01(t))
@@ -91,8 +100,9 @@ export const useHeroAnimation = (canvasId: string) => {
         const token = getTokenDotRGB()
         if (token) return `rgba(${token.r},${token.g},${token.b},${a})`
         if (isDark()) {
-          const darkBase = mix(primaryHex, '#000000', 0.55)   // less black
-          return hexToRGBA(darkBase, a * 1.5)                 // 1.5x alpha boost
+          const darkBase = mix(primaryHex, '#000000', DARK.mixK)
+          const boosted = Math.min(DARK.maxAlpha, a * DARK.alphaBoost)
+          return hexToRGBA(darkBase, boosted)
         }
         return `rgba(255,255,255,${a})`
       }
@@ -102,9 +112,7 @@ export const useHeroAnimation = (canvasId: string) => {
       const primary600 = mix(primaryHex, '#000000', 0.24)
       const primary400 = mix(primaryHex, '#FFFFFF', 0.28)
       const amberSoft = mix(primaryHex, '#FFD39A', 0.55)
-
-      // Dark-mode gradient boost
-      const GRAD = isDark() ? 1.35 : 1.0
+      const GRAD = isDark() ? DARK.gradBoost : 1
 
       type Dot = { x: number; y: number; r: number; phase: number; speed: number; base: number; amp: number }
       let dots: Dot[] = []
@@ -113,6 +121,7 @@ export const useHeroAnimation = (canvasId: string) => {
       function buildGrid() {
         const cols = Math.ceil(w / SPACING)
         const rows = Math.ceil(h / SPACING)
+        const dark = isDark()
         dots = []
         for (let y = 0; y < rows; y++) {
           for (let x = 0; x < cols; x++) {
@@ -124,8 +133,8 @@ export const useHeroAnimation = (canvasId: string) => {
               r: DOT_MIN + Math.random() * (DOT_MAX - DOT_MIN),
               phase: Math.random() * Math.PI * 2,
               speed: 0.012 + Math.random() * 0.018,
-              base: BASE_ALPHA * (0.85 + Math.random() * 0.3) * (isDark() ? 1.5 : 1),
-              amp: TWINKLE_AMP * (0.6 + Math.random() * 0.8),
+              base: BASE_ALPHA * (0.85 + Math.random() * 0.3) * (dark ? DARK.baseScale : 1),
+              amp: TWINKLE_AMP * (0.6 + Math.random() * 0.8) * (dark ? DARK.ampScale : 1),
             })
           }
         }
@@ -139,14 +148,14 @@ export const useHeroAnimation = (canvasId: string) => {
         ctx.fillRect(0, 0, w, h)
 
         g = ctx.createRadialGradient(w * 0.85, h * 0.18, 0, w * 0.85, h * 0.18, Math.hypot(w, h) * 0.35)
-        g.addColorStop(0, hexToRGBA(primary400, 0.28 * GRAD))
+        g.addColorStop(0, hexToRGBA(primary400, 0.24 * GRAD)) // slightly reduced from 0.28
         g.addColorStop(1, 'rgba(0,0,0,0)')
         ctx.fillStyle = g
         ctx.fillRect(0, 0, w, h)
 
         g = ctx.createRadialGradient(w * 0.5, h * 0.95, 0, w * 0.5, h * 0.95, Math.hypot(w, h) * 0.25)
-        g.addColorStop(0, hexToRGBA(primary600, 0.18 * GRAD))
-        g.addColorStop(0.6, hexToRGBA(amberSoft, 0.08 * GRAD))
+        g.addColorStop(0, hexToRGBA(primary600, 0.16 * GRAD)) // slightly reduced
+        g.addColorStop(0.6, hexToRGBA(amberSoft, 0.07 * GRAD))
         g.addColorStop(1, 'rgba(0,0,0,0)')
         ctx.fillStyle = g
         ctx.fillRect(0, 0, w, h)
