@@ -152,6 +152,12 @@ export default function Dashboard() {
   };
 
   const handleViewChange = (view: string) => {
+    // Handle special navigation cases
+    if (view === 'plans') {
+      navigate({ to: '/dashboard/plans' });
+      return;
+    }
+
     const featureMap = {
       analytics: 'analytics_advanced',
       store: 'store',

@@ -20,14 +20,21 @@ export const usePaymentSuccess = () => {
         description: 'Your subscription has been activated. Refreshing your plan...',
       });
 
-      // Wait a moment for Stripe webhook processing, then refresh subscription
-      setTimeout(() => {
-        fetchSubscription();
-        
-        // Clean up URL parameters
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
-      }, 2000);
+      // Immediate refresh, then multiple retries to ensure webhook processing
+      fetchSubscription();
+
+      // Clean up URL parameters immediately
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+
+      // Retry subscription fetch multiple times to catch webhook updates
+      const retryIntervals = [2000, 5000, 10000];
+      retryIntervals.forEach((delay) => {
+        setTimeout(() => {
+          console.log(`[PAYMENT_SUCCESS] Retrying subscription fetch after ${delay}ms`);
+          fetchSubscription();
+        }, delay);
+      });
     }
-  }, [fetchSubscription, toast]);
+  }, []); // Removed dependencies to prevent re-runs
 };

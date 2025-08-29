@@ -23,8 +23,8 @@ export const useTrialFallback = (user: any, sites: any[], subscription: any, onT
         return;
       }
       
-      // Only proceed if user has sites but no subscription
-      if (!user?.id || !sites?.length || subscription) {
+      // Only proceed if user has sites but no subscription AND hasn't already created trial
+      if (!user?.id || !sites?.length || subscription || createdTrialRef.current) {
         console.log('[TRIAL_FALLBACK] Skipping - conditions not met');
         return;
       }
@@ -70,8 +70,7 @@ export const useTrialFallback = (user: any, sites: any[], subscription: any, onT
       }
     };
 
-    // Delay to ensure other subscription checks have completed
-    const timer = setTimeout(createMissingTrial, 2000);
-    return () => clearTimeout(timer);
+    // Remove timer - execute immediately but only once
+    createMissingTrial();
   }, [user?.id, sites?.length, subscription, toast]); // Removed onTrialCreated from dependencies to prevent infinite loop
 };
