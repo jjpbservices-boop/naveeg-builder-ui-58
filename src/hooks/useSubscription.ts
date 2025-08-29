@@ -140,6 +140,37 @@ export const useSubscription = () => {
     }
   };
 
+  // Manual subscription sync function for fixing issues
+  const syncSubscription = async (siteId?: string) => {
+    if (!user) return;
+    
+    console.log('[SUBSCRIPTION] Manual sync requested', { siteId });
+    
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke('sync-subscription', {
+        body: { site_id: siteId }
+      });
+
+      if (error) {
+        console.error('[SUBSCRIPTION] Sync error:', error);
+        throw error;
+      }
+
+      console.log('[SUBSCRIPTION] Sync response:', data);
+      
+      // Refetch subscription after sync
+      await fetchSubscription(siteId);
+      
+      return data;
+    } catch (err) {
+      console.error('[SUBSCRIPTION] Sync failed:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const createPortal = async () => {
     try {
       const requestBody = { action: 'create-portal' };
@@ -232,6 +263,7 @@ export const useSubscription = () => {
     fetchSubscription,
     createCheckout,
     createPortal,
+    syncSubscription,
     isTrialActive,
     isSubscriptionActive,
     canConnectDomain,
