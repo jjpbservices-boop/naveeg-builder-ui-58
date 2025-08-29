@@ -10,7 +10,9 @@ import CookieBanner from '@/components/CookieBanner';
 import Footer from '@/components/Footer';
 import { HeroAnimation } from '@/components/HeroAnimation';
 
-interface LayoutProps { children: React.ReactNode; }
+interface LayoutProps {
+  children: React.ReactNode;
+}
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { i18n } = useTranslation();
@@ -26,23 +28,38 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { code: 'it', name: 'Italiano', flag: '🇮🇹' },
     { code: 'pt', name: 'Português', flag: '🇵🇹' },
   ];
-  const currentLanguage = languages.find(l => l.code === i18n.language) || languages[0];
 
-  const changeLanguage = (code: string) => i18n.changeLanguage(code);
-  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
+  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+
+  const changeLanguage = (languageCode: string) => {
+    i18n.changeLanguage(languageCode);
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   const navigation = [
     { name: 'Pricing', href: '/pricing' },
     { name: 'Gallery', href: '/gallery' },
-    { name: 'Contact', href: '/contact' },
+    { name: 'Contact', href: '/contact' }
   ];
 
-  const handleGenerateClick = () => navigate({ to: '/onboarding/brief' });
-  const handleLoginClick = () => navigate({ to: '/auth' });
+  const handleGenerateClick = () => {
+    navigate({ to: '/onboarding/brief' });
+  };
 
-  const p = location.pathname;
-  const isOnboardingPage =
-    p.includes('/onboarding') || p.includes('/generating') || p.includes('/generate') || p.includes('/ready') || p.includes('/describe');
+  const handleLoginClick = () => {
+    navigate({ to: '/auth' });
+  };
+
+  // Check if current route is an onboarding page using proper router state
+  const currentPath = location.pathname;
+  const isOnboardingPage = currentPath.includes('/onboarding') || 
+                          currentPath.includes('/generating') || 
+                          currentPath.includes('/generate') || 
+                          currentPath.includes('/ready') ||
+                          currentPath.includes('/describe');
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -50,97 +67,170 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-3 sm:px-4">
           <div className="flex items-center justify-between h-14 sm:h-16">
-            <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate({ to: '/' })}>
-              <img src="/lovable-uploads/b874b017-8b73-4029-9431-6caffeaef48c.png" alt="Naveeg" className="h-6 sm:h-8 w-auto" />
+            {/* Logo */}
+            <div 
+              className="flex items-center space-x-2 cursor-pointer"
+              onClick={() => navigate({ to: '/' })}
+            >
+              <img 
+                src="/lovable-uploads/b874b017-8b73-4029-9431-6caffeaef48c.png" 
+                alt="Naveeg" 
+                className="h-6 sm:h-8 w-auto"
+              />
               <span className="font-sansation text-lg sm:text-xl font-bold text-foreground">Naveeg</span>
             </div>
 
+            {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center space-x-8">
-              {navigation.map(item => (
-                <button key={item.name} onClick={() => navigate({ to: item.href })}
-                  className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
+              {navigation.map((item) => (
+                <button
+                  key={item.name}
+                  onClick={() => navigate({ to: item.href })}
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+                >
                   {item.name}
                 </button>
               ))}
             </nav>
 
+            {/* Desktop Controls */}
             <div className="hidden lg:flex items-center space-x-4">
+              {/* Language Selector */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm"><Globe className="mr-2" /><span>{currentLanguage.name}</span></Button>
+                  <Button variant="ghost" size="sm">
+                    <Globe className="mr-2" />
+                    <span>{currentLanguage.name}</span>
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  {languages.map(language => (
-                    <DropdownMenuItem key={language.code} onClick={() => changeLanguage(language.code)} className="flex items-center justify-between">
+                  {languages.map((language) => (
+                    <DropdownMenuItem
+                      key={language.code}
+                      onClick={() => changeLanguage(language.code)}
+                      className="flex items-center justify-between"
+                    >
                       <span>{language.name}</span>
-                      {i18n.language === language.code && <Check className="h-4 w-4 text-primary" />}
+                      {i18n.language === language.code && (
+                        <Check className="h-4 w-4 text-primary" />
+                      )}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button variant="ghost" size="sm-icon" onClick={handleLoginClick}><LogIn /></Button>
+              {/* Login Button */}
+              <Button 
+                variant="ghost" 
+                size="sm-icon" 
+                onClick={handleLoginClick}
+              >
+                <LogIn />
+              </Button>
 
+              {/* Theme Toggle */}
               <Button variant="ghost" size="sm-icon" onClick={toggleTheme}>
                 <Sun className="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                 <Moon className="absolute rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               </Button>
 
-              <Button onClick={handleGenerateClick} className="bg-primary hover:bg-primary/90 text-white font-semibold">
-                <Sparkles className="mr-2" />Try Free
+              {/* CTA Button */}
+              <Button 
+                onClick={handleGenerateClick}
+                className="bg-primary hover:bg-primary/90 text-white font-semibold"
+              >
+                <Sparkles className="mr-2" />
+                Try Free
               </Button>
             </div>
 
+            {/* Mobile Controls */}
             <div className="flex lg:hidden items-center space-x-2">
+              {/* Theme Toggle */}
               <Button variant="ghost" size="sm-icon" onClick={toggleTheme}>
                 <Sun className="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                 <Moon className="absolute rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               </Button>
 
+              {/* Mobile Menu */}
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm-icon"><Menu /></Button>
+                  <Button variant="ghost" size="sm-icon">
+                    <Menu />
+                  </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-80">
                   <SheetHeader>
                     <SheetTitle className="flex items-center space-x-2">
-                      <img src="/lovable-uploads/b874b017-8b73-4029-9431-6caffeaef48c.png" alt="Naveeg" className="h-6 w-auto" />
+                      <img 
+                        src="/lovable-uploads/b874b017-8b73-4029-9431-6caffeaef48c.png" 
+                        alt="Naveeg" 
+                        className="h-6 w-auto"
+                      />
                       <span className="font-sansation text-lg font-bold">Naveeg</span>
                     </SheetTitle>
                   </SheetHeader>
-
+                  
                   <div className="mt-8 space-y-6">
+                    {/* Navigation Links */}
                     <nav className="space-y-4">
-                      {navigation.map(item => (
-                        <button key={item.name}
-                          onClick={() => { navigate({ to: item.href }); setIsSheetOpen(false); }}
-                          className="block text-muted-foreground hover:text-foreground transition-colors text-base font-medium w-full text-left">
+                      {navigation.map((item) => (
+                        <button
+                          key={item.name}
+                          onClick={() => {
+                            navigate({ to: item.href });
+                            setIsSheetOpen(false);
+                          }}
+                          className="block text-muted-foreground hover:text-foreground transition-colors text-base font-medium w-full text-left"
+                        >
                           {item.name}
                         </button>
                       ))}
                     </nav>
 
+                    {/* Language Selector */}
                     <div className="space-y-3">
                       <h3 className="text-sm font-semibold text-foreground">Language</h3>
                       <div className="grid grid-cols-2 gap-2">
-                        {languages.map(language => (
-                          <button key={language.code} onClick={() => changeLanguage(language.code)}
+                        {languages.map((language) => (
+                          <button
+                            key={language.code}
+                            onClick={() => changeLanguage(language.code)}
                             className={`flex items-center justify-center p-2 rounded-lg border transition-colors ${
-                              i18n.language === language.code ? 'bg-primary/10 border-primary text-primary' : 'border-border hover:bg-muted'
-                            }`}>
+                              i18n.language === language.code
+                                ? 'bg-primary/10 border-primary text-primary'
+                                : 'border-border hover:bg-muted'
+                            }`}
+                          >
                             <span className="text-sm">{language.name}</span>
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    <Button onClick={() => { handleLoginClick(); setIsSheetOpen(false); }} variant="outline" className="w-full">
-                      <LogIn className="mr-2" />Login
+                    {/* Login Button */}
+                    <Button 
+                      onClick={() => {
+                        handleLoginClick();
+                        setIsSheetOpen(false);
+                      }}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      <LogIn className="mr-2" />
+                      Login
                     </Button>
 
-                    <Button onClick={() => { handleGenerateClick(); setIsSheetOpen(false); }}
-                      className="w-full bg-primary hover:bg-primary/90 text-white font-semibold">
-                      <Sparkles className="mr-2" />Try Free
+                    {/* CTA Button */}
+                    <Button 
+                      onClick={() => {
+                        handleGenerateClick();
+                        setIsSheetOpen(false);
+                      }}
+                      className="w-full bg-primary hover:bg-primary/90 text-white font-semibold"
+                    >
+                      <Sparkles className="mr-2" />
+                      Try Free
                     </Button>
                   </div>
                 </SheetContent>
@@ -150,27 +240,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       </header>
 
-      {/* Main */}
-      <main
-        className={
-          isOnboardingPage
-            ? // isolate and floor width; keep header offset here
-              'flex-1 relative overflow-hidden min-w-[320px] pt-14 sm:pt-16 bg-gradient-to-br from-background via-muted/30 to-background [contain:layout_paint]'
-            : 'flex-1'
-        }
-      >
+      {/* Main Content */}
+      <main className={`flex-1 ${isOnboardingPage ? 'bg-gradient-to-br from-background via-muted/30 to-background pt-14 sm:pt-16 relative' : ''}`}>
         {isOnboardingPage && (
-          <div
-            className="absolute inset-0 -z-10 pointer-events-none [contain:layout_paint]"
-            aria-hidden="true"
-          >
+          <div className="absolute inset-0 w-full h-full">
             <HeroAnimation />
           </div>
         )}
-        <div className={isOnboardingPage ? 'relative z-10' : ''}>{children}</div>
+        <div className={isOnboardingPage ? 'relative z-10' : ''}>
+          {children}
+        </div>
       </main>
 
+      {/* Footer */}
       <Footer />
+
+      {/* Cookie Banner */}
       <CookieBanner />
     </div>
   );
