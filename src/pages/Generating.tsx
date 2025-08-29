@@ -91,7 +91,12 @@ export default function Generating() {
       console.log('User is authenticated:', session.user.id);
       
       // Create or update database record now that we have a valid website_id
-      await createDatabaseRecord(session.user);
+      const createdSite = await createDatabaseRecord(session.user);
+      
+      // Create 7-day trial subscription for the user
+      if (createdSite?.id) {
+        await createTrialSubscription(session.user.id, createdSite.id);
+      }
       
       // Continue with publishing if already authenticated
       await completeWebsiteGeneration(session.user);
@@ -134,13 +139,39 @@ export default function Generating() {
 
       if (insertError) {
         console.error('Failed to create database record:', insertError);
-        // Don't throw, just log - the website generation can continue
+        return null;
       } else {
         console.log('Database record created successfully:', insertedWebsite);
         updateApiData({ database_id: insertedWebsite.id });
+        return insertedWebsite;
       }
     } catch (error) {
       console.error('Error creating database record:', error);
+      return null;
+    }
+  };
+
+  const createTrialSubscription = async (userId: string, siteId: string) => {
+    try {
+      console.log('Creating trial subscription for user:', userId, 'site:', siteId);
+      
+      const { data, error } = await supabase.rpc('create_trial_subscription', {
+        p_user_id: userId,
+        p_site_id: siteId
+      });
+
+      if (error) {
+        console.error('Failed to create trial subscription:', error);
+        // Don't throw, just log - the website generation can continue
+      } else {
+        console.log('Trial subscription created successfully:', data);
+        toast({
+          title: 'Welcome! 🎉',
+          description: 'Your 7-day free trial has started. Enjoy exploring all features!'
+        });
+      }
+    } catch (error) {
+      console.error('Error creating trial subscription:', error);
       // Don't throw, just log - the website generation can continue
     }
   };
@@ -214,6 +245,14 @@ export default function Generating() {
       if (event === 'SIGNED_IN' && showAuthModal && session?.user) {
         setShowAuthModal(false);
         setIsGenerating(true);
+        
+        // Create database record first if not already created
+        if (!database_id) {
+          const createdSite = await createDatabaseRecord(session.user);
+          if (createdSite?.id) {
+            await createTrialSubscription(session.user.id, createdSite.id);
+          }
+        }
         
         // Complete website generation and publishing with authenticated user
         await completeWebsiteGeneration(session.user);

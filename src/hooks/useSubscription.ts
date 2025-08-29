@@ -162,8 +162,9 @@ export const useSubscription = () => {
   };
 
   useEffect(() => {
-    fetchSubscription();
-  }, [fetchSubscription]);
+    // Don't auto-fetch without site_id context
+    // Components should call fetchSubscription(siteId) explicitly
+  }, []);
 
   // Real-time subscription with both user_id and site_id filters
   useEffect(() => {

@@ -27,12 +27,12 @@ const planFeatures = [
 
 export default function Plans() {
   const navigate = useNavigate();
-  const { subscription, createCheckout, loading } = useSubscription();
+  const { subscription, createCheckout, loading, fetchSubscription } = useSubscription();
   const { toast } = useToast();
   const [currentSiteId, setCurrentSiteId] = useState<string | null>(null);
   const [loadingSite, setLoadingSite] = useState(true);
 
-  // Site context - resolve non-null currentSiteId
+  // Site context - resolve non-null currentSiteId and fetch subscription
   useEffect(() => {
     const resolveSiteId = async () => {
       try {
@@ -74,6 +74,9 @@ export default function Plans() {
         
         setCurrentSiteId(siteId);
         console.log('[PLANS] Current site ID resolved to:', siteId);
+        
+        // Fetch subscription for this specific site
+        fetchSubscription(siteId);
       } catch (error) {
         console.error('[PLANS] Error resolving site ID:', error);
         toast({
@@ -87,7 +90,7 @@ export default function Plans() {
     };
 
     resolveSiteId();
-  }, [toast]);
+  }, [toast, fetchSubscription]);
 
   const handleBack = () => {
     navigate({ to: '/dashboard' });
