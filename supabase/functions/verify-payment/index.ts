@@ -97,7 +97,7 @@ serve(async (req) => {
       logStep("Checking for existing active subscriptions");
       const { data: existingSubscriptions, error: existingError } = await supabaseService
         .from('subscriptions')
-        .select('stripe_subscription_id')
+        .select('id, stripe_subscription_id')
         .eq('user_id', user.id)
         .in('status', ['active', 'trialing'])
         .neq('stripe_subscription_id', subscription.id);
@@ -107,16 +107,16 @@ serve(async (req) => {
       } else if (existingSubscriptions && existingSubscriptions.length > 0) {
         logStep("Found existing subscriptions to cancel", { count: existingSubscriptions.length });
         
-        // Cancel existing subscriptions in Stripe
+        // Cancel existing subscriptions in Stripe first
         for (const existingSub of existingSubscriptions) {
           if (existingSub.stripe_subscription_id) {
             try {
               await stripe.subscriptions.cancel(existingSub.stripe_subscription_id);
               logStep("Canceled subscription in Stripe", { subscriptionId: existingSub.stripe_subscription_id });
             } catch (cancelError) {
-              logStep("Error canceling subscription in Stripe", { 
+              logStep("Warning: Could not cancel subscription in Stripe", { 
                 subscriptionId: existingSub.stripe_subscription_id, 
-                error: cancelError 
+                error: cancelError instanceof Error ? cancelError.message : String(cancelError)
               });
             }
           }
@@ -148,47 +148,6 @@ serve(async (req) => {
       if (priceError || !priceData) {
         logStep("Error finding plan for price", { priceId, error: priceError });
         throw new Error(`Could not find plan for price ${priceId}`);
-      }
-
-      // Cancel any existing active subscriptions for this user
-      logStep("Checking for existing active subscriptions");
-      const { data: existingSubscriptions, error: existingError } = await supabaseService
-        .from('subscriptions')
-        .select('id, stripe_subscription_id')
-        .eq('user_id', user.id)
-        .in('status', ['active', 'trialing']);
-
-      if (existingSubscriptions && existingSubscriptions.length > 0) {
-        logStep("Found existing subscriptions, canceling them", { count: existingSubscriptions.length });
-        
-        // Cancel old subscriptions in database
-        const { error: cancelError } = await supabaseService
-          .from('subscriptions')
-          .update({ status: 'canceled', updated_at: new Date().toISOString() })
-          .eq('user_id', user.id)
-          .in('status', ['active', 'trialing'])
-          .neq('stripe_subscription_id', subscription.id);
-
-        if (cancelError) {
-          logStep("Error canceling existing subscriptions", { error: cancelError });
-        } else {
-          logStep("Successfully canceled existing subscriptions");
-        }
-
-        // Cancel old subscriptions in Stripe (ignore errors for trial subscriptions without stripe_subscription_id)
-        for (const oldSub of existingSubscriptions) {
-          if (oldSub.stripe_subscription_id && oldSub.stripe_subscription_id !== subscription.id) {
-            try {
-              await stripe.subscriptions.cancel(oldSub.stripe_subscription_id);
-              logStep("Canceled old Stripe subscription", { subscriptionId: oldSub.stripe_subscription_id });
-            } catch (stripeError) {
-              logStep("Warning: Could not cancel old Stripe subscription", { 
-                subscriptionId: oldSub.stripe_subscription_id, 
-                error: stripeError instanceof Error ? stripeError.message : String(stripeError) 
-              });
-            }
-          }
-        }
       }
 
       // Prepare subscription data
