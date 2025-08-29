@@ -87,10 +87,7 @@ export const useSubscription = () => {
       
       // POST JSON call to billing function
       const { data, error } = await supabase.functions.invoke('billing', {
-        body: JSON.stringify(requestBody),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        body: requestBody,
       });
 
       console.log('[CHECKOUT] Response:', { data, error });
@@ -120,10 +117,7 @@ export const useSubscription = () => {
       
       // POST JSON call to billing function
       const { data, error } = await supabase.functions.invoke('billing', {
-        body: JSON.stringify(requestBody),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        body: requestBody,
       });
 
       if (error) throw error;
