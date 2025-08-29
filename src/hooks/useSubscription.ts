@@ -77,13 +77,17 @@ export const useSubscription = () => {
     }
 
     try {
+      const requestBody = { 
+        action: 'create-checkout', 
+        plan, 
+        site_id: siteId 
+      };
+      
+      console.log('[CHECKOUT] Request body:', requestBody);
+      
       // POST JSON call to billing function
       const { data, error } = await supabase.functions.invoke('billing', {
-        body: { 
-          action: 'create-checkout', 
-          plan, 
-          site_id: siteId 
-        },
+        body: JSON.stringify(requestBody),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -111,11 +115,12 @@ export const useSubscription = () => {
 
   const createPortal = async () => {
     try {
+      const requestBody = { action: 'create-portal' };
+      console.log('[PORTAL] Request body:', requestBody);
+      
       // POST JSON call to billing function
       const { data, error } = await supabase.functions.invoke('billing', {
-        body: { 
-          action: 'create-portal'
-        },
+        body: JSON.stringify(requestBody),
         headers: {
           'Content-Type': 'application/json',
         },
