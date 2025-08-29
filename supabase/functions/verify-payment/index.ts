@@ -93,6 +93,50 @@ serve(async (req) => {
         { auth: { persistSession: false } }
       );
 
+      // Cancel any existing active subscriptions for this user to prevent duplicates
+      logStep("Checking for existing active subscriptions");
+      const { data: existingSubscriptions, error: existingError } = await supabaseService
+        .from('subscriptions')
+        .select('stripe_subscription_id')
+        .eq('user_id', user.id)
+        .in('status', ['active', 'trialing'])
+        .neq('stripe_subscription_id', subscription.id);
+
+      if (existingError) {
+        logStep("Error checking existing subscriptions", { error: existingError });
+      } else if (existingSubscriptions && existingSubscriptions.length > 0) {
+        logStep("Found existing subscriptions to cancel", { count: existingSubscriptions.length });
+        
+        // Cancel existing subscriptions in Stripe
+        for (const existingSub of existingSubscriptions) {
+          if (existingSub.stripe_subscription_id) {
+            try {
+              await stripe.subscriptions.cancel(existingSub.stripe_subscription_id);
+              logStep("Canceled subscription in Stripe", { subscriptionId: existingSub.stripe_subscription_id });
+            } catch (cancelError) {
+              logStep("Error canceling subscription in Stripe", { 
+                subscriptionId: existingSub.stripe_subscription_id, 
+                error: cancelError 
+              });
+            }
+          }
+        }
+
+        // Update existing subscriptions to canceled status in database
+        const { error: updateError } = await supabaseService
+          .from('subscriptions')
+          .update({ status: 'canceled', updated_at: new Date().toISOString() })
+          .eq('user_id', user.id)
+          .in('status', ['active', 'trialing'])
+          .neq('stripe_subscription_id', subscription.id);
+
+        if (updateError) {
+          logStep("Error updating existing subscriptions", { error: updateError });
+        } else {
+          logStep("Successfully canceled existing subscriptions in database");
+        }
+      }
+
       // Get plan_id from price_id
       const priceId = subscription.items.data[0].price.id;
       const { data: priceData, error: priceError } = await supabaseService

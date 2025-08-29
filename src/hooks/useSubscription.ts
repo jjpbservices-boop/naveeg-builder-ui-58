@@ -45,20 +45,14 @@ export const useSubscription = () => {
       return;
     }
 
-    // Prevent redundant calls for same siteId
-    if (siteId === lastFetchedSiteId && subscription) {
-      console.log('[SUBSCRIPTION] Already fetched for siteId:', siteId);
-      return;
-    }
-
     try {
       console.log('[SUBSCRIPTION] Starting fetch for:', executionKey);
       setIsExecuting(prev => new Set(prev).add(executionKey));
       setLoading(true);
       setError(null);
-      setLastFetchedSiteId(siteId || null);
 
-      // First try to fetch subscription for specific site
+      // Fetch the most recent active subscription for the user
+      // Priority: subscription with matching site_id, then any active subscription
       let query = supabase
         .from('subscriptions')
         .select('*')
@@ -79,7 +73,7 @@ export const useSubscription = () => {
       // If no subscription found for specific site, try without site filter as fallback
       if (!data || data.length === 0) {
         if (siteId) {
-          console.log('[SUBSCRIPTION] No subscription found for site, trying fallback');
+          console.log('[SUBSCRIPTION] No subscription found for site, trying fallback without site_id');
           const { data: fallbackData, error: fallbackError } = await supabase
             .from('subscriptions')
             .select('*')
@@ -115,7 +109,7 @@ export const useSubscription = () => {
       });
       console.log('[SUBSCRIPTION] Fetch completed for:', executionKey);
     }
-  }, [user, subscription, lastFetchedSiteId, isExecuting]);
+  }, [user, isExecuting]);
 
   // Client passes plan, not price IDs
   const createCheckout = async (plan: 'starter' | 'pro', siteId: string) => {
