@@ -132,11 +132,12 @@ serve(async (req) => {
         ],
         mode: "subscription",
         automatic_tax: { enabled: true },
-        success_url: `${appUrl}/billing?success=1`,
-        cancel_url: `${appUrl}/plans?canceled=1`,
+        success_url: `${appUrl}/dashboard?session_id={CHECKOUT_SESSION_ID}&success=true`,
+        cancel_url: `${appUrl}/dashboard`,
         metadata: {
           user_id: user.id,
           site_id: site_id,
+          plan: plan,
         },
       });
 

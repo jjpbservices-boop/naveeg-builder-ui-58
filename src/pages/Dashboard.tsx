@@ -18,6 +18,7 @@ import { LockedFeature } from '@/components/LockedFeature';
 import { UpgradeModal } from '@/components/UpgradeModal';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useTrialFallback } from '@/hooks/useTrialFallback';
+import { usePaymentSuccess } from '@/hooks/usePaymentSuccess';
 
 
 export default function Dashboard() {
@@ -50,13 +51,20 @@ export default function Dashboard() {
     }
   }, [currentWebsite?.id]); // Removed fetchSubscription from dependencies to prevent infinite loop
 
-  // Create missing trial subscription as fallback
-  useTrialFallback(user, websites, subscription, () => {
+  // Create stable callback for trial creation to prevent dependency loop
+  const handleTrialCreated = React.useCallback(() => {
+    console.log('[DASHBOARD] Trial created, refetching subscription');
     // Refetch subscription instead of page reload
     if (currentWebsite?.id) {
       fetchSubscription(currentWebsite.id);
     }
-  });
+  }, [currentWebsite?.id, fetchSubscription]);
+
+  // Create missing trial subscription as fallback
+  useTrialFallback(user, websites, subscription, handleTrialCreated);
+
+  // Handle payment success and refresh subscription
+  usePaymentSuccess();
 
   useEffect(() => {
     // Set up auth state listener first

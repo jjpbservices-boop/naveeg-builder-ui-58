@@ -299,7 +299,7 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
                 {isGenerating && (
                   <Button
                     variant="outline"
-                    onClick={() => window.location.reload()}
+                    onClick={loadAnalytics}
                     className="mt-4"
                   >
                     <RefreshCw className="h-4 w-4 mr-2" />
