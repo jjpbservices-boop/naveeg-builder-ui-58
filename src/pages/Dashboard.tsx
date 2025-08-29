@@ -60,8 +60,8 @@ export default function Dashboard() {
     }
   }, [currentWebsite?.id]); // Removed fetchSubscription dependency to prevent infinite loop
 
-  // Create missing trial subscription as fallback
-  useTrialFallback(user, websites, subscription, handleTrialCreated);
+  // Removed useTrialFallback to prevent infinite refresh loops
+  // useTrialFallback(user, websites, subscription, handleTrialCreated);
 
   // Handle payment success and refresh subscription
   usePaymentSuccess(currentWebsite?.id);
@@ -188,7 +188,7 @@ export default function Dashboard() {
     if (upgradeType === 'pro-to-custom') {
       window.open('mailto:sales@naveeg.com?subject=Custom Plan Inquiry', '_blank');
     } else {
-      navigate({ to: '/dashboard/plans' });
+      navigate({ to: '/plans' });
     }
   };
 
