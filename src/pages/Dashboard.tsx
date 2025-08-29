@@ -63,23 +63,9 @@ export default function Dashboard() {
   // Removed useTrialFallback and usePaymentSuccess to prevent infinite refresh loops
 
   useEffect(() => {
-    // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
-      if (!session) {
-        console.log('No session, redirecting to auth');
-        navigate({ to: '/auth' });
-        return;
-      }
-      setUser(session.user);
-      if (session.user?.id) {
-        loadUserWebsites(session.user.id);
-      }
-    });
-
-    // Then check for existing session
+    // Get initial session only - auth state is managed by AuthProvider
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session check:', session?.user?.id);
+      console.log('Dashboard initial session check:', session?.user?.id);
       if (!session) {
         console.log('No initial session, redirecting to auth');
         navigate({ to: '/auth' });
@@ -90,10 +76,6 @@ export default function Dashboard() {
         loadUserWebsites(session.user.id);
       }
     });
-
-    return () => {
-      subscription.unsubscribe();
-    };
   }, [navigate]);
 
   const loadUserWebsites = async (userId: string) => {

@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext, useContext, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -32,38 +32,77 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  
+  // Track last session to prevent duplicate events
+  const lastSessionRef = useRef<Session | null>(null);
+  const lastEventRef = useRef<string | null>(null);
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    console.log('[AUTH] Setting up auth state listener');
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('[AUTH] Auth state changed:', event, !!session, session?.user?.id);
+        
+        // Compare sessions to prevent unnecessary updates
+        const sessionChanged = lastSessionRef.current?.user?.id !== session?.user?.id;
+        const eventChanged = lastEventRef.current !== event;
+        
+        if (!sessionChanged && !eventChanged) {
+          console.log('[AUTH] Ignoring duplicate auth event');
+          return;
+        }
+        
+        // Update refs
+        lastSessionRef.current = session;
+        lastEventRef.current = event;
+        
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Handle auth events
-        if (event === 'SIGNED_IN') {
-          toast({
-            title: "Welcome back!",
-            description: "You have successfully signed in.",
-          });
+        // Rate-limit toast notifications to prevent spam
+        if (toastTimeoutRef.current) {
+          clearTimeout(toastTimeoutRef.current);
+        }
+
+        // Handle auth events with debouncing
+        if (event === 'SIGNED_IN' && sessionChanged) {
+          toastTimeoutRef.current = setTimeout(() => {
+            toast({
+              title: "Welcome back!",
+              description: "You have successfully signed in.",
+            });
+          }, 500);
         } else if (event === 'SIGNED_OUT') {
-          toast({
-            title: "Signed out",
-            description: "You have been signed out successfully.",
-          });
+          toastTimeoutRef.current = setTimeout(() => {
+            toast({
+              title: "Signed out",
+              description: "You have been signed out successfully.",
+            });
+          }, 500);
         }
       }
     );
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('[AUTH] Initial session check:', !!session, session?.user?.id);
+      lastSessionRef.current = session;
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('[AUTH] Cleaning up auth listener');
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+      subscription.unsubscribe();
+    };
   }, [toast]);
 
   const signIn = async (email: string, password: string) => {
