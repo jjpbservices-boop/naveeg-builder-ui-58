@@ -5,8 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, ResponsiveContainer, Area, AreaChart } from 'recharts';
-import { RefreshCw, TrendingUp, Users, Eye, Clock, BarChart3, Smartphone, Globe, Search, Activity, Target, MousePointer, Timer, Monitor } from 'lucide-react'; // Updated import
-import { supabase } from '@/integrations/supabase/client';
+import { RefreshCw, TrendingUp, Users, Eye, Clock, BarChart3, Smartphone, Globe, Search, Activity, Target, MousePointer, Timer, Monitor, Calendar } from 'lucide-react';
+import { useAnalytics } from '@/hooks/useTenWebApi';
+import { useFeatureGate } from '@/hooks/useFeatureGate';
+import { LockedFeature } from '../LockedFeature';
 
 interface DashboardAnalyticsProps {
   currentWebsite: any;
@@ -14,108 +16,102 @@ interface DashboardAnalyticsProps {
 
 export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) {
   const { t } = useTranslation('analytics');
-  const [analytics, setAnalytics] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { canUseAnalytics } = useFeatureGate();
+  const [period, setPeriod] = useState<'day' | 'week' | 'month' | 'year'>('week');
+  
+  const { 
+    getVisitors,
+    data: analyticsData,
+    loading,
+    error 
+  } = useAnalytics('');
 
   useEffect(() => {
-    if (currentWebsite?.id) {
+    if (currentWebsite?.id && canUseAnalytics) {
       loadAnalytics();
     }
-  }, [currentWebsite]);
+  }, [currentWebsite?.id, period, canUseAnalytics]);
+
+  // Feature gating for analytics
+  if (!canUseAnalytics) {
+    return (
+      <LockedFeature
+        featureName="Advanced Analytics"
+        description="Get detailed insights about your website's performance and visitor behavior"
+        requiredPlan="pro"
+        onUpgrade={() => window.location.href = '/plans'}
+      />
+    );
+  }
 
   const loadAnalytics = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Fetch events for this website
-      const { data: events, error } = await supabase
-        .from('events')
-        .select('*')
-        .eq('site_id', currentWebsite.id)
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (error) throw error;
-
-      // Process analytics data
-      const processedData = processAnalyticsData(events || []);
-      setAnalytics(processedData);
-    } catch (error) {
-      console.error('Error loading analytics:', error);
-      // Show demo data for new websites
-      const demoData = processAnalyticsData([]);
-      setAnalytics(demoData);
-    } finally {
-      setIsLoading(false);
-    }
+    if (!currentWebsite?.id) return;
+    await getVisitors(period);
   };
 
-  const processAnalyticsData = (events: any[]) => {
-    // Calculate metrics from events
-    const pageViews = events.length || 1247;
-    const uniqueVisitors = new Set(events.map(e => e.metadata?.visitor_id || e.id)).size || 892;
+  const processedAnalytics = React.useMemo(() => {
+    if (!analyticsData) return null;
+
+    // Process real analytics data
+    const visitors = analyticsData.visitors || {};
+    const totalVisitors = Object.values(visitors).reduce((sum: number, count: any) => sum + (Number(count) || 0), 0);
+    const totalPageViews = Math.floor(Number(totalVisitors) * 1.4); // Estimate page views from visitors
     
-    // Group events by page
-    const pageStats = events.reduce((acc, event) => {
-      const page = event.metadata?.page || '/';
-      acc[page] = (acc[page] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    // Generate time series data based on real data
+    const timeSeriesData = Object.entries(visitors).map(([date, count]) => ({
+      date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      pageViews: Math.floor((count as number) * 1.4),
+      visitors: count as number,
+    }));
 
-    const topPages = Object.entries(pageStats).length > 0 
-      ? Object.entries(pageStats)
-          .map(([page, views]) => ({ page, views: views as number }))
-          .sort((a, b) => b.views - a.views)
-          .slice(0, 5)
-      : [
-          { page: '/', views: 423 },
-          { page: '/about', views: 234 },
-          { page: '/services', views: 189 },
-          { page: '/contact', views: 156 },
-          { page: '/blog', views: 134 }
-        ];
+    // Calculate metrics
+    const avgSessionDuration = '2m 14s'; // Default for now
+    const bounceRate = '38%'; // Default for now
+    const conversionRate = '4.2%'; // Default for now
 
-    // Enhanced device breakdown with colors
-    const deviceBreakdown = [
+    // Mock top pages (real implementation would come from 10Web pages API)
+    const topPages = [
+      { page: '/', views: Math.floor(Number(totalPageViews) * 0.4) },
+      { page: '/about', views: Math.floor(Number(totalPageViews) * 0.2) },
+      { page: '/services', views: Math.floor(Number(totalPageViews) * 0.15) },
+      { page: '/contact', views: Math.floor(Number(totalPageViews) * 0.12) },
+      { page: '/blog', views: Math.floor(Number(totalPageViews) * 0.08) }
+    ];
+
+    return {
+      pageViews: totalPageViews,
+      uniqueVisitors: totalVisitors,
+      avgSessionDuration,
+      bounceRate,
+      conversionRate,
+      topPages,
+      timeSeriesData,
+      lastUpdated: new Date().toISOString(),
+    };
+  }, [analyticsData]);
+
+  // Enhanced device breakdown with colors (mock data for now)
+  const deviceBreakdown = React.useMemo(() => {
+    const uniqueVisitors = Number(processedAnalytics?.uniqueVisitors) || 0;
+    return [
       { device: 'Desktop', count: Math.floor(uniqueVisitors * 0.6), percentage: 60, fill: 'hsl(var(--chart-1))' },
       { device: 'Mobile', count: Math.floor(uniqueVisitors * 0.35), percentage: 35, fill: 'hsl(var(--chart-2))' },
       { device: 'Tablet', count: Math.floor(uniqueVisitors * 0.05), percentage: 5, fill: 'hsl(var(--chart-3))' },
     ];
+  }, [processedAnalytics?.uniqueVisitors]);
 
-    // Enhanced traffic sources with colors
-    const trafficSources = [
+  // Enhanced traffic sources with colors (mock data for now)
+  const trafficSources = React.useMemo(() => {
+    const uniqueVisitors = Number(processedAnalytics?.uniqueVisitors) || 0;
+    return [
       { source: 'Direct', count: Math.floor(uniqueVisitors * 0.4), percentage: 40, fill: 'hsl(var(--chart-1))' },
       { source: 'Google', count: Math.floor(uniqueVisitors * 0.3), percentage: 30, fill: 'hsl(var(--chart-2))' },
       { source: 'Social Media', count: Math.floor(uniqueVisitors * 0.2), percentage: 20, fill: 'hsl(var(--chart-3))' },
       { source: 'Other', count: Math.floor(uniqueVisitors * 0.1), percentage: 10, fill: 'hsl(var(--chart-4))' },
     ];
+  }, [processedAnalytics?.uniqueVisitors]);
 
-    // Generate time series data for the last 7 days
-    const last7Days = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (6 - i));
-      return {
-        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        pageViews: Math.floor(Math.random() * 100) + 120,
-        visitors: Math.floor(Math.random() * 50) + 80,
-      };
-    });
-
-    return {
-      pageViews,
-      uniqueVisitors,
-      avgSessionDuration: '2m 34s',
-      bounceRate: '42%',
-      conversionRate: '3.8%',
-      topPages,
-      deviceBreakdown,
-      trafficSources,
-      timeSeriesData: last7Days,
-      lastUpdated: new Date().toISOString(),
-    };
-  };
-
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="flex items-center space-x-2">
@@ -126,7 +122,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
     );
   }
 
-  if (!analytics) {
+  if (!processedAnalytics) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
@@ -150,10 +146,26 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
           <h2 className="text-2xl font-bold tracking-tight">{t('title')}</h2>
           <p className="text-muted-foreground">{t('subtitle')}</p>
         </div>
-        <Button onClick={loadAnalytics} variant="outline" size="sm">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh Analytics
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 rounded-lg border p-1">
+            {(['day', 'week', 'month', 'year'] as const).map((p) => (
+              <Button
+                key={p}
+                size="sm"
+                variant={period === p ? 'default' : 'ghost'}
+                onClick={() => setPeriod(p)}
+                className="text-xs px-2 py-1 h-7"
+              >
+                <Calendar className="h-3 w-3 mr-1" />
+                {p.charAt(0).toUpperCase() + p.slice(1)}
+              </Button>
+            ))}
+          </div>
+          <Button onClick={loadAnalytics} variant="outline" size="sm" disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Clean KPI Cards */}
@@ -163,7 +175,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-1">Page Views</p>
-                <p className="text-2xl font-semibold">{analytics.pageViews.toLocaleString()}</p>
+                <p className="text-2xl font-semibold">{processedAnalytics.pageViews.toLocaleString()}</p>
                 <p className="text-xs text-success flex items-center mt-2">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   +12.5%
@@ -181,7 +193,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-1">Unique Visitors</p>
-                <p className="text-2xl font-semibold">{analytics.uniqueVisitors.toLocaleString()}</p>
+                <p className="text-2xl font-semibold">{processedAnalytics.uniqueVisitors.toLocaleString()}</p>
                 <p className="text-xs text-success flex items-center mt-2">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   +8.2%
@@ -199,7 +211,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-1">Avg. Session</p>
-                <p className="text-2xl font-semibold">{analytics.avgSessionDuration}</p>
+                <p className="text-2xl font-semibold">{processedAnalytics.avgSessionDuration}</p>
                 <p className="text-xs text-muted-foreground flex items-center mt-2">
                   <Activity className="h-3 w-3 mr-1" />
                   +2.1%
@@ -217,7 +229,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-1">Bounce Rate</p>
-                <p className="text-2xl font-semibold">{analytics.bounceRate}</p>
+                <p className="text-2xl font-semibold">{processedAnalytics.bounceRate}</p>
                 <p className="text-xs text-success flex items-center mt-2">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   -5.3%
@@ -235,7 +247,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-1">Conversion Rate</p>
-                <p className="text-2xl font-semibold">{analytics.conversionRate}</p>
+                <p className="text-2xl font-semibold">{processedAnalytics.conversionRate}</p>
                 <p className="text-xs text-success flex items-center mt-2">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   +15.8%
@@ -265,7 +277,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
             }}
           >
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={analytics.timeSeriesData}>
+              <AreaChart data={processedAnalytics.timeSeriesData}>
                 <defs>
                   <linearGradient id="pageViewsGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3}/>
@@ -317,7 +329,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
               views: { label: "Views", color: "hsl(var(--chart-1))" }
             }}>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={analytics.topPages} layout="horizontal">
+                <BarChart data={processedAnalytics.topPages} layout="horizontal">
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                   <XAxis type="number" className="text-xs fill-muted-foreground" />
                   <YAxis dataKey="page" type="category" width={80} className="text-xs fill-muted-foreground" />
@@ -346,7 +358,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
               <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
                   <Pie
-                    data={analytics.deviceBreakdown}
+                    data={deviceBreakdown}
                     cx="50%"
                     cy="50%"
                     innerRadius={40}
@@ -354,7 +366,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
                     paddingAngle={5}
                     dataKey="count"
                   >
-                    {analytics.deviceBreakdown.map((entry: any, index: number) => (
+                    {deviceBreakdown.map((entry: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Pie>
@@ -363,7 +375,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
               </ResponsiveContainer>
             </ChartContainer>
             <div className="flex justify-center space-x-4 mt-4">
-              {analytics.deviceBreakdown.map((device: any, index: number) => (
+              {deviceBreakdown.map((device: any, index: number) => (
                 <div key={device.device} className="flex items-center space-x-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: device.fill }}></div>
                   <span className="text-xs text-muted-foreground">{device.device}</span>
@@ -386,7 +398,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
               count: { label: "Visitors", color: "hsl(var(--chart-2))" }
             }}>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={analytics.trafficSources}>
+                <BarChart data={trafficSources}>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                   <XAxis dataKey="source" className="text-xs fill-muted-foreground" />
                   <YAxis className="text-xs fill-muted-foreground" />
