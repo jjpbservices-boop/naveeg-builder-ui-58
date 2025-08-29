@@ -86,22 +86,14 @@ export default function Plans() {
       });
       return;
     }
-
-    // Map plan to actual Stripe price IDs
-    const priceMap = {
-      starter: 'price_1QQSj3JnQl0NMBaKSXgkdpT8',
-      pro: 'price_1QQSiuJnQl0NMBaKgCOY4c6A'
-    };
-    
-    const priceId = priceMap[plan];
     
     try {
-      await createCheckout(priceId, currentSiteId);
+      await createCheckout(plan, currentSiteId);
     } catch (error) {
       console.error('Failed to create checkout:', error);
       toast({
         title: "Checkout Error",
-        description: "Failed to create checkout session. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to create checkout session. Please try again.",
         variant: "destructive"
       });
     }

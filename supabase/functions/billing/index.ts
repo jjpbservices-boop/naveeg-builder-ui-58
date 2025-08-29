@@ -44,16 +44,35 @@ serve(async (req) => {
     
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const url = new URL(req.url);
-    const action = url.searchParams.get('action');
+    const { action, plan, site_id, price_id } = await req.json().catch(() => ({}));
     const appUrl = Deno.env.get("APP_URL") || "http://localhost:3000";
 
-    if (action === 'create-checkout') {
-      // Create checkout session
-      const priceId = url.searchParams.get('price_id');
-      if (!priceId) throw new Error("price_id parameter is required");
+    // Create service role client for database queries
+    const supabaseService = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
 
-      logStep("Creating checkout session", { priceId });
+    if (action === 'create-checkout') {
+      // Map plan to price ID from database if plan is provided
+      let priceId = price_id;
+      if (plan) {
+        const { data: priceData, error: priceError } = await supabaseService
+          .from('stripe_prices')
+          .select('price_id')
+          .eq('plan_id', plan)
+          .single();
+        
+        if (priceError || !priceData) {
+          throw new Error(`Invalid plan: ${plan}`);
+        }
+        priceId = priceData.price_id;
+      }
+      
+      if (!priceId) throw new Error("price_id or plan parameter is required");
+
+      logStep("Creating checkout session", { priceId, plan, site_id });
 
       // Check if customer exists
       const customers = await stripe.customers.list({ email: user.email, limit: 1 });
@@ -63,8 +82,10 @@ serve(async (req) => {
         logStep("Found existing customer", { customerId });
       }
 
-      // Get current site_id
-      const siteId = url.searchParams.get('site_id');
+      // Ensure site_id is provided
+      if (!site_id) {
+        throw new Error("site_id is required for checkout");
+      }
 
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
@@ -81,7 +102,7 @@ serve(async (req) => {
         cancel_url: `${appUrl}/plans?canceled=1`,
         metadata: {
           user_id: user.id,
-          site_id: siteId || '',
+          site_id: site_id,
         },
       });
 
@@ -93,8 +114,8 @@ serve(async (req) => {
       });
 
     } else if (action === 'create-portal') {
-      // Create customer portal session
-      let customerId = url.searchParams.get('customer_id') || '';
+      // Create customer portal session - no need to get from URL since we use JSON body
+      let customerId = '';
       if (!customerId) {
         // Find customer by email
         const customers = await stripe.customers.list({ email: user.email, limit: 1 });

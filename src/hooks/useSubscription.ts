@@ -63,16 +63,18 @@ export const useSubscription = () => {
     }
   }, [user]);
 
-  const createCheckout = async (priceId: string, siteId?: string) => {
-    try {
-      const queryParams = new URLSearchParams({
-        action: 'create-checkout',
-        price_id: priceId,
-        ...(siteId && { site_id: siteId }),
-      });
+  const createCheckout = async (plan: 'starter' | 'pro', siteId: string) => {
+    if (!siteId) {
+      throw new Error('Site ID is required for checkout');
+    }
 
-      const { data, error } = await supabase.functions.invoke('billing?' + queryParams.toString(), {
-        body: {},
+    try {
+      const { data, error } = await supabase.functions.invoke('billing', {
+        body: { 
+          action: 'create-checkout', 
+          plan, 
+          site_id: siteId 
+        },
         headers: {
           'Content-Type': 'application/json',
         },
@@ -81,26 +83,23 @@ export const useSubscription = () => {
       if (error) throw error;
 
       if (data?.url) {
-        // Open checkout in new tab
-        window.open(data.url, '_blank');
+        // Redirect in same tab to prevent popup blocking
+        window.location.assign(data.url);
       }
 
       return { data, error: null };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create checkout';
-      return { data: null, error: errorMessage };
+      throw new Error(errorMessage);
     }
   };
 
-  const createPortal = async (customerId?: string) => {
+  const createPortal = async () => {
     try {
-      const queryParams = new URLSearchParams({
-        action: 'create-portal',
-        ...(customerId && { customer_id: customerId }),
-      });
-
-      const { data, error } = await supabase.functions.invoke('billing?' + queryParams.toString(), {
-        body: {},
+      const { data, error } = await supabase.functions.invoke('billing', {
+        body: { 
+          action: 'create-portal'
+        },
         headers: {
           'Content-Type': 'application/json',
         },
@@ -109,14 +108,12 @@ export const useSubscription = () => {
       if (error) throw error;
 
       if (data?.url) {
-        // Open portal in new tab
-        window.open(data.url, '_blank');
+        // Redirect in same tab to prevent popup blocking
+        window.location.assign(data.url);
       }
-
-      return { data, error: null };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create portal';
-      return { data: null, error: errorMessage };
+      throw new Error(errorMessage);
     }
   };
 

@@ -26,18 +26,22 @@ export function Billing() {
 
   const handleUpgradeToStarter = async () => {
     try {
-      const { error } = await createCheckout('price_starter_monthly');
-      if (error) {
+      // We need to get the site ID first
+      const currentSiteId = localStorage.getItem('currentSiteId');
+      if (!currentSiteId) {
         toast({
-          title: "Error",
-          description: error,
+          title: "Error", 
+          description: "No site found. Please create a site first.",
           variant: "destructive",
         });
+        return;
       }
+      
+      await createCheckout('starter', currentSiteId);
     } catch (err) {
       toast({
         title: "Error",
-        description: "Failed to create checkout session",
+        description: err instanceof Error ? err.message : "Failed to create checkout session",
         variant: "destructive",
       });
     }
@@ -45,18 +49,22 @@ export function Billing() {
 
   const handleUpgradeToPro = async () => {
     try {
-      const { error } = await createCheckout('price_pro_monthly');
-      if (error) {
+      // We need to get the site ID first
+      const currentSiteId = localStorage.getItem('currentSiteId');
+      if (!currentSiteId) {
         toast({
           title: "Error",
-          description: error,
+          description: "No site found. Please create a site first.",
           variant: "destructive",
         });
+        return;
       }
+      
+      await createCheckout('pro', currentSiteId);
     } catch (err) {
       toast({
-        title: "Error",
-        description: "Failed to create checkout session",
+        title: "Error", 
+        description: err instanceof Error ? err.message : "Failed to create checkout session",
         variant: "destructive",
       });
     }
@@ -64,18 +72,11 @@ export function Billing() {
 
   const handleManageSubscription = async () => {
     try {
-      const { error } = await createPortal(subscription?.stripe_customer_id);
-      if (error) {
-        toast({
-          title: "Error",
-          description: error,
-          variant: "destructive",
-        });
-      }
+      await createPortal();
     } catch (err) {
       toast({
         title: "Error",
-        description: "Failed to open billing portal",
+        description: err instanceof Error ? err.message : "Failed to open billing portal",
         variant: "destructive",
       });
     }
