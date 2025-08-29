@@ -160,6 +160,13 @@ const dashboardRoute = createRoute({
   component: Dashboard,
 });
 
+// Dashboard nested routes
+const dashboardPlansRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/dashboard/plans',
+  component: Plans,
+});
+
 const workspaceRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/workspace',
@@ -226,6 +233,7 @@ const routeTree = rootRoute.addChildren([
     notFoundRoute,
   ]),
   dashboardRoute,
+  dashboardPlansRoute,
   workspaceRoute,
   settingsRoute,
   plansRoute,

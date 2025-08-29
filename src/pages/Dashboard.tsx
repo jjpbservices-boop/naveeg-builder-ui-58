@@ -369,7 +369,7 @@ export default function Dashboard() {
           </Card>
         );
       case 'plans':
-        navigate({ to: '/dashboard/plans' });
+        // Already handled by sidebar navigation to /dashboard/plans
         return null;
       case 'settings':
         return (
