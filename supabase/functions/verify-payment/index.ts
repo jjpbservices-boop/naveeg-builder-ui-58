@@ -56,15 +56,23 @@ serve(async (req) => {
       throw new Error("session_id is required");
     }
 
-    logStep("Verifying session", { sessionId: session_id, siteId: site_id });
+    logStep("Verifying session", { sessionId: session_id, frontendSiteId: site_id });
 
     // Retrieve the checkout session from Stripe
     const session = await stripe.checkout.sessions.retrieve(session_id);
+    
+    // Extract site_id from Stripe metadata (primary source) or fallback to frontend
+    const metadataSiteId = session.metadata?.site_id;
+    const finalSiteId = metadataSiteId || site_id;
+    
     logStep("Retrieved session", { 
       sessionId: session.id, 
       paymentStatus: session.payment_status,
       subscriptionId: session.subscription,
-      mode: session.mode
+      mode: session.mode,
+      metadataSiteId,
+      frontendSiteId: site_id,
+      finalSiteId
     });
 
     if (session.payment_status !== 'paid') {
@@ -110,7 +118,7 @@ serve(async (req) => {
       logStep("Checking for existing subscriptions for user");
       const { data: existingSubscriptions, error: existingError } = await supabaseService
         .from('subscriptions')
-        .select('id, stripe_subscription_id, status')
+        .select('id, stripe_subscription_id, status, site_id')
         .eq('user_id', user.id)
         .in('status', ['active', 'trialing']);
 
@@ -119,10 +127,22 @@ serve(async (req) => {
         throw new Error(`Error checking existing subscriptions: ${existingError.message}`);
       }
 
+      // Determine the correct site_id to use
+      let targetSiteId = finalSiteId;
+      
+      // If updating an existing subscription, preserve its site_id unless we have a valid new one
+      if (existingSubscriptions && existingSubscriptions.length > 0) {
+        const existingSiteId = existingSubscriptions[0].site_id;
+        if (existingSiteId && !targetSiteId) {
+          targetSiteId = existingSiteId;
+          logStep("Preserving existing site_id", { existingSiteId });
+        }
+      }
+      
       // Prepare subscription data
       const subscriptionData = {
         user_id: user.id,
-        site_id: site_id || null,
+        site_id: targetSiteId || null,
         plan_id: priceData.plan_id,
         status: subscription.status,
         stripe_subscription_id: subscription.id,
@@ -132,9 +152,16 @@ serve(async (req) => {
         metadata: {
           verified_at: new Date().toISOString(),
           session_id: session.id,
+          site_id_source: metadataSiteId ? 'stripe_metadata' : 'frontend'
         },
         updated_at: new Date().toISOString(),
       };
+      
+      logStep("Prepared subscription data", { 
+        targetSiteId, 
+        planId: priceData.plan_id,
+        stripeSubId: subscription.id
+      });
 
       let upsertData;
       
