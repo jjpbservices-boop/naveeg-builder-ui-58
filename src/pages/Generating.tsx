@@ -94,10 +94,8 @@ export default function Generating() {
       // Create or update database record now that we have a valid website_id
       const createdSite = await createDatabaseRecord(session.user);
       
-      // Note: Trial subscription will be created by 10Web webhook when site is published
-      // Removed duplicate trial creation to prevent conflicts
-      
       // Continue with publishing if already authenticated
+      // Trial subscription will be created automatically by ai-router after successful publishing
       await completeWebsiteGeneration(session.user);
 
     } catch (error: any) {
@@ -150,8 +148,8 @@ export default function Generating() {
     }
   };
 
-  // Removed createTrialSubscription function - trial creation is now handled exclusively by 10Web webhook
-  // This eliminates the race condition between client-side and webhook trial creation
+  // Trial subscription creation is now handled automatically by the ai-router
+  // after successful website publishing - no need for manual trial creation here
 
   const completeWebsiteGeneration = async (user: any) => {
     try {

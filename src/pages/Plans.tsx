@@ -144,12 +144,17 @@ export default function Plans() {
     if (loading || loadingSite) return 'Loading...';
     const currentPlanId = getCurrentPlanId();
     const isActive = subscription && ['active', 'past_due'].includes(subscription.status);
+    const isTrialing = subscription && subscription.status === 'trialing';
     
     switch (plan) {
       case 'starter':
-        return (currentPlanId === 'starter' && isActive) ? 'Current Plan' : 'Choose Starter';
+        if (currentPlanId === 'starter' && isActive) return 'Current Plan';
+        if (isTrialing) return 'Upgrade from Trial';
+        return 'Choose Starter';
       case 'pro':
-        return (currentPlanId === 'pro' && isActive) ? 'Current Plan' : 'Choose Pro';
+        if (currentPlanId === 'pro' && isActive) return 'Current Plan';
+        if (isTrialing) return 'Upgrade from Trial';
+        return 'Choose Pro';
       case 'custom':
         return 'Contact Sales';
       default:
@@ -198,6 +203,13 @@ export default function Plans() {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Select the perfect plan for your business needs. Upgrade or downgrade anytime.
           </p>
+          {subscription?.status === 'trialing' && (
+            <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-lg max-w-md mx-auto">
+              <p className="text-sm text-primary font-medium">
+                🎉 You're currently on a 7-day free trial! Upgrade to continue using your website after the trial ends.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Plan Cards */}

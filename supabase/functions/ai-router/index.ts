@@ -443,7 +443,46 @@ const handlePublishAndFrontpage = async (body: any, origin: string | null) => {
         preview_url = preview_url || hit?.site_url || (sub ? `https://${sub}.10web.site` : null);
         admin_url = admin_url || hit?.admin_url || (sub ? `https://${sub}.10web.site/wp-admin` : null);
       }
-      if (preview_url && admin_url) return J(200, { ok: true, preview_url, admin_url }, origin);
+      if (preview_url && admin_url) {
+        // SUCCESS: Website is published with URLs, now create trial subscription
+        console.log(`Website ${website_id} published successfully, creating trial subscription`);
+        
+        try {
+          // Get the site record to find the user_id
+          const { data: siteData, error: siteError } = await supabase
+            .from('sites')
+            .select('user_id, id')
+            .eq('website_id', website_id)
+            .single();
+          
+          if (siteError) {
+            console.error('Failed to find site record:', siteError);
+          } else if (siteData?.user_id) {
+            console.log(`Creating trial subscription for user ${siteData.user_id}, site ${siteData.id}`);
+            
+            // Create trial subscription using the RPC function
+            const { data: trialData, error: trialError } = await supabase
+              .rpc('create_trial_subscription', {
+                p_user_id: siteData.user_id,
+                p_site_id: siteData.id
+              });
+            
+            if (trialError) {
+              console.error('Failed to create trial subscription:', trialError);
+              // Don't fail the whole publishing process if trial creation fails
+            } else {
+              console.log('Trial subscription created successfully:', trialData);
+            }
+          } else {
+            console.warn('No user_id found for website, skipping trial creation');
+          }
+        } catch (trialCreationError) {
+          console.error('Error during trial creation:', trialCreationError);
+          // Don't fail the whole publishing process if trial creation fails
+        }
+        
+        return J(200, { ok: true, preview_url, admin_url }, origin);
+      }
     } catch {}
     await new Promise(r => setTimeout(r, 3000));
   }
