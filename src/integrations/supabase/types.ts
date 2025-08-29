@@ -334,6 +334,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_trial_subscription: {
+        Args: { p_site_id: string; p_user_id: string }
+        Returns: string
+      }
       user_owns_site: {
         Args: { site_uuid: string }
         Returns: boolean
