@@ -184,7 +184,8 @@ export const useSubscription = () => {
           // Refetch subscription when changes occur, filtered by site_id if available
           const siteId = (payload.new as any)?.site_id || (payload.old as any)?.site_id;
           console.log('[SUBSCRIPTION] Real-time update received', { payload, siteId });
-          fetchSubscription(siteId);
+          // Don't call fetchSubscription here to prevent loops
+          // Let components handle subscription refetch explicitly
         }
       )
       .subscribe();
@@ -192,7 +193,7 @@ export const useSubscription = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, fetchSubscription]);
+  }, [user]); // Removed fetchSubscription from dependencies to prevent infinite loop
 
   return {
     subscription,

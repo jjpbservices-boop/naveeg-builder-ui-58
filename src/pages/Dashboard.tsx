@@ -48,7 +48,7 @@ export default function Dashboard() {
       console.log('[DASHBOARD] Fetching subscription for site:', currentWebsite.id);
       fetchSubscription(currentWebsite.id);
     }
-  }, [currentWebsite?.id, fetchSubscription]);
+  }, [currentWebsite?.id]); // Removed fetchSubscription from dependencies to prevent infinite loop
 
   // Create missing trial subscription as fallback
   useTrialFallback(user, websites, subscription, () => {

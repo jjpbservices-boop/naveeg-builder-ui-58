@@ -71,7 +71,11 @@ serve(async (req) => {
     }
     
     const { action, plan, site_id, customer_id } = requestBody;
-    const appUrl = Deno.env.get("APP_URL") || "http://localhost:3000";
+    // Use request origin as primary, APP_URL as secondary, localhost as last resort
+    const origin = req.headers.get("origin") || req.headers.get("host");
+    const appUrl = origin || Deno.env.get("APP_URL") || "http://localhost:3000";
+    
+    logStep("Using app URL", { origin, appUrl });
     
     // Validate required action parameter
     if (!action) {
