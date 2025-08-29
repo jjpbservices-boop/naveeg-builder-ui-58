@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, Plus, ExternalLink, CheckCircle, XCircle, Clock, AlertTriangle, AlertCircle, Shield, Check, Copy } from 'lucide-react';
+import { Globe, Plus, ExternalLink, CheckCircle, XCircle, Clock, AlertTriangle, AlertCircle, Shield, Check, Copy, Trash2, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,8 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useDomainManagement } from '@/hooks/useTenWebApi';
+import { useFeatureGate } from '@/hooks/useFeatureGate';
 import { LockedFeature } from '../LockedFeature';
 
 interface DashboardDomainProps {
@@ -16,14 +16,29 @@ interface DashboardDomainProps {
 }
 
 export function DashboardDomain({ currentWebsite }: DashboardDomainProps) {
-  const { canConnectDomain, isSubscriptionActive } = useSubscription();
+  const { canConnectDomain } = useFeatureGate();
   const [customDomain, setCustomDomain] = useState('');
-  const [isConnecting, setIsConnecting] = useState(false);
   const [copied, setCopied] = useState('');
   const { toast } = useToast();
+  
+  const { 
+    listDomains, 
+    addDomain, 
+    setDefaultDomain, 
+    deleteDomain,
+    data: domains,
+    loading,
+    error 
+  } = useDomainManagement(currentWebsite?.id || '');
 
-  // Domain connect gating - blocked unless active/past_due subscription
-  if (!canConnectDomain()) {
+  useEffect(() => {
+    if (currentWebsite?.id && canConnectDomain) {
+      listDomains();
+    }
+  }, [currentWebsite?.id, canConnectDomain, listDomains]);
+
+  // Domain connect gating - blocked unless subscription allows
+  if (!canConnectDomain) {
     return (
       <LockedFeature
         featureName="Custom Domain"
@@ -54,43 +69,29 @@ export function DashboardDomain({ currentWebsite }: DashboardDomainProps) {
       return;
     }
 
-    setIsConnecting(true);
-    try {
-      // Get current site ID
-      const siteId = localStorage.getItem('currentSiteId');
-      if (!siteId) {
-        throw new Error('No site selected');
-      }
-
-      // Check domain gate first
-      const { data: gateResponse, error: gateError } = await supabase.functions.invoke('domain-gate', {
-        body: { site_id: siteId },
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (gateError || !gateResponse?.allowed) {
-        throw new Error(gateResponse?.reason || 'Domain connection not allowed');
-      }
-
-      // Simulate domain connection process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast({
-        title: 'Domain Connection Initiated',
-        description: 'Please configure the DNS records shown below to complete the setup.',
-      });
-    } catch (error) {
+    if (!currentWebsite?.id) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to connect domain. Please try again.',
+        description: 'No website selected',
         variant: 'destructive',
       });
-    } finally {
-      setIsConnecting(false);
+      return;
     }
+
+    await addDomain(customDomain.trim());
+    setCustomDomain('');
+  };
+
+  const handleSetDefault = async (domain: string) => {
+    await setDefaultDomain(domain);
+  };
+
+  const handleDeleteDomain = async (domain: string) => {
+    await deleteDomain(domain);
   };
 
   const currentDomain = currentWebsite?.site_url || currentWebsite?.subdomain || 'No domain configured';
+  const defaultDomain = domains?.find(d => d.default)?.domain || currentDomain;
   
   const dnsRecords = [
     {
@@ -109,45 +110,89 @@ export function DashboardDomain({ currentWebsite }: DashboardDomainProps) {
 
   return (
     <div className="space-y-6">
-      {/* Current Domain */}
+      {/* Connected Domains */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
-            Current Domain
+            Connected Domains
           </CardTitle>
+          <CardDescription>
+            Manage your website domains and SSL certificates
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label className="text-sm font-medium text-muted-foreground">Primary Domain</Label>
-            <div className="flex items-center gap-2 mt-2">
-              <Input 
-                value={currentDomain}
-                readOnly 
-                className="flex-1"
-              />
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => handleCopy(currentDomain, 'Domain URL')}
-              >
-                {copied === 'Domain URL' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              </Button>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
-          </div>
-
-          {currentWebsite?.site_url && (
-            <div className="flex gap-2">
-              <Button asChild className="flex-1">
-                <a href={currentWebsite.site_url} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Visit Website
-                </a>
-              </Button>
-              <Button variant="outline" className="flex-1">
-                <Shield className="h-4 w-4 mr-2" />
-                SSL Status: Active
-              </Button>
+          ) : domains && domains.length > 0 ? (
+            <div className="space-y-3">
+              {domains.map((domain) => (
+                <div key={domain.domain} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{domain.domain}</span>
+                        {domain.default && (
+                          <Badge variant="default" className="text-xs">
+                            <Star className="h-3 w-3 mr-1" />
+                            Default
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant={domain.status === 'active' ? 'default' : 'secondary'}>
+                          {domain.status || 'pending'}
+                        </Badge>
+                        {domain.ssl_enabled && (
+                          <Badge variant="outline" className="text-green-600">
+                            <Shield className="h-3 w-3 mr-1" />
+                            SSL
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleCopy(`https://${domain.domain}`, 'Domain URL')}
+                    >
+                      {copied === 'Domain URL' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                    <Button asChild size="sm" variant="outline">
+                      <a href={`https://${domain.domain}`} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </Button>
+                    {!domain.default && (
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleSetDefault(domain.domain)}
+                      >
+                        <Star className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleDeleteDomain(domain.domain)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Globe className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No custom domains connected yet</p>
+              <p className="text-sm">Add your first domain below to get started</p>
             </div>
           )}
         </CardContent>
@@ -176,9 +221,9 @@ export function DashboardDomain({ currentWebsite }: DashboardDomainProps) {
               />
               <Button 
                 onClick={handleConnectDomain}
-                disabled={isConnecting}
+                disabled={loading}
               >
-                {isConnecting ? 'Connecting...' : 'Connect'}
+                {loading ? 'Adding...' : 'Add Domain'}
               </Button>
             </div>
           </div>
