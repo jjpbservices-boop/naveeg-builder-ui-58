@@ -72,5 +72,5 @@ export const useTrialFallback = (user: any, sites: any[], subscription: any, onT
 
     // Remove timer - execute immediately but only once
     createMissingTrial();
-  }, [user?.id, sites?.length, subscription, toast]); // Removed onTrialCreated from dependencies to prevent infinite loop
+  }, [user?.id, sites?.length, toast]); // Removed subscription and onTrialCreated from dependencies to prevent infinite loop
 };

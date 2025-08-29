@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useSubscription } from './useSubscription';
 import { useToast } from './use-toast';
 
-export const usePaymentSuccess = () => {
+export const usePaymentSuccess = (siteId?: string) => {
   const { fetchSubscription } = useSubscription();
   const { toast } = useToast();
 
@@ -20,21 +20,18 @@ export const usePaymentSuccess = () => {
         description: 'Your subscription has been activated. Refreshing your plan...',
       });
 
-      // Immediate refresh, then multiple retries to ensure webhook processing
-      fetchSubscription();
+      // Immediate refresh with siteId context
+      fetchSubscription(siteId);
 
       // Clean up URL parameters immediately
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
 
-      // Retry subscription fetch multiple times to catch webhook updates
-      const retryIntervals = [2000, 5000, 10000];
-      retryIntervals.forEach((delay) => {
-        setTimeout(() => {
-          console.log(`[PAYMENT_SUCCESS] Retrying subscription fetch after ${delay}ms`);
-          fetchSubscription();
-        }, delay);
-      });
+      // Single retry to ensure webhook processing
+      setTimeout(() => {
+        console.log(`[PAYMENT_SUCCESS] Retrying subscription fetch after 3s`);
+        fetchSubscription(siteId);
+      }, 3000);
     }
   }, []); // Removed dependencies to prevent re-runs
 };

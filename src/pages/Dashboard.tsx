@@ -58,13 +58,13 @@ export default function Dashboard() {
     if (currentWebsite?.id) {
       fetchSubscription(currentWebsite.id);
     }
-  }, [currentWebsite?.id, fetchSubscription]);
+  }, [currentWebsite?.id]); // Removed fetchSubscription dependency to prevent infinite loop
 
   // Create missing trial subscription as fallback
   useTrialFallback(user, websites, subscription, handleTrialCreated);
 
   // Handle payment success and refresh subscription
-  usePaymentSuccess();
+  usePaymentSuccess(currentWebsite?.id);
 
   useEffect(() => {
     // Set up auth state listener first
