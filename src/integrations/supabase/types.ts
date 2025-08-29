@@ -217,18 +217,18 @@ export type Database = {
       stripe_prices: {
         Row: {
           created_at: string
-          id: string
           plan_id: string
+          price_id: string
         }
         Insert: {
           created_at?: string
-          id: string
           plan_id: string
+          price_id: string
         }
         Update: {
           created_at?: string
-          id?: string
           plan_id?: string
+          price_id?: string
         }
         Relationships: [
           {

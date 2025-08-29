@@ -45,7 +45,7 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     const action = url.searchParams.get('action');
-    const origin = req.headers.get("origin") || "http://localhost:3000";
+    const appUrl = Deno.env.get("APP_URL") || "http://localhost:3000";
 
     if (action === 'create-checkout') {
       // Create checkout session
@@ -75,8 +75,9 @@ serve(async (req) => {
           },
         ],
         mode: "subscription",
-        success_url: `${origin}/dashboard?checkout=success`,
-        cancel_url: `${origin}/plans?checkout=canceled`,
+        automatic_tax: { enabled: true },
+        success_url: `${appUrl}/billing?success=1`,
+        cancel_url: `${appUrl}/plans?canceled=1`,
         metadata: {
           user_id: user.id,
           site_id: siteId || '',
@@ -106,7 +107,7 @@ serve(async (req) => {
 
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: customerId,
-        return_url: `${origin}/dashboard`,
+        return_url: `${appUrl}/billing`,
       });
 
       logStep("Customer portal session created", { sessionId: portalSession.id, url: portalSession.url });

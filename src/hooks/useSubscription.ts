@@ -23,7 +23,7 @@ export const useSubscription = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSubscription = async () => {
+  const fetchSubscription = async (siteId?: string) => {
     if (!user) {
       setSubscription(null);
       setLoading(false);
@@ -34,10 +34,17 @@ export const useSubscription = () => {
       setLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await supabase
+      let query = supabase
         .from('subscriptions')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', user.id);
+
+      // Filter by site_id if provided
+      if (siteId) {
+        query = query.eq('site_id', siteId);
+      }
+
+      const { data, error: fetchError } = await query
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();

@@ -77,7 +77,7 @@ serve(async (req) => {
           const { data: priceData } = await supabaseClient
             .from('stripe_prices')
             .select('plan_id')
-            .eq('id', priceId)
+            .eq('price_id', priceId)
             .single();
 
           if (priceData) {
@@ -104,7 +104,7 @@ serve(async (req) => {
                 stripe_customer_id: session.customer as string,
                 stripe_subscription_id: subscription.id,
                 metadata: session.metadata || {}
-              });
+              }, { onConflict: 'stripe_subscription_id' });
 
             if (error) {
               logStep("Error upserting subscription", { error: error.message });
@@ -131,7 +131,7 @@ serve(async (req) => {
         const { data: priceData } = await supabaseClient
           .from('stripe_prices')
           .select('plan_id')
-          .eq('id', priceId)
+          .eq('price_id', priceId)
           .single();
 
         if (priceData) {

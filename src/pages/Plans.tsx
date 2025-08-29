@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { usePlanStore } from '@/lib/stores/usePlanStore';
+import { useSubscription } from '@/hooks/useSubscription';
 
 const planFeatures = [
   { name: 'Pages', starter: '5 max', pro: 'Unlimited', custom: 'Unlimited + multi-site' },
@@ -26,17 +27,27 @@ const planFeatures = [
 export default function Plans() {
   const navigate = useNavigate();
   const { currentPlan, setPlan } = usePlanStore();
+  const { createCheckout } = useSubscription();
 
   const handleBack = () => {
     navigate({ to: '/dashboard' });
   };
 
-  const handlePlanSelect = (plan: 'starter' | 'pro' | 'custom') => {
+  const handlePlanSelect = async (plan: 'starter' | 'pro' | 'custom') => {
     if (plan === 'custom') {
       window.open('mailto:sales@naveeg.com?subject=Custom Plan Inquiry', '_blank');
     } else {
-      // Navigate to billing page for checkout
-      navigate({ to: '/billing' });
+      // Get the appropriate price ID from Supabase secrets
+      const priceId = plan === 'starter' ? 'price_starter_monthly' : 'price_pro_monthly';
+      
+      // Get current site ID (you may want to pass this from context or params)
+      const currentSiteId = null; // TODO: Get actual site ID from context
+      
+      try {
+        await createCheckout(priceId, currentSiteId);
+      } catch (error) {
+        console.error('Failed to create checkout:', error);
+      }
     }
   };
 
