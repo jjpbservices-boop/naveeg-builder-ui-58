@@ -38,13 +38,18 @@ export default function Plans() {
       try {
         console.log('[PLANS] Resolving site ID...');
         
-        // 1. Check router params or localStorage first
+        // 1. Check router params first
         const urlParams = new URLSearchParams(window.location.search);
-        let siteId = urlParams.get('site_id') || localStorage.getItem('currentSiteId');
+        let siteId = urlParams.get('site_id');
         
+        // 2. Check localStorage cache
+        if (!siteId) {
+          siteId = localStorage.getItem('currentSiteId');
+        }
+        
+        // 3. Fetch user's first site from DB if none found
         if (!siteId) {
           console.log('[PLANS] No cached site ID, fetching from database...');
-          // 2. Fetch user's first site
           const { data: sites, error } = await supabase
             .from('sites')
             .select('id')
@@ -63,13 +68,17 @@ export default function Plans() {
           }
         }
         
+        if (!siteId) {
+          throw new Error('No site found for this user');
+        }
+        
         setCurrentSiteId(siteId);
         console.log('[PLANS] Current site ID resolved to:', siteId);
       } catch (error) {
         console.error('[PLANS] Error resolving site ID:', error);
         toast({
           title: "Error",
-          description: "Could not load site information",
+          description: "Could not load site information. Please create a site first.",
           variant: "destructive"
         });
       } finally {
@@ -111,6 +120,7 @@ export default function Plans() {
     }
     
     try {
+      console.log('[PLANS] Starting checkout for:', { plan, site_id: currentSiteId });
       await createCheckout(plan, currentSiteId);
     } catch (error) {
       console.error('[PLANS] Failed to create checkout:', error);

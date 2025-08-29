@@ -27,20 +27,26 @@ export function Billing() {
 
   const handleUpgradeToStarter = async () => {
     try {
-      // Get current site ID for checkout
-      const { data: sites, error } = await supabase
-        .from('sites')
-        .select('id')
-        .limit(1)
-        .single();
+      // Get current site ID
+      const siteId = localStorage.getItem('currentSiteId');
+      if (!siteId) {
+        // Fallback: fetch from database
+        const { data: sites, error } = await supabase
+          .from('sites')
+          .select('id')
+          .limit(1)
+          .single();
 
-      if (error || !sites?.id) {
-        throw new Error('No site found. Please create a site first.');
+        if (error || !sites?.id) {
+          throw new Error('No site found. Please create a site first.');
+        }
+        localStorage.setItem('currentSiteId', sites.id);
+        await createCheckout('starter', sites.id);
+      } else {
+        await createCheckout('starter', siteId);
       }
-
-      await createCheckout('starter', sites.id);
     } catch (error) {
-      console.error('Error upgrading to starter:', error);
+      console.error('[BILLING] Error upgrading to starter:', error);
       toast({
         title: "Upgrade Error",
         description: error instanceof Error ? error.message : "Failed to start upgrade process",
@@ -51,20 +57,26 @@ export function Billing() {
 
   const handleUpgradeToPro = async () => {
     try {
-      // Get current site ID for checkout
-      const { data: sites, error } = await supabase
-        .from('sites')
-        .select('id')
-        .limit(1)
-        .single();
+      // Get current site ID
+      const siteId = localStorage.getItem('currentSiteId');
+      if (!siteId) {
+        // Fallback: fetch from database
+        const { data: sites, error } = await supabase
+          .from('sites')
+          .select('id')
+          .limit(1)
+          .single();
 
-      if (error || !sites?.id) {
-        throw new Error('No site found. Please create a site first.');
+        if (error || !sites?.id) {
+          throw new Error('No site found. Please create a site first.');
+        }
+        localStorage.setItem('currentSiteId', sites.id);
+        await createCheckout('pro', sites.id);
+      } else {
+        await createCheckout('pro', siteId);
       }
-
-      await createCheckout('pro', sites.id);
     } catch (error) {
-      console.error('Error upgrading to pro:', error);
+      console.error('[BILLING] Error upgrading to pro:', error);
       toast({
         title: "Upgrade Error",
         description: error instanceof Error ? error.message : "Failed to start upgrade process",
@@ -75,9 +87,10 @@ export function Billing() {
 
   const handleManageSubscription = async () => {
     try {
+      console.log('[BILLING] Opening customer portal');
       await createPortal();
     } catch (error) {
-      console.error('Error opening portal:', error);
+      console.error('[BILLING] Error opening portal:', error);
       toast({
         title: "Portal Error",
         description: error instanceof Error ? error.message : "Failed to open subscription portal",
@@ -161,10 +174,10 @@ export function Billing() {
                   {getStatusBadge(subscription.status)}
                 </div>
 
-                {isTrialActive() && (
+                {subscription.status === 'trialing' && (
                   <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800/30">
                     <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                      🎉 Trial ends in {getTrialDaysLeft()} day{getTrialDaysLeft() !== 1 ? 's' : ''}. Subscribe to keep your website live.
+                      🎉 You are on a 7-day free trial. {getTrialDaysLeft()} day{getTrialDaysLeft() !== 1 ? 's' : ''} left until your website is deactivated unless you subscribe.
                     </p>
                   </div>
                 )}

@@ -23,7 +23,7 @@ export const useSubscription = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch subscription by user_id AND site_id
+  // Fetch subscription by user_id AND site_id (mandatory filtering)
   const fetchSubscription = useCallback(async (siteId?: string) => {
     if (!user) {
       setSubscription(null);
@@ -35,14 +35,17 @@ export const useSubscription = () => {
       setLoading(true);
       setError(null);
 
+      // ALWAYS filter by both user_id AND site_id for proper per-site subscriptions
       let query = supabase
         .from('subscriptions')
         .select('*')
         .eq('user_id', user.id);
 
-      // Filter by site_id if provided (required for proper filtering)
+      // site_id is mandatory for proper filtering
       if (siteId) {
         query = query.eq('site_id', siteId);
+      } else {
+        console.warn('[SUBSCRIPTION] No site_id provided for subscription fetch');
       }
 
       const { data, error: fetchError } = await query
@@ -54,11 +57,12 @@ export const useSubscription = () => {
         throw fetchError;
       }
 
+      console.log('[SUBSCRIPTION] Fetched subscription:', data);
       setSubscription(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch subscription';
       setError(errorMessage);
-      console.error('Error fetching subscription:', err);
+      console.error('[SUBSCRIPTION] Error fetching subscription:', err);
     } finally {
       setLoading(false);
     }

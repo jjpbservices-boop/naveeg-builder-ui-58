@@ -1,31 +1,38 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Globe, Plus, ExternalLink, CheckCircle, XCircle, Clock, AlertTriangle, AlertCircle, Shield, Check, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Globe, 
-  Shield, 
-  Copy,
-  Check,
-  ExternalLink,
-  Plus,
-  AlertCircle,
-  CheckCircle,
-  Clock
-} from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useSubscription } from '@/hooks/useSubscription';
+import { LockedFeature } from '../LockedFeature';
 
 interface DashboardDomainProps {
   currentWebsite: any;
 }
 
 export function DashboardDomain({ currentWebsite }: DashboardDomainProps) {
+  const { canConnectDomain, isSubscriptionActive } = useSubscription();
   const [customDomain, setCustomDomain] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
   const [copied, setCopied] = useState('');
+  const { toast } = useToast();
+
+  // Domain connect gating - blocked unless active/past_due subscription
+  if (!canConnectDomain()) {
+    return (
+      <LockedFeature
+        featureName="Custom Domain"
+        description="Connect your custom domain to enhance your brand presence"
+        requiredPlan="pro"
+        onUpgrade={() => window.location.href = '/plans'}
+      />
+    );
+  }
 
   const handleCopy = async (text: string, type: string) => {
     await navigator.clipboard.writeText(text);
@@ -49,6 +56,22 @@ export function DashboardDomain({ currentWebsite }: DashboardDomainProps) {
 
     setIsConnecting(true);
     try {
+      // Get current site ID
+      const siteId = localStorage.getItem('currentSiteId');
+      if (!siteId) {
+        throw new Error('No site selected');
+      }
+
+      // Check domain gate first
+      const { data: gateResponse, error: gateError } = await supabase.functions.invoke('domain-gate', {
+        body: { site_id: siteId },
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (gateError || !gateResponse?.allowed) {
+        throw new Error(gateResponse?.reason || 'Domain connection not allowed');
+      }
+
       // Simulate domain connection process
       await new Promise(resolve => setTimeout(resolve, 2000));
       
@@ -59,7 +82,7 @@ export function DashboardDomain({ currentWebsite }: DashboardDomainProps) {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to connect domain. Please try again.',
+        description: error instanceof Error ? error.message : 'Failed to connect domain. Please try again.',
         variant: 'destructive',
       });
     } finally {
