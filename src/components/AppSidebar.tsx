@@ -72,29 +72,7 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { t, i18n } = useTranslation('common');
-  const { subscription, isSubscriptionActive, canConnectDomain, fetchSubscription, lastUpdate } = useSubscription();
-  
-  // Force re-render when subscription changes
-  const [renderKey, setRenderKey] = React.useState(0);
-  
-  // Debug subscription state changes
-  React.useEffect(() => {
-    console.log('[SIDEBAR] Subscription state changed:', {
-      subscription,
-      plan_id: subscription?.plan_id,
-      status: subscription?.status,
-      lastUpdate,
-      renderKey
-    });
-    setRenderKey(prev => prev + 1);
-  }, [subscription?.plan_id, subscription?.status, subscription?.id, lastUpdate]);
-  
-  // Manual refresh function for debugging
-  const handleRefreshSubscription = async () => {
-    console.log('[SIDEBAR] Manual refresh triggered');
-    await fetchSubscription();
-    setRenderKey(prev => prev + 1);
-  };
+  const { subscription, isSubscriptionActive, canConnectDomain } = useSubscription();
 
   const languages = [
     { code: 'en', name: 'English' },
@@ -111,29 +89,27 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
 
   const isFeatureAccessible = (item: any) => {
     if (!item.requiredFeature) return true;
-    // For now, allow domain access based on subscription status
-    if (item.id === 'domain') return canConnectDomain();
-    return isSubscriptionActive();
+    
+    const planId = subscription?.plan_id;
+    if (!isSubscriptionActive()) return false;
+    
+    // Feature access by plan level
+    switch (item.requiredFeature) {
+      case 'store':
+      case 'forms_advanced':
+      case 'automations':
+        return planId === 'pro' || planId === 'custom';
+      case 'analytics_advanced':
+        return planId === 'starter' || planId === 'pro' || planId === 'custom';
+      default:
+        return true;
+    }
   };
 
   const getPlanBadge = React.useMemo(() => {
-    console.log('[SIDEBAR] Computing plan badge with subscription:', {
-      subscription,
-      plan_id: subscription?.plan_id,
-      status: subscription?.status,
-      lastUpdate,
-      renderKey
-    });
-    
-    if (!subscription) {
-      console.log('[SIDEBAR] No subscription found, showing Trial badge');
-      return 'Trial';
-    }
-    
-    const badge = subscription.plan_id.charAt(0).toUpperCase() + subscription.plan_id.slice(1);
-    console.log('[SIDEBAR] Subscription found, showing badge:', badge, 'Status:', subscription.status);
-    return badge;
-  }, [subscription?.plan_id, subscription?.status, subscription?.id, lastUpdate, renderKey]);
+    if (!subscription) return 'Trial';
+    return subscription.plan_id.charAt(0).toUpperCase() + subscription.plan_id.slice(1);
+  }, [subscription?.plan_id]);
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border" style={{ '--sidebar-width': '240px', '--sidebar-width-icon': '64px' } as React.CSSProperties}>
@@ -284,18 +260,9 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
           <div className="px-3 mb-2">
             <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
               <span className="text-xs font-medium text-muted-foreground">Plan</span>
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-bold text-primary" key={renderKey}>
-                  {getPlanBadge}
-                </span>
-                <button 
-                  onClick={handleRefreshSubscription}
-                  className="text-xs text-muted-foreground hover:text-foreground"
-                  title="Refresh subscription"
-                >
-                  🔄
-                </button>
-              </div>
+              <span className="text-xs font-bold text-primary">
+                {getPlanBadge}
+              </span>
             </div>
           </div>
         )}
