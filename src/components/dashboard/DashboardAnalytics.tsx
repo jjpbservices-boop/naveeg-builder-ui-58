@@ -19,18 +19,22 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
   const { canUseAnalytics } = useFeatureGate();
   const [period, setPeriod] = useState<'day' | 'week' | 'month' | 'year'>('week');
   
+  // Always initialize the hook - never conditionally call hooks
   const { 
     getVisitors,
     data: analyticsData,
     loading,
     error 
-  } = useAnalytics('');
+  } = useAnalytics(currentWebsite?.id || '');
+
+  const loadAnalytics = React.useCallback(async () => {
+    if (!currentWebsite?.id || !canUseAnalytics) return;
+    await getVisitors(period);
+  }, [currentWebsite?.id, period, canUseAnalytics, getVisitors]);
 
   useEffect(() => {
-    if (currentWebsite?.id && canUseAnalytics) {
-      loadAnalytics();
-    }
-  }, [currentWebsite?.id, period, canUseAnalytics]);
+    loadAnalytics();
+  }, [loadAnalytics]);
 
   // Feature gating for analytics
   if (!canUseAnalytics) {
@@ -44,10 +48,6 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
     );
   }
 
-  const loadAnalytics = async () => {
-    if (!currentWebsite?.id) return;
-    await getVisitors(period);
-  };
 
   const processedAnalytics = React.useMemo(() => {
     if (!analyticsData) return null;

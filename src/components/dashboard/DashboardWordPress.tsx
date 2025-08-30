@@ -39,23 +39,30 @@ export function DashboardWordPress({ currentWebsite }: DashboardWordPressProps) 
     setIsOpeningAdmin(true);
     try {
       const adminUrl = `${currentWebsite.site_url}/wp-admin`;
-      await generateAdminToken(adminUrl);
+      const tokenResponse = await generateAdminToken(adminUrl);
       
-      if (adminToken?.token) {
-        // Open WordPress admin with autologin token
-        const adminUrl = `${currentWebsite.site_url}/wp-admin?autologin_token=${adminToken.token}`;
-        window.open(adminUrl, '_blank', 'noopener,noreferrer');
+      if (tokenResponse?.wp_admin_url) {
+        // Use the exact URL returned by the API
+        window.open(tokenResponse.wp_admin_url, '_blank', 'noopener,noreferrer');
         
         toast({
           title: 'Opening WordPress Admin',
           description: 'WordPress dashboard is opening in a new tab',
         });
+      } else {
+        throw new Error('No admin URL returned from autologin');
       }
     } catch (error) {
+      // Handle token expiry/single-use with retry
       toast({
         title: 'Error',
         description: 'Failed to open WordPress admin. Please try again.',
         variant: 'destructive',
+        action: (
+          <Button variant="outline" size="sm" onClick={handleOpenWPAdmin}>
+            Retry
+          </Button>
+        ),
       });
     } finally {
       setIsOpeningAdmin(false);
