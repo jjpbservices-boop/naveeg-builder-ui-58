@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { tenwebApi, TenWebApiError, TenWebResponse } from '@/lib/tenwebApi'
 import { useToast } from '@/hooks/use-toast'
+import { auditLogger } from '@/lib/auditLogger'
 
 interface UseTenWebApiState<T = any> {
   data: T | null
@@ -115,14 +116,23 @@ export function useDomainManagement(websiteId: string) {
   const listDomains = useCallback(() => 
     execute(() => tenwebApi.listDomains(websiteId)), [execute, websiteId])
 
-  const addDomain = useCallback((domain: string) => 
-    execute(() => tenwebApi.addDomain(websiteId, domain)), [execute, websiteId])
+  const addDomain = useCallback(async (domain: string) => {
+    const result = await execute(() => tenwebApi.addDomain(websiteId, domain));
+    await auditLogger.logDomainAction('add', websiteId, result ? 'success' : 'error', { domain });
+    return result;
+  }, [execute, websiteId])
 
-  const setDefaultDomain = useCallback((domainId: string) => 
-    execute(() => tenwebApi.setDefaultDomain(websiteId, domainId)), [execute, websiteId])
+  const setDefaultDomain = useCallback(async (domainId: string) => {
+    const result = await execute(() => tenwebApi.setDefaultDomain(websiteId, domainId));
+    await auditLogger.logDomainAction('set_default', websiteId, result ? 'success' : 'error', { domainId });
+    return result;
+  }, [execute, websiteId])
 
-  const deleteDomain = useCallback((domainId: string) => 
-    execute(() => tenwebApi.deleteDomain(websiteId, domainId)), [execute, websiteId])
+  const deleteDomain = useCallback(async (domainId: string) => {
+    const result = await execute(() => tenwebApi.deleteDomain(websiteId, domainId));
+    await auditLogger.logDomainAction('delete', websiteId, result ? 'success' : 'error', { domainId });
+    return result;
+  }, [execute, websiteId])
 
   return {
     ...state,
@@ -170,11 +180,17 @@ export function useBackupManagement(websiteId: string) {
   const listBackups = useCallback(() => 
     execute(() => tenwebApi.listBackups(websiteId)), [execute, websiteId])
 
-  const runBackup = useCallback(() => 
-    execute(() => tenwebApi.runBackup(websiteId)), [execute, websiteId])
+  const runBackup = useCallback(async () => {
+    const result = await execute(() => tenwebApi.runBackup(websiteId));
+    await auditLogger.logBackupAction('create', websiteId, result ? 'success' : 'error');
+    return result;
+  }, [execute, websiteId])
 
-  const restoreBackup = useCallback((backupId: string) => 
-    execute(() => tenwebApi.restoreBackup(websiteId, backupId)), [execute, websiteId])
+  const restoreBackup = useCallback(async (backupId: string) => {
+    const result = await execute(() => tenwebApi.restoreBackup(websiteId, backupId));
+    await auditLogger.logBackupAction('restore', websiteId, result ? 'success' : 'error', { backupId });
+    return result;
+  }, [execute, websiteId])
 
   return {
     ...state,
@@ -190,20 +206,35 @@ export function useCacheManagement(websiteId: string) {
     showErrorToast: true
   })
 
-  const enableCache = useCallback((ttl?: number) => 
-    execute(() => tenwebApi.enableCache(websiteId, ttl)), [execute, websiteId])
+  const enableCache = useCallback(async (ttl?: number) => {
+    const result = await execute(() => tenwebApi.enableCache(websiteId, ttl));
+    await auditLogger.logCacheAction('enable', websiteId, result ? 'success' : 'error', { ttl });
+    return result;
+  }, [execute, websiteId])
 
-  const disableCache = useCallback(() => 
-    execute(() => tenwebApi.disableCache(websiteId)), [execute, websiteId])
+  const disableCache = useCallback(async () => {
+    const result = await execute(() => tenwebApi.disableCache(websiteId));
+    await auditLogger.logCacheAction('disable', websiteId, result ? 'success' : 'error');
+    return result;
+  }, [execute, websiteId])
 
-  const purgeCache = useCallback((recache?: boolean) => 
-    execute(() => tenwebApi.purgeCache(websiteId, recache)), [execute, websiteId])
+  const purgeCache = useCallback(async (recache?: boolean) => {
+    const result = await execute(() => tenwebApi.purgeCache(websiteId, recache));
+    await auditLogger.logCacheAction('purge', websiteId, result ? 'success' : 'error', { recache });
+    return result;
+  }, [execute, websiteId])
 
-  const toggleObjectCache = useCallback(() => 
-    execute(() => tenwebApi.toggleObjectCache(websiteId)), [execute, websiteId])
+  const toggleObjectCache = useCallback(async () => {
+    const result = await execute(() => tenwebApi.toggleObjectCache(websiteId));
+    await auditLogger.logCacheAction('toggle_object', websiteId, result ? 'success' : 'error');
+    return result;
+  }, [execute, websiteId])
 
-  const flushObjectCache = useCallback(() => 
-    execute(() => tenwebApi.flushObjectCache(websiteId)), [execute, websiteId])
+  const flushObjectCache = useCallback(async () => {
+    const result = await execute(() => tenwebApi.flushObjectCache(websiteId));
+    await auditLogger.logCacheAction('flush_object', websiteId, result ? 'success' : 'error');
+    return result;
+  }, [execute, websiteId])
 
   return {
     ...state,
