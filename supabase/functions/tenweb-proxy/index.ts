@@ -1,27 +1,34 @@
-const ALLOWED_ORIGINS = new Set([
+// supabase/functions/tenweb-proxy/index.ts
+const ORIGINS = new Set([
   "https://naveeg.app",
   "https://www.naveeg.app",
   "http://localhost:5173",
   "http://localhost:3000",
+  // add any preview domains you actually use
 ]);
 
-function cors(req: Request) {
-  const origin = req.headers.get("origin") || "";
-  const allowOrigin = ALLOWED_ORIGINS.has(origin) ? origin : "https://naveeg.app";
+function buildCors(req: Request) {
+  const origin = req.headers.get("origin") ?? "";
+  const allowOrigin = ORIGINS.has(origin) ? origin : "https://naveeg.app";
+  const acrh =
+    req.headers.get("access-control-request-headers") ??
+    "authorization, x-client-info, apikey, content-type, x-api-key";
   return {
     "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
-    "Access-Control-Allow-Headers":
-      "authorization, x-client-info, apikey, content-type, x-api-key",
+    "Access-Control-Allow-Headers": acrh,
+    "Access-Control-Allow-Credentials": "true",
     "Access-Control-Max-Age": "86400",
-    "Vary": "Origin",
+    Vary: "Origin, Access-Control-Request-Headers",
   };
 }
 
 Deno.serve(async (req) => {
-  const corsHeaders = cors(req);
+  const cors = buildCors(req);
+
+  // Preflight
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: cors });
   }
 
   try {
@@ -29,12 +36,15 @@ Deno.serve(async (req) => {
 
     const TENWEB_API_KEY = Deno.env.get("TENWEB_API_KEY")!;
     const url = new URL(`https://api.10web.io${path}`);
-    Object.entries(query ?? {}).forEach(([k, v]) => url.searchParams.set(k, String(v)));
+    Object.entries(query ?? {}).forEach(([k, v]) =>
+      url.searchParams.set(k, String(v))
+    );
 
-    const upstream = await fetch(url.toString(), {
+    const upstream = await fetch(url, {
       method,
       headers: {
-        "x-api-key": TENWEB_API_KEY,          // required by 10Web API
+        "x-api-key": TENWEB_API_KEY,
+        "accept": "application/json",
         "content-type": "application/json",
       },
       body: body ? JSON.stringify(body) : undefined,
@@ -43,12 +53,16 @@ Deno.serve(async (req) => {
     const text = await upstream.text();
     return new Response(text, {
       status: upstream.status,
-      headers: { ...corsHeaders, "content-type": upstream.headers.get("content-type") ?? "application/json" },
+      headers: {
+        ...cors,
+        "content-type":
+          upstream.headers.get("content-type") ?? "application/json",
+      },
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500,
-      headers: { ...corsHeaders, "content-type": "application/json" },
+      headers: { ...cors, "content-type": "application/json" },
     });
   }
 });
