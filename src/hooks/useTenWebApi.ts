@@ -214,3 +214,53 @@ export function useCacheManagement(websiteId: string) {
     flushObjectCache
   }
 }
+
+export function useSecurityManagement(websiteId: string) {
+  const { execute, ...state } = useTenWebApi({
+    showSuccessToast: true,
+    showErrorToast: true
+  })
+
+  const togglePasswordProtection = useCallback((enabled: boolean, password?: string) => 
+    execute(() => tenwebApi.togglePasswordProtection(websiteId, enabled ? 'enable' : 'disable')), [execute, websiteId])
+
+  const updateIpWhitelist = useCallback((ipAddress: string) => 
+    execute(() => tenwebApi.whitelistIP(websiteId, ipAddress)), [execute, websiteId])
+
+  return {
+    ...state,
+    togglePasswordProtection,
+    updateIpWhitelist
+  }
+}
+
+export function usePagesManagement(websiteId: string) {
+  const { execute, ...state } = useTenWebApi({
+    showSuccessToast: true,
+    showErrorToast: true
+  })
+
+  const listPages = useCallback(() => 
+    execute(() => tenwebApi.listPages(websiteId)), [execute, websiteId])
+
+  const addBlankPage = useCallback((title: string, content?: string) => 
+    execute(() => tenwebApi.addBlankPage(websiteId, title)), [execute, websiteId])
+
+  const deletePages = useCallback((pageIds: string[]) => 
+    execute(() => tenwebApi.deletePages(websiteId, pageIds)), [execute, websiteId])
+
+  const publishPages = useCallback((pageIds: string[], status: 'publish' | 'draft') => 
+    execute(() => tenwebApi.publishPages(websiteId, pageIds, status)), [execute, websiteId])
+
+  const setFrontPage = useCallback((pageId: string) => 
+    execute(() => tenwebApi.setFrontPage(websiteId, pageId)), [execute, websiteId])
+
+  return {
+    ...state,
+    listPages,
+    addBlankPage,
+    deletePages,
+    publishPages,
+    setFrontPage
+  }
+}
