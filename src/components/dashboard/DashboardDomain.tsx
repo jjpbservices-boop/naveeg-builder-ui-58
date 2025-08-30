@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, Plus, ExternalLink, CheckCircle, XCircle, Clock, AlertTriangle, AlertCircle, Shield, Check, Copy, Trash2, Star } from 'lucide-react';
+import { Globe, Plus, ExternalLink, CheckCircle, XCircle, Clock, AlertTriangle, AlertCircle, Shield, Check, Copy, Trash2, Star, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useDomainManagement } from '@/hooks/useTenWebApi';
 import { useFeatureGate } from '@/hooks/useFeatureGate';
@@ -228,18 +229,39 @@ export function DashboardDomain({ currentWebsite }: DashboardDomainProps) {
             </div>
           </div>
 
-          <div className="p-4 bg-accent/50 rounded-lg border">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="h-5 w-5 text-primary mt-0.5" />
-              <div>
-                <p className="font-medium text-sm">Custom Domain Requirements</p>
-                <ul className="text-sm text-muted-foreground mt-1 space-y-1">
-                  <li>• Domain must be registered and active</li>
-                  <li>• You need access to DNS settings</li>
-                  <li>• SSL certificate will be automatically provisioned</li>
-                  <li>• Setup typically takes 24-48 hours</li>
-                </ul>
+          <div className="space-y-4">
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                <strong>DNS Setup Required:</strong> Point your domain to your website by updating DNS records at your domain registrar.
+              </AlertDescription>
+            </Alert>
+
+            <div className="space-y-3">
+              <div className="p-4 bg-muted rounded-lg">
+                <h4 className="font-medium mb-2">Required DNS Records:</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono">A @ 185.158.133.1</span>
+                    <Button variant="ghost" size="sm" onClick={() => handleCopy('185.158.133.1', 'IP Address')}>
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono">A www 185.158.133.1</span>
+                    <Button variant="ghost" size="sm" onClick={() => handleCopy('185.158.133.1', 'IP Address')}>
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
               </div>
+
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  DNS propagation can take up to 48 hours. Your domain will show as "Pending" until DNS records are properly configured.
+                </AlertDescription>
+              </Alert>
             </div>
           </div>
         </CardContent>
