@@ -1,53 +1,54 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+const ALLOWED_ORIGINS = new Set([
+  "https://naveeg.app",
+  "https://www.naveeg.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
+]);
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+function cors(req: Request) {
+  const origin = req.headers.get("origin") || "";
+  const allowOrigin = ALLOWED_ORIGINS.has(origin) ? origin : "https://naveeg.app";
+  return {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, x-api-key",
+    "Access-Control-Max-Age": "86400",
+    "Vary": "Origin",
+  };
 }
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+Deno.serve(async (req) => {
+  const corsHeaders = cors(req);
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { action } = await req.json()
+    const { path, method = "GET", query, body } = await req.json();
 
-    switch (action) {
-      case 'get-api-key':
-        // Return the 10Web API key from environment
-        const apiKey = Deno.env.get('TENWEB_API_KEY')
-        if (!apiKey) {
-          throw new Error('TENWEB_API_KEY not configured')
-        }
-        
-        return new Response(
-          JSON.stringify({ apiKey }),
-          {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200,
-          }
-        )
+    const TENWEB_API_KEY = Deno.env.get("TENWEB_API_KEY")!;
+    const url = new URL(`https://api.10web.io${path}`);
+    Object.entries(query ?? {}).forEach(([k, v]) => url.searchParams.set(k, String(v)));
 
-      default:
-        return new Response(
-          JSON.stringify({ error: 'Unknown action' }),
-          {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 400,
-          }
-        )
-    }
-  } catch (error) {
-    console.error('TenWeb Proxy Error:', error)
-    return new Response(
-      JSON.stringify({ 
-        error: error.message || 'Internal server error' 
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
-    )
+    const upstream = await fetch(url.toString(), {
+      method,
+      headers: {
+        "x-api-key": TENWEB_API_KEY,          // required by 10Web API
+        "content-type": "application/json",
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+
+    const text = await upstream.text();
+    return new Response(text, {
+      status: upstream.status,
+      headers: { ...corsHeaders, "content-type": upstream.headers.get("content-type") ?? "application/json" },
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: String(e) }), {
+      status: 500,
+      headers: { ...corsHeaders, "content-type": "application/json" },
+    });
   }
-})
+});
