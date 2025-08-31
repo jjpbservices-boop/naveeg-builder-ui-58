@@ -7,50 +7,74 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 
 function cors(req: Request) {
-  const origin = req.headers.get("origin") || "";
+  const origin = req.headers.get("origin") ?? "";
   const allow = ALLOWED_ORIGINS.has(origin) ? origin : "https://naveeg.app";
+  const acrh =
+    req.headers.get("access-control-request-headers") ??
+    "authorization, x-client-info, apikey, content-type, x-api-key";
   return {
     "Access-Control-Allow-Origin": allow,
     "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
-    "Access-Control-Allow-Headers":
-      "authorization, x-client-info, apikey, content-type, x-api-key",
+    "Access-Control-Allow-Headers": acrh,
+    "Access-Control-Allow-Credentials": "true",
     "Access-Control-Max-Age": "86400",
-    "Vary": "Origin",
+    Vary: "Origin, Access-Control-Request-Headers",
   };
 }
 
 Deno.serve(async (req) => {
   const corsHeaders = cors(req);
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  // Preflight
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
 
   try {
     const { path, method = "GET", query, body } = await req.json();
-    if (!path) return new Response(JSON.stringify({ error: "Missing path" }), {
-      status: 400, headers: { ...corsHeaders, "content-type": "application/json" },
-    });
+
+    if (!path || typeof path !== "string") {
+      return new Response(JSON.stringify({ error: "Missing path" }), {
+        status: 400,
+        headers: { ...corsHeaders, "content-type": "application/json" },
+      });
+    }
 
     const TENWEB_API_KEY = Deno.env.get("TENWEB_API_KEY");
-    if (!TENWEB_API_KEY) return new Response(JSON.stringify({ error: "TENWEB_API_KEY not set" }), {
-      status: 500, headers: { ...corsHeaders, "content-type": "application/json" },
-    });
+    if (!TENWEB_API_KEY) {
+      return new Response(JSON.stringify({ error: "TENWEB_API_KEY not set" }), {
+        status: 500,
+        headers: { ...corsHeaders, "content-type": "application/json" },
+      });
+    }
 
     const url = new URL(`https://api.10web.io${path}`);
-    Object.entries(query ?? {}).forEach(([k, v]) => url.searchParams.set(k, String(v)));
+    Object.entries(query ?? {}).forEach(([k, v]) =>
+      url.searchParams.set(k, String(v))
+    );
 
     const upstream = await fetch(url.toString(), {
       method,
-      headers: { "x-api-key": TENWEB_API_KEY, "content-type": "application/json" },
+      headers: {
+        "x-api-key": TENWEB_API_KEY,
+        "accept": "application/json",
+        "content-type": "application/json",
+      },
       body: body ? JSON.stringify(body) : undefined,
     });
 
     const text = await upstream.text();
     return new Response(text, {
       status: upstream.status,
-      headers: { ...corsHeaders, "content-type": upstream.headers.get("content-type") ?? "application/json" },
+      headers: {
+        ...corsHeaders,
+        "content-type": upstream.headers.get("content-type") ?? "application/json",
+      },
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), {
-      status: 500, headers: { ...corsHeaders, "content-type": "application/json" },
+      status: 500,
+      headers: { ...corsHeaders, "content-type": "application/json" },
     });
   }
 });
