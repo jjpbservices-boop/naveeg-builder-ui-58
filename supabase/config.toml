@@ -3,5 +3,8 @@ project_id = "eilpazegjrcrwgpujqni"
 [functions.ai-router]
 verify_jwt = false
 
+[functions.tenweb-proxy]
+verify_jwt = false
+
 [functions.tenweb-webhook]
 verify_jwt = false
