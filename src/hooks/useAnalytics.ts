@@ -1,82 +1,91 @@
 import { useEffect, useRef, useState } from "react";
 import { getSupabase } from "../lib/supabase";
 
-export function useAnalytics(websiteId?: number, period: "day"|"week"|"month"|"year" = "week") {
+type Period = "day" | "week" | "month" | "year";
+
+const PENDING = new Map<string, Promise<any>>();
+const LAST_GOOD = new Map<string, any>();
+const COOLDOWN_UNTIL = new Map<string, number>();
+
+export function useAnalytics(websiteId?: number, period: Period = "week") {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const inflight = useRef(false);
-  const lastKey = useRef<string | null>(null);
-  const coolUntil = useRef<number>(0);
+  const mounted = useRef(true);
+  useEffect(() => () => { mounted.current = false; }, []);
 
   useEffect(() => {
     if (!websiteId) return;
 
     const key = `${websiteId}:${period}`;
-    if (lastKey.current === key && (data || loading)) return; // dedupe
-    lastKey.current = key;
+    const now = Date.now();
+    const cool = COOLDOWN_UNTIL.get(key) ?? 0;
 
-    // backoff window after 429
-    if (Date.now() < coolUntil.current) {
+    // If cooling down, surface last good immediately
+    if (now < cool) {
+      if (LAST_GOOD.has(key)) setData(LAST_GOOD.get(key));
       setError("rate_limited");
       return;
     }
 
-    let cancelled = false;
-    const run = async () => {
-      if (inflight.current) return;
-      inflight.current = true;
-      setLoading(true);
-      setError(null);
+    // Serve last good instantly while fetching
+    if (LAST_GOOD.has(key)) setData(LAST_GOOD.get(key));
 
+    const invoke = async () => {
       const supabase = getSupabase();
-      const invoke = async () =>
-        supabase.functions.invoke("tenweb-proxy", {
-          body: {
-            path: `/v1/hosting/websites/${Number(websiteId)}/visitors`,
-            method: "GET",
-            query: { period },
-          },
-        });
+      return supabase.functions.invoke("tenweb-proxy", {
+        body: {
+          path: `/v1/hosting/websites/${Number(websiteId)}/visitors`,
+          method: "GET",
+          query: { period },
+        },
+      });
+    };
 
-      try {
-        // single retry with small delay if 429
-        let { data: res, error: err } = await invoke();
-        if (err && (err as any).status === 429) {
+    // Coalesce multiple callers / StrictMode remounts
+    if (!PENDING.has(key)) {
+      PENDING.set(key, (async () => {
+        // one light retry on 429
+        let { data: res, error: err }: any = await invoke();
+        if (err && (err.status === 429)) {
           await new Promise(r => setTimeout(r, 1500));
           ({ data: res, error: err } = await invoke());
         }
+        return { res, err };
+      })().finally(() => PENDING.delete(key)));
+    }
 
-        if (cancelled) return;
+    setLoading(true);
+    setError(null);
+
+    (async () => {
+      try {
+        const { res, err }: any = await PENDING.get(key)!;
+        if (!mounted.current) return;
 
         if (err) {
-          const st = (err as any).status;
+          const st = err.status ?? 0;
           if (st === 429) {
-            coolUntil.current = Date.now() + 60_000; // cool down 60s
+            COOLDOWN_UNTIL.set(key, Date.now() + 60_000);
             setError("rate_limited");
           } else {
-            setError((err as any).message ?? "error");
+            setError(err.message ?? "error");
           }
           setLoading(false);
-          inflight.current = false;
           return;
         }
 
+        // Success (includes stale-from-proxy which still returns 200)
+        LAST_GOOD.set(key, res);
         setData(res);
         setLoading(false);
-        inflight.current = false;
       } catch (e: any) {
-        if (!cancelled) {
-          setError(e?.message ?? "error");
-          setLoading(false);
-          inflight.current = false;
-        }
+        if (!mounted.current) return;
+        setError(e?.message ?? "error");
+        setLoading(false);
       }
-    };
-
-    run();
-    return () => { cancelled = true; };
+    })();
   }, [websiteId, period]);
 
   return { data, loading, error };
