@@ -7,7 +7,7 @@ const PENDING = new Map<string, Promise<any>>();
 const LAST_GOOD = new Map<string, any>();
 const COOLDOWN_UNTIL = new Map<string, number>();
 
-export function useAnalytics(websiteId?: number, period: Period = "week") {
+export function useAnalytics(websiteId?: number, period: Period = "month") {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
