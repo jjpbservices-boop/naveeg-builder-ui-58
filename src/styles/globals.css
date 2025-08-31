@@ -10,58 +10,58 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 239 82% 60%; /* Indigo */
-    --primary-foreground: 210 20% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 185 94% 43%; /* Cyan */
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 239 82% 60%;
-    --radius: 0.75rem;
-
-    /* Custom colors for consistency */
-    --success: 142.1 76.2% 36.3%;
-    --warning: 48 96% 50%;
-    --danger: 0 84.2% 60.2%;
+    /* Light mode tokens */
+    --bg: #FFFFFF;
+    --fg: #0F172A;
+    --muted: #94A3B8;
+    --primary: #6366F1;
+    --primary-contrast: #FFFFFF;
+    --accent: #06B6D4;
+    --success: #22C55E;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    
+    /* Additional tokens */
+    --border: #E2E8F0;
+    --input: #E2E8F0;
+    --ring: #6366F1;
+    --secondary: #F1F5F9;
+    --secondary-foreground: #0F172A;
+    --destructive-foreground: #FFFFFF;
+    --muted-foreground: #64748B;
+    --accent-foreground: #0F172A;
+    --popover: #FFFFFF;
+    --popover-foreground: #0F172A;
+    --card: #FFFFFF;
+    --card-foreground: #0F172A;
+    --radius: 16px;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 20% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 20% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 239 82% 60%; /* Indigo */
-    --primary-foreground: 210 20% 98%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 185 94% 43%; /* Cyan */
-    --accent-foreground: 210 20% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 239 82% 60%;
-
-    /* Custom colors for consistency */
-    --success: 142.1 70.6% 45.3%;
-    --warning: 48 96% 50%;
-    --danger: 0 62.8% 30.6%;
+    /* Dark mode tokens */
+    --bg: #0B0F19;
+    --fg: #E5E7EB;
+    --muted: #94A3B8;
+    --primary: #6366F1;
+    --primary-contrast: #FFFFFF;
+    --accent: #06B6D4;
+    --success: #22C55E;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    
+    /* Additional tokens */
+    --border: #1E293B;
+    --input: #1E293B;
+    --ring: #6366F1;
+    --secondary: #1E293B;
+    --secondary-foreground: #E5E7EB;
+    --destructive-foreground: #FFFFFF;
+    --muted-foreground: #94A3B8;
+    --accent-foreground: #E5E7EB;
+    --popover: #0B0F19;
+    --popover-foreground: #E5E7EB;
+    --card: #0B0F19;
+    --card-foreground: #E5E7EB;
   }
 }
 
