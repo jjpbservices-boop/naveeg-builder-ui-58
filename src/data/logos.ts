@@ -1,38 +1,38 @@
 export interface CompanyLogo {
   name: string
   logo: string
-  href?: string
+  url?: string
 }
 
 export const companyLogos: CompanyLogo[] = [
   {
-    name: "Stripe",
-    logo: "/placeholders/stripe-logo.png",
-    href: "https://stripe.com"
+    name: "Local Café",
+    logo: "☕",
+    url: "#"
   },
   {
-    name: "Shopify",
-    logo: "/placeholders/shopify-logo.png",
-    href: "https://shopify.com"
+    name: "Beauty Salon", 
+    logo: "💇‍♀️",
+    url: "#"
   },
   {
-    name: "Notion",
-    logo: "/placeholders/notion-logo.png",
-    href: "https://notion.so"
+    name: "Family Restaurant",
+    logo: "🍽️", 
+    url: "#"
   },
   {
-    name: "Vercel",
-    logo: "/placeholders/vercel-logo.png",
-    href: "https://vercel.com"
+    name: "Local Services",
+    logo: "🔧",
+    url: "#"
   },
   {
-    name: "Figma",
-    logo: "/placeholders/figma-logo.png",
-    href: "https://figma.com"
+    name: "Small Shop",
+    logo: "🛍️",
+    url: "#"
   },
   {
-    name: "Linear",
-    logo: "/placeholders/linear-logo.png",
-    href: "https://linear.app"
+    name: "Local Business",
+    logo: "🏢",
+    url: "#"
   }
 ]

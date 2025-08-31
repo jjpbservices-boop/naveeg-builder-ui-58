@@ -1,147 +1,174 @@
-import React from 'react'
-import { Check, Star } from 'lucide-react'
+import React, { useState } from 'react'
+import { CheckCircle, Star, Zap, Shield, Globe, CreditCard, HeadphonesIcon, Settings, BarChart3, FileText, Users, Crown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Section } from '@/components/ui/section'
-import { FAQ } from '@/components/ui/faq'
 import { CTA } from '@/components/ui/cta'
-import { pricingTiers } from '@/data/pricing'
-import { setPageSEO } from '@/lib/seo'
 
 export default function Pricing() {
-  const [isAnnual, setIsAnnual] = React.useState(false)
+  const [isYearly, setIsYearly] = useState(false)
 
-  React.useEffect(() => {
-    setPageSEO({
-      title: 'Pricing - Naveeg Website Builder',
-      description: 'Simple, transparent pricing for Naveeg. Start free and scale as you grow. No hidden fees, ever.',
-      keywords: 'pricing, website builder pricing, Naveeg pricing, website builder cost',
-      ogImage: '/placeholders/og-image.jpg'
-    })
-  }, [])
-
-  const faqItems = [
+  const plans = [
     {
-      question: "Is there a free trial?",
-      answer: "Yes! We offer a 7-day free trial for all plans. No credit card required to start building your website."
+      name: "Starter",
+      price: "€49",
+      period: "/mo",
+      description: "For first websites and local businesses",
+      popular: false,
+      features: [
+        "AI website setup",
+        "Managed WordPress hosting + SSL",
+        "5 pages",
+        "Free subdomain or connect your domain",
+        "Basic SEO and speed checks",
+        "Daily backups",
+        "Email support"
+      ],
+      cta: "Start free",
+      ctaVariant: "default" as const
     },
     {
-      question: "Can I cancel anytime?",
-      answer: "Absolutely. You can cancel your subscription at any time with no questions asked. Your website will remain active until the end of your billing period."
+      name: "Growth",
+      price: "€99",
+      period: "/mo",
+      description: "For growing SMEs",
+      popular: true,
+      features: [
+        "Everything in Starter",
+        "Unlimited pages",
+        "Blog",
+        "Online payments (Stripe) or bookings",
+        "Priority support",
+        "Advanced SEO tips and speed reports"
+      ],
+      cta: "Start free",
+      ctaVariant: "default" as const
     },
     {
-      question: "What happens after my trial ends?",
-      answer: "After your 7-day trial, you'll be automatically charged for the plan you selected. You can upgrade, downgrade, or cancel at any time."
-    },
-    {
-      question: "Do you offer refunds?",
-      answer: "We offer a 30-day money-back guarantee. If you're not satisfied with Naveeg, we'll refund your payment in full."
-    },
-    {
-      question: "Can I change plans later?",
-      answer: "Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately and are prorated."
-    },
-    {
-      question: "Is VAT included in the price?",
-      answer: "Yes, all prices include VAT where applicable. The price you see is the price you pay."
+      name: "Business",
+      price: "Custom",
+      period: "",
+      description: "For businesses that need more",
+      popular: false,
+      features: [
+        "Everything in Growth",
+        "Custom integrations",
+        "Onboarding help",
+        "Dedicated support"
+      ],
+      cta: "Talk to sales",
+      ctaVariant: "secondary" as const
     }
   ]
+
+  const handleStartFree = () => {
+    // TODO: Implement free trial signup
+    console.log('Starting free trial...')
+  }
+
+  const handleTalkToSales = () => {
+    // TODO: Implement sales contact
+    console.log('Contacting sales...')
+  }
+
+  const handleCtaClick = (plan: typeof plans[0]) => {
+    if (plan.name === "Business") {
+      handleTalkToSales()
+    } else {
+      handleStartFree()
+    }
+  }
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
       <Section
-        eyebrow="Pricing"
-        title="Simple, transparent pricing"
-        description="Start free and scale as you grow. No hidden fees, ever."
-        className="bg-muted/20"
+        eyebrow="Simple Pricing"
+        title="Simple plans. No setup fees. Cancel anytime."
+        description="Start free and choose the plan that fits your business. No hidden costs, no surprises."
+        className="text-center pt-32"
       >
-        {/* Billing Toggle */}
+        {/* Pricing Toggle */}
         <div className="flex items-center justify-center gap-4 mb-16">
-          <span className={`text-sm ${!isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
+          <span className={`text-sm ${!isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
             Monthly
           </span>
           <button
-            onClick={() => setIsAnnual(!isAnnual)}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              isAnnual ? 'bg-primary' : 'bg-muted'
+            onClick={() => setIsYearly(!isYearly)}
+            className={`relative w-16 h-8 rounded-full transition-colors duration-200 ${
+              isYearly ? 'bg-primary' : 'bg-muted'
             }`}
           >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                isAnnual ? 'translate-x-6' : 'translate-x-1'
+            <div
+              className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-transform duration-200 ${
+                isYearly ? 'translate-x-8' : 'translate-x-1'
               }`}
             />
           </button>
-          <span className={`text-sm ${isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
-            Annual
-            <Badge variant="accent" className="ml-2">
-              Save 20%
-            </Badge>
+          <span className={`text-sm ${isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
+            Yearly
+            <span className="ml-1 text-xs text-primary font-medium">(save 2 months)</span>
           </span>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 max-w-6xl mx-auto">
-          {pricingTiers.map((tier, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
+          {plans.map((plan, index) => (
             <div
               key={index}
-              className={`card-clean card-clean-hover relative p-8 ${
-                tier.popular ? 'ring-2 ring-primary' : ''
-              }`}
+              className={`relative card-clean p-8 ${
+                plan.popular 
+                  ? 'ring-2 ring-primary shadow-xl scale-105' 
+                  : 'hover:scale-105'
+              } transition-all duration-300`}
             >
-              {tier.popular && (
-                <Badge
-                  variant="default"
-                  className="absolute -top-3 left-1/2 -translate-x-1/2"
-                >
+              {plan.popular && (
+                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                   Most Popular
                 </Badge>
               )}
               
               <div className="text-center mb-8">
-                <h3 className="text-2xl font-semibold mb-4">{tier.name}</h3>
-                <div className="mb-4">
+                <h3 className="heading-display text-2xl mb-2">{plan.name}</h3>
+                <p className="text-muted-foreground mb-4">{plan.description}</p>
+                <div className="mb-6">
                   <span className="text-4xl font-bold">
-                    {isAnnual ? `$${Math.round(parseInt(tier.price.replace('$', '')) * 0.8)}` : tier.price}
+                    {isYearly && plan.name !== "Business" 
+                      ? `€${Math.round(parseInt(plan.price.replace('€', '')) * 10 / 12)}`
+                      : plan.price
+                    }
                   </span>
-                  <span className="text-muted-foreground">/{tier.period}</span>
+                  <span className="text-muted-foreground">
+                    {isYearly && plan.name !== "Business" ? "/mo" : plan.period}
+                  </span>
                 </div>
-                <p className="text-muted-foreground">{tier.description}</p>
               </div>
-              
+
               <ul className="space-y-4 mb-8">
-                {tier.features.map((feature, featureIndex) => (
+                {plan.features.map((feature, featureIndex) => (
                   <li key={featureIndex} className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                    <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
                     <span className="text-sm">{feature}</span>
                   </li>
                 ))}
               </ul>
-              
+
               <Button
-                asChild
+                variant={plan.ctaVariant}
+                size="lg"
                 className="w-full"
-                variant={tier.popular ? "default" : "secondary"}
+                onClick={() => handleCtaClick(plan)}
               >
-                <a href={tier.href}>{tier.cta}</a>
+                {plan.cta}
               </Button>
             </div>
           ))}
         </div>
 
-        {/* Enterprise CTA */}
-        <div className="text-center mt-16">
-          <div className="card-clean p-8 max-w-2xl mx-auto">
-            <Star className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h3 className="text-2xl font-semibold mb-4">Need something custom?</h3>
-            <p className="text-muted-foreground mb-6">
-              We offer custom enterprise solutions for large organizations with specific requirements.
-            </p>
-            <Button variant="outline" size="lg">
-              Contact Sales
-            </Button>
-          </div>
+        {/* Legal Note */}
+        <div className="text-center text-sm text-muted-foreground mb-8">
+          <p>14-day free trial on a Naveeg subdomain. No credit card required to start.</p>
+          <p className="mt-2">Prices exclude VAT where applicable.</p>
         </div>
       </Section>
 
@@ -149,26 +176,58 @@ export default function Pricing() {
       <Section
         eyebrow="Frequently Asked Questions"
         title="Everything you need to know"
-        description="Can't find the answer you're looking for? Contact our support team."
+        description="Common questions about Naveeg's pricing and service"
+        className="bg-muted/20"
       >
-        <FAQ items={faqItems} />
+        <div className="max-w-4xl mx-auto space-y-8">
+          {[
+            {
+              question: "Do I need any tech skills?",
+              answer: "No. If you can type an email, you can update your site."
+            },
+            {
+              question: "Can I use my domain?",
+              answer: "Yes. Start on a free subdomain and connect your domain any time."
+            },
+            {
+              question: "Can I switch plans?",
+              answer: "Yes, upgrade or downgrade from your account."
+            },
+            {
+              question: "Is hosting included?",
+              answer: "Yes. SSL and backups too."
+            },
+            {
+              question: "What happens after the trial?",
+              answer: "Pick a plan to stay live. If not, your site pauses."
+            },
+            {
+              question: "Do you offer refunds?",
+              answer: "Monthly plans are pay-as-you-go. Talk to us if something goes wrong."
+            }
+          ].map((faq, index) => (
+            <div key={index} className="card-clean p-6">
+              <h3 className="font-semibold mb-3">{faq.question}</h3>
+              <p className="text-muted-foreground">{faq.answer}</p>
+            </div>
+          ))}
+        </div>
       </Section>
 
       {/* Final CTA */}
-      <Section className="bg-gradient-to-br from-primary to-accent text-primary-contrast">
-        <CTA
-          headline="Ready to get started?"
-          subcopy="Join thousands of businesses building their online presence with Naveeg. Start your free trial today!"
-          primaryButton={{
-            text: "Start Free Trial",
-            href: "/get-started"
-          }}
-          secondaryLink={{
-            text: "Book a Demo",
-            href: "/demo"
-          }}
-        />
-      </Section>
+      <CTA
+        headline="Ready to get started?"
+        subcopy="Join thousands of SMEs who trust Naveeg to build and manage their online presence. Start your free trial today."
+        primaryButton={{
+          text: "Start free",
+          href: "/auth",
+          loading: false
+        }}
+        secondaryLink={{
+          text: "Book a demo",
+          href: "/contact"
+        }}
+      />
     </div>
   )
 }

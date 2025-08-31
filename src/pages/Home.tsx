@@ -1,21 +1,21 @@
 import React from 'react'
-import { useNavigate } from '@tanstack/react-router'
 import { 
-  Sparkles, 
-  MessageSquare, 
+  ArrowRight, 
+  CheckCircle, 
+  Star, 
+  Rocket, 
   Zap, 
   Shield, 
-  Clock, 
-  Settings, 
-  Headphones, 
-  TrendingUp,
-  ArrowRight,
-  CheckCircle,
-  Star,
-  Globe,
-  Smartphone,
+  Smartphone, 
   Palette,
-  Rocket
+  MessageSquare,
+  Sparkles,
+  Globe,
+  Users,
+  BarChart3,
+  FileText,
+  Settings,
+  HeadphonesIcon
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -26,37 +26,29 @@ import { Testimonial } from '@/components/ui/testimonial'
 import { CTA } from '@/components/ui/cta'
 import { companyLogos } from '@/data/logos'
 import { testimonials } from '@/data/testimonials'
-import { setPageSEO } from '@/lib/seo'
 
 export default function Home() {
-  const navigate = useNavigate()
-
-  React.useEffect(() => {
-    setPageSEO({
-      title: 'Naveeg - Build Your Website As Easy as Sending an Email',
-      description: 'AI-powered website builder for business owners. Create professional WordPress websites in minutes with no technical skills required.',
-      keywords: 'website builder, AI website, WordPress, business website, no-code website',
-      ogImage: '/placeholders/og-image.jpg'
-    })
-  }, [])
-
   const handleStartOnboarding = () => {
-    navigate({ to: '/brief' })
+    // TODO: Implement onboarding flow
+    console.log('Starting onboarding...')
+  }
+
+  const handleSeePricing = () => {
+    // TODO: Navigate to pricing
+    console.log('Navigating to pricing...')
+  }
+
+  const handleBookDemo = () => {
+    // TODO: Implement demo booking
+    console.log('Booking demo...')
   }
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/5 to-background">
-          <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-primary/5 to-transparent rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-br from-accent/5 to-transparent rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute bottom-40 left-1/4 w-20 h-20 bg-gradient-to-br from-primary/3 to-transparent rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-        </div>
-        
-        <div className="container-clean relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
+      <section className="section-clean pt-32 pb-24 text-center bg-gradient-to-br from-background via-muted/20 to-background">
+        <div className="container-clean">
+          <div className="max-w-4xl mx-auto">
             {/* Eyebrow */}
             <Badge variant="accent" className="mb-6">
               ✨ AI-Powered Website Builder
@@ -64,25 +56,24 @@ export default function Home() {
             
             {/* Main Headline */}
             <h1 className="heading-display text-display-1 mb-6 text-balance">
-              Ship production-grade websites{' '}
-              <span className="gradient-text">10× faster</span>
+              Launch a polished website in{' '}
+              <span className="gradient-text">hours, not weeks</span>
             </h1>
             
-            {/* Subcopy */}
+            {/* Sub-headline */}
             <p className="text-lead mb-10 max-w-3xl mx-auto text-balance">
-              From AI scaffolding to one-click deploys — build, test, and launch in hours, not weeks. 
-              No technical knowledge required.
+              Tell us about your business. Naveeg creates your site, hosts it, and keeps it fast. No tech skills needed.
             </p>
             
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Button size="xl" onClick={handleStartOnboarding}>
                 <Sparkles className="mr-3 h-5 w-5" />
-                Get Started
+                Start free
                 <ArrowRight className="ml-3 h-5 w-5" />
               </Button>
-              <Button variant="secondary" size="xl">
-                Book Demo
+              <Button variant="secondary" size="xl" onClick={handleSeePricing}>
+                See pricing
               </Button>
             </div>
             
@@ -90,15 +81,15 @@ export default function Home() {
             <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-success" />
-                No credit card required
+                GDPR-ready
               </div>
               <div className="flex items-center gap-2">
                 <Star className="h-4 w-4 text-warning" />
-                7-day free trial
+                Fast hosting
               </div>
               <div className="flex items-center gap-2">
                 <Rocket className="h-4 w-4 text-primary" />
-                Launch in minutes
+                Cancel anytime
               </div>
             </div>
           </div>
@@ -107,7 +98,7 @@ export default function Home() {
 
       {/* Social Proof */}
       <Section
-        eyebrow="Trusted by Industry Leaders"
+        eyebrow="Trusted by local businesses and growing SMEs"
         title="Join thousands of businesses worldwide"
         description="Companies trust Naveeg to build their online presence"
         className="bg-muted/20"
@@ -123,24 +114,24 @@ export default function Home() {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <FeatureItem
-            icon={Zap}
-            title="Lightning Fast"
-            body="Build and deploy your website in minutes, not days. Our AI handles the heavy lifting."
+            icon={MessageSquare}
+            title="AI website setup"
+            body="Answer a few questions. Get a complete site with pages, images, and text."
           />
           <FeatureItem
             icon={Shield}
-            title="Enterprise Security"
-            body="Bank-level security with SSL certificates, automatic backups, and DDoS protection."
+            title="Managed WordPress hosting"
+            body="Fast, secure, automatic backups with SSL and uptime monitoring included."
           />
           <FeatureItem
-            icon={Smartphone}
-            title="Mobile First"
-            body="Every website is automatically optimized for mobile devices and all screen sizes."
+            icon={FileText}
+            title="Simple editing"
+            body="Change text and images like a document. No code required."
           />
           <FeatureItem
-            icon={Palette}
-            title="Beautiful Design"
-            body="Professional templates designed by experts. Customize colors, fonts, and layouts easily."
+            icon={BarChart3}
+            title="Built-in marketing basics"
+            body="SEO, speed checks, and contact forms included to help you grow."
           />
         </div>
       </Section>
@@ -157,117 +148,154 @@ export default function Home() {
             {
               icon: MessageSquare,
               step: "01",
-              title: "Describe Your Business",
-              description: "Tell us about your company, services, and what makes you special. Use simple, everyday language."
+              title: "Describe your business",
+              description: "Name, services, and a short description."
             },
             {
               icon: Sparkles,
-              step: "02",
-              title: "AI Generates Your Site",
-              description: "Our AI creates your complete website with content, design, and images. Everything is done for you."
+              step: "02", 
+              title: "Generate your site",
+              description: "We create pages, images, and copy you can edit."
             },
             {
-              icon: Rocket,
+              icon: Globe,
               step: "03",
-              title: "Launch & Optimize",
-              description: "Your website goes live instantly. Update content easily through our simple dashboard."
+              title: "Publish",
+              description: "Go live on a free subdomain or connect your domain."
             }
-          ].map((step, index) => (
-            <div key={index} className="text-center group">
-              <div className="relative mb-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto shadow-lg">
-                  {step.step}
+          ].map((item, index) => (
+            <div key={index} className="text-center">
+              <div className="relative mb-6">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <item.icon className="h-8 w-8 text-primary" />
                 </div>
-                <div className="absolute inset-0 w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
-              </div>
-              
-              <div className="card-clean card-clean-hover p-8 h-full">
-                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <step.icon className="w-8 h-8 text-primary" />
+                <div className="absolute -top-2 -right-2 bg-primary text-white text-sm font-bold rounded-full w-8 h-8 flex items-center justify-center">
+                  {item.step}
                 </div>
-                
-                <h3 className="text-xl font-semibold mb-4">
-                  {step.title}
-                </h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {step.description}
-                </p>
               </div>
+              <h3 className="heading-display text-xl mb-3">{item.title}</h3>
+              <p className="text-muted-foreground">{item.description}</p>
             </div>
           ))}
         </div>
       </Section>
 
-      {/* Deep Dive - Split Sections */}
+      {/* Deep Dives - Alternating */}
       <Section
-        eyebrow="Advanced Features"
-        title="Built for scale and performance"
-        description="Enterprise-grade features that grow with your business"
+        eyebrow="Built for Business Owners"
+        title="Features that make sense for SMEs"
+        description="Everything you need to succeed online, nothing you don't"
       >
         <div className="space-y-24">
-          {/* Feature 1 */}
+          {/* Row 1 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h3 className="heading-display text-display-4 mb-6">
-                AI-Powered Content Generation
-              </h3>
+              <h3 className="heading-display text-2xl mb-4">Editor you can't break</h3>
               <p className="text-lead mb-6">
-                Our AI understands your business and creates compelling content that converts visitors into customers.
+                Click, type, save. Undo any change. Our editor is designed so you can't accidentally break your site.
               </p>
               <ul className="space-y-3">
-                {[
-                  "SEO-optimized content that ranks",
-                  "Professional copywriting in your voice",
-                  "Automatic content updates",
-                  "Multi-language support"
-                ].map((feature, index) => (
-                  <li key={index} className="flex items-center gap-3">
-                    <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <span>Visual editing with live preview</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <span>Unlimited undo/redo</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <span>Auto-save every change</span>
+                </li>
               </ul>
             </div>
-            <div className="relative">
-              <div className="aspect-video bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl border border-border/50 flex items-center justify-center">
-                <div className="text-center">
-                  <Globe className="h-16 w-16 text-primary mx-auto mb-4" />
-                  <p className="text-muted-foreground">AI Content Preview</p>
-                </div>
-              </div>
+            <div className="bg-muted/20 rounded-2xl p-8 text-center">
+              <FileText className="h-24 w-24 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Visual editor preview</p>
             </div>
           </div>
 
-          {/* Feature 2 */}
+          {/* Row 2 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="lg:order-2">
-              <h3 className="heading-display text-display-4 mb-6">
-                One-Click Deploy & Hosting
-              </h3>
+              <h3 className="heading-display text-2xl mb-4">Speed & SEO</h3>
               <p className="text-lead mb-6">
-                Deploy your website to our global CDN with automatic SSL, backups, and performance optimization.
+                Automatic speed tests and simple tips to rank better. We handle the technical stuff so you don't have to.
               </p>
               <ul className="space-y-3">
-                {[
-                  "Global CDN for lightning-fast loading",
-                  "Automatic SSL certificates",
-                  "Daily backups and version control",
-                  "99.9% uptime guarantee"
-                ].map((feature, index) => (
-                  <li key={index} className="flex items-center gap-3">
-                    <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <span>Real-time speed monitoring</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <span>SEO checklist and tips</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <span>Mobile optimization included</span>
+                </li>
               </ul>
             </div>
-            <div className="relative lg:order-1">
-              <div className="aspect-video bg-gradient-to-br from-accent/10 to-primary/10 rounded-2xl border border-border/50 flex items-center justify-center">
-                <div className="text-center">
-                  <Rocket className="h-16 w-16 text-accent mx-auto mb-4" />
-                  <p className="text-muted-foreground">Deploy Preview</p>
-                </div>
-              </div>
+            <div className="bg-muted/20 rounded-2xl p-8 text-center lg:order-1">
+              <BarChart3 className="h-24 w-24 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Performance dashboard</p>
+            </div>
+          </div>
+
+          {/* Row 3 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h3 className="heading-display text-2xl mb-4">One-click admin</h3>
+              <p className="text-lead mb-6">
+                Access WordPress admin safely when you need advanced changes. We keep it secure so you can focus on your business.
+              </p>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <span>Secure admin access</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <span>Plugin management</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <span>Advanced customization</span>
+                </li>
+              </ul>
+            </div>
+            <div className="bg-muted/20 rounded-2xl p-8 text-center">
+              <Settings className="h-24 w-24 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Admin panel access</p>
+            </div>
+          </div>
+
+          {/* Row 4 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="lg:order-2">
+              <h3 className="heading-display text-2xl mb-4">Security & backups</h3>
+              <p className="text-lead mb-6">
+                SSL, daily backups, and monitoring included. Your site is protected so you can sleep soundly.
+              </p>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <span>SSL certificates included</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <span>Daily automated backups</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <span>24/7 security monitoring</span>
+                </li>
+              </ul>
+            </div>
+            <div className="bg-muted/20 rounded-2xl p-8 text-center lg:order-1">
+              <Shield className="h-24 w-24 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Security dashboard</p>
             </div>
           </div>
         </div>
@@ -275,118 +303,53 @@ export default function Home() {
 
       {/* Testimonials */}
       <Section
-        eyebrow="Customer Success"
-        title="What our customers say"
-        description="Join thousands of business owners who've transformed their online presence"
+        eyebrow="What Our Customers Say"
+        title="Real businesses, real results"
+        description="See how Naveeg is helping SMEs get online and grow"
         className="bg-muted/20"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {testimonials.map((testimonial, index) => (
-            <Testimonial
-              key={index}
-              avatar={testimonial.avatar}
-              name={testimonial.name}
-              role={testimonial.role}
-              quote={testimonial.quote}
-              logo={testimonial.logo}
-              company={testimonial.company}
-            />
-          ))}
-        </div>
-      </Section>
-
-      {/* Integrations */}
-      <Section
-        eyebrow="Integrations"
-        title="Works with your favorite tools"
-        description="Connect Naveeg with the services you already use and love"
-      >
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 max-w-4xl mx-auto">
-          {[
-            { name: "Stripe", icon: "💳" },
-            { name: "Mailchimp", icon: "📧" },
-            { name: "Google Analytics", icon: "📊" },
-            { name: "Zapier", icon: "🔗" },
-            { name: "Shopify", icon: "🛍️" },
-            { name: "HubSpot", icon: "🎯" }
-          ].map((integration, index) => (
-            <div key={index} className="text-center group">
-              <div className="w-16 h-16 bg-muted/50 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/10 transition-colors duration-200">
-                <span className="text-2xl">{integration.icon}</span>
-              </div>
-              <p className="text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-200">
-                {integration.name}
-              </p>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {testimonials.slice(0, 2).map((testimonial, index) => (
+            <Testimonial key={index} {...testimonial} />
           ))}
         </div>
       </Section>
 
       {/* Pricing Preview */}
       <Section
-        eyebrow="Pricing"
-        title="Simple, transparent pricing"
-        description="Start free and scale as you grow. No hidden fees, ever."
-        className="bg-muted/20"
+        eyebrow="Simple Pricing"
+        title="Start free, grow when you're ready"
+        description="No setup fees. Cancel anytime. Choose the plan that fits your business."
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {[
-            {
-              name: "Starter",
-              price: "$29",
-              period: "/month",
-              description: "Perfect for small businesses",
-              features: ["AI website generation", "WordPress hosting", "SSL certificate", "Mobile responsive"]
-            },
-            {
-              name: "Pro",
-              price: "$79",
-              period: "/month",
-              description: "Everything you need to scale",
-              features: ["Everything in Starter", "E-commerce integration", "Advanced SEO tools", "Priority support"]
-            }
-          ].map((plan, index) => (
-            <div key={index} className="card-clean card-clean-hover p-8 text-center">
-              <h3 className="text-2xl font-semibold mb-2">{plan.name}</h3>
-              <div className="mb-4">
-                <span className="text-4xl font-bold">{plan.price}</span>
-                <span className="text-muted-foreground">{plan.period}</span>
-              </div>
-              <p className="text-muted-foreground mb-6">{plan.description}</p>
-              <ul className="space-y-2 mb-8 text-left">
-                {plan.features.map((feature, featureIndex) => (
-                  <li key={featureIndex} className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-success flex-shrink-0" />
-                    <span className="text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button variant="secondary" className="w-full">
-                See Pricing
-              </Button>
-            </div>
-          ))}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-6 text-lg font-semibold mb-6">
+            <span>Starter €49/mo</span>
+            <span>•</span>
+            <span>Growth €99/mo</span>
+            <span>•</span>
+            <span>Business Custom</span>
+          </div>
+          <Button size="lg" onClick={handleSeePricing}>
+            See pricing
+          </Button>
         </div>
       </Section>
 
       {/* Final CTA */}
-      <Section 
-        title="Ready to build your dream website?"
-        className="bg-gradient-to-br from-primary to-accent text-primary-contrast"
-      >
-        <CTA
-          headline="Ready to build your dream website?"
-          subcopy="Join thousands of businesses who've transformed their online presence with Naveeg. Start building today!"
-          primaryButton={{
-            text: "Start Building Now",
-            href: "/get-started"
-          }}
-          secondaryLink={{
-            text: "Book a Demo",
-            href: "/demo"
-          }}
-        />
-      </Section>
+      <CTA
+        headline="Your website, done right."
+        subcopy="Join thousands of SMEs who trust Naveeg to build and manage their online presence. No tech skills required."
+        primaryButton={{
+          text: "Start free",
+          href: "/auth",
+          loading: false
+        }}
+        secondaryLink={{
+          text: "Book a demo",
+          href: "/contact"
+        }}
+        className="bg-gradient-to-br from-primary/5 via-accent/5 to-primary/5"
+      />
     </div>
   )
 }
