@@ -146,7 +146,22 @@ class TenWebApiClient {
 
   // Analytics
   async getVisitors(websiteId: string, period: 'day' | 'week' | 'month' | 'year'): Promise<TenWebResponse> {
-    return this.request(`/v1/hosting/websites/${websiteId}/visitors`, {
+    console.log('[TENWEB_API] Getting visitors:', { websiteId, period, websiteIdType: typeof websiteId })
+    
+    // Ensure websiteId is a valid number
+    const numericWebsiteId = parseInt(websiteId, 10)
+    if (isNaN(numericWebsiteId)) {
+      throw new TenWebApiError(
+        `Invalid website ID: ${websiteId}. Expected numeric value.`,
+        400,
+        'INVALID_WEBSITE_ID'
+      )
+    }
+    
+    const endpoint = `/v1/hosting/websites/${numericWebsiteId}/visitors`
+    console.log('[TENWEB_API] Visitors endpoint:', endpoint, { query: { period } })
+    
+    return this.request(endpoint, {
       query: { period }
     })
   }
