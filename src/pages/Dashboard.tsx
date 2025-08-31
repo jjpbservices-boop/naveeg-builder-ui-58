@@ -244,7 +244,7 @@ export default function Dashboard() {
         return (
           <ErrorBoundary>
             <DashboardAnalytics
-              websiteId={currentWebsite?.id}
+              website={currentWebsite}
             />
           </ErrorBoundary>
         );
