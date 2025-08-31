@@ -64,18 +64,25 @@ export default function Dashboard() {
 
   const loadUserWebsites = async (userId: string) => {
     try {
+      console.log('[DASHBOARD] Loading websites for user ID:', userId);
       const supabase = getSupabase();
       const { data, error } = await supabase
         .from('sites')
-        .select('id, title, subdomain, site_url, plan, website_id, tenweb_website_id, business_name, business_type, created_at')
+        .select('id, title, subdomain, site_url, plan, website_id, tenweb_website_id, business_name, business_type, created_at, user_id')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
+      console.log('[DASHBOARD] Database query result:', { data, error, userId });
+
       if (error) throw error;
 
+      console.log('[DASHBOARD] Found websites:', data?.length || 0);
       setWebsites(data || []);
       if (data && data.length > 0) {
+        console.log('[DASHBOARD] Setting current website:', data[0]);
         setCurrentWebsite(data[0]);
+      } else {
+        console.log('[DASHBOARD] No websites found for user');
       }
     } catch (error) {
       console.error('Error loading websites:', error);

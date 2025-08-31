@@ -261,35 +261,59 @@ export function AppSidebar({ activeView, onViewChange, user, onSignOut }: AppSid
         {/* User Account */}
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={collapsed ? handleSignOut : undefined}
-              tooltip={collapsed ? "Sign Out" : undefined}
-              className={cn(
-                "h-10 w-full relative flex items-center",
-                collapsed ? "justify-center px-2" : "justify-start px-3"
-              )}
-            >
-              <Avatar className="h-6 w-6 shrink-0">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                  {user?.email?.charAt(0).toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              {!collapsed && (
-                <div className="flex flex-1 items-center justify-between min-w-0 ml-2">
-                  <span className="text-xs font-medium text-foreground truncate">
-                    Account
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleSignOut}
-                    className="h-6 w-6 text-muted-foreground hover:text-foreground shrink-0"
+            {collapsed ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton 
+                    tooltip="Account"
+                    className="h-10 w-full flex items-center justify-center px-2"
                   >
-                    <LogOut className="h-3 w-3" />
-                  </Button>
-                </div>
-              )}
-            </SidebarMenuButton>
+                    <Avatar className="h-6 w-6 shrink-0">
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                        {user?.email?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="right" align="end">
+                  <DropdownMenuItem onClick={() => navigate({ to: '/plans' })}>
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Billing & Plans
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton className="h-10 w-full flex items-center justify-start px-3">
+                    <Avatar className="h-6 w-6 shrink-0">
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                        {user?.email?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-1 items-center justify-between min-w-0 ml-2">
+                      <span className="text-xs font-medium text-foreground truncate">
+                        Account
+                      </span>
+                    </div>
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="right" align="end">
+                  <DropdownMenuItem onClick={() => navigate({ to: '/plans' })}>
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Billing & Plans
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
