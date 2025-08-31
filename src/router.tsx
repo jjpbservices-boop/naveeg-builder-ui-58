@@ -1,6 +1,13 @@
 import { createRouter, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
 import Layout from '@/components/Layout';
 
+// Type declarations for TanStack Router
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
+
 // Import pages
 import Home from '@/pages/Home';
 import Features from '@/pages/Features';
@@ -232,8 +239,9 @@ const routeTree = rootRoute.addChildren([
     authRoute,
     notFoundRoute,
   ]),
-  dashboardRoute,
-  dashboardPlansRoute,
+  dashboardRoute.addChildren([
+    dashboardPlansRoute,
+  ]),
   workspaceRoute,
   settingsRoute,
   plansRoute,
@@ -243,4 +251,4 @@ const routeTree = rootRoute.addChildren([
 // Create router
 export const router = createRouter({ 
   routeTree,
-} as any);
+}) as const;

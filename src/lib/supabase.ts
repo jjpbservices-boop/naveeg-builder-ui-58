@@ -6,7 +6,7 @@ let supabaseClient: SupabaseClient<Database> | null = null;
 export function getSupabaseClient(): SupabaseClient<Database> {
   if (!supabaseClient) {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY; // Use the key that exists in .env
     
     if (!supabaseUrl || !supabaseAnonKey) {
       throw new Error('Missing Supabase environment variables');

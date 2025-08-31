@@ -1,502 +1,392 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from '@tanstack/react-router';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ArrowRight, Zap, LayoutDashboard, Shield, Database, TrendingUp, Headphones, CheckCircle, MessageSquare, Sparkles, Rocket } from 'lucide-react';
-import TrustBadges from '@/components/TrustBadges';
-import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
-import { HeroAnimation } from '@/components/HeroAnimation';
-import { ScrollReveal } from '@/components/ScrollReveal';
-import { TestimonialCarousel } from '@/components/TestimonialCarousel';
-import { FloatingElements } from '@/components/FloatingElements';
+import React from 'react'
+import { useNavigate } from '@tanstack/react-router'
+import { 
+  Sparkles, 
+  MessageSquare, 
+  Zap, 
+  Shield, 
+  Clock, 
+  Settings, 
+  Headphones, 
+  TrendingUp,
+  ArrowRight,
+  CheckCircle,
+  Star,
+  Globe,
+  Smartphone,
+  Palette,
+  Rocket
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Section } from '@/components/ui/section'
+import { FeatureItem } from '@/components/ui/feature-item'
+import { LogoCloud } from '@/components/ui/logo-cloud'
+import { Testimonial } from '@/components/ui/testimonial'
+import { CTA } from '@/components/ui/cta'
+import { companyLogos } from '@/data/logos'
+import { testimonials } from '@/data/testimonials'
+import { setPageSEO } from '@/lib/seo'
 
-const Home: React.FC = () => {
-  const { t } = useTranslation('home');
-  const navigate = useNavigate();
-  const { updateBasicInfo } = useOnboardingStore();
-  const [businessInput, setBusinessInput] = useState('');
+export default function Home() {
+  const navigate = useNavigate()
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (businessInput.trim()) {
-      // Fix: Set business_name instead of business_description
-      updateBasicInfo({ 
-        business_name: businessInput.trim(),
-        business_description: businessInput.trim() 
-      });
-      navigate({ to: '/onboarding/brief' });
-    }
-  };
+  React.useEffect(() => {
+    setPageSEO({
+      title: 'Naveeg - Build Your Website As Easy as Sending an Email',
+      description: 'AI-powered website builder for business owners. Create professional WordPress websites in minutes with no technical skills required.',
+      keywords: 'website builder, AI website, WordPress, business website, no-code website',
+      ogImage: '/placeholders/og-image.jpg'
+    })
+  }, [])
 
   const handleStartOnboarding = () => {
-    navigate({ to: '/onboarding/brief' });
-  };
-
-  const iconMap = {
-    zap: Zap,
-    layout: LayoutDashboard,
-    shield: Shield,
-    database: Database,
-    'trending-up': TrendingUp,
-    headphones: Headphones
-  };
+    navigate({ to: '/brief' })
+  }
 
   return (
     <div className="min-h-screen">
-      {/* 1. Hero Section */}
-      <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background flex flex-col">
-        <HeroAnimation />
+      {/* Hero Section */}
+      <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/5 to-background">
+          <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-primary/5 to-transparent rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-br from-accent/5 to-transparent rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute bottom-40 left-1/4 w-20 h-20 bg-gradient-to-br from-primary/3 to-transparent rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        </div>
         
-        {/* Main Hero Content - Centered */}
-        <div className="flex-1 flex items-center justify-center relative z-10">
-          <div className="container mx-auto px-4 py-8">
-            <div className="max-w-4xl mx-auto text-center">
-              <h1 className="font-sansation text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-foreground mb-6 leading-tight animate-fade-in-up">
-                {t('hero.title')}
-              </h1>
-              
-              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                {t('hero.subtitle')}
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-                <Button
-                  size="xl"
-                  className="bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl touch-target animate-pulse-glow"
-                  onClick={handleStartOnboarding}
-                >
-                  Create Your Website
-                  <ArrowRight className="ml-2" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="xl"
-                  className="rounded-xl touch-target hover:bg-accent hover:text-accent-foreground hover:scale-105 transition-all duration-200"
-                  onClick={() => navigate({ to: '/gallery' })}
-                >
-                  {t('hero.secondaryButton')}
-                </Button>
+        <div className="container-clean relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            {/* Eyebrow */}
+            <Badge variant="accent" className="mb-6">
+              ✨ AI-Powered Website Builder
+            </Badge>
+            
+            {/* Main Headline */}
+            <h1 className="heading-display text-display-1 mb-6 text-balance">
+              Ship production-grade websites{' '}
+              <span className="gradient-text">10× faster</span>
+            </h1>
+            
+            {/* Subcopy */}
+            <p className="text-lead mb-10 max-w-3xl mx-auto text-balance">
+              From AI scaffolding to one-click deploys — build, test, and launch in hours, not weeks. 
+              No technical knowledge required.
+            </p>
+            
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <Button size="xl" onClick={handleStartOnboarding}>
+                <Sparkles className="mr-3 h-5 w-5" />
+                Get Started
+                <ArrowRight className="ml-3 h-5 w-5" />
+              </Button>
+              <Button variant="secondary" size="xl">
+                Book Demo
+              </Button>
+            </div>
+            
+            {/* Trust Indicators */}
+            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-success" />
+                No credit card required
               </div>
-              
-              <div className="animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-                <TrustBadges className="mb-6" />
+              <div className="flex items-center gap-2">
+                <Star className="h-4 w-4 text-warning" />
+                7-day free trial
+              </div>
+              <div className="flex items-center gap-2">
+                <Rocket className="h-4 w-4 text-primary" />
+                Launch in minutes
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. How It Works */}
-      <section className="py-24 bg-muted/20">
-        <div className="container mx-auto px-4">
-          <ScrollReveal>
-            <div className="text-center mb-16">
-              <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
-                {t('howItWorks.title')}
-              </h2>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-                {t('howItWorks.subtitle')}
-              </p>
-            </div>
-          </ScrollReveal>
-          
-          {/* Modern Background with Flow */}
-          <div className="relative max-w-6xl mx-auto">
-            {/* Desktop Flow Path */}
-            <div className="hidden lg:block absolute inset-0">
-              <svg className="w-full h-full" viewBox="0 0 800 200" preserveAspectRatio="none">
-                <path
-                  d="M100 100 Q400 50 700 100"
-                  stroke="url(#flowGradient)"
-                  strokeWidth="2"
-                  fill="none"
-                  className="opacity-30"
-                />
-                <defs>
-                  <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="hsl(var(--muted-foreground))" stopOpacity="0.3" />
-                    <stop offset="50%" stopColor="hsl(var(--muted-foreground))" stopOpacity="0.5" />
-                    <stop offset="100%" stopColor="hsl(var(--muted-foreground))" stopOpacity="0.3" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
+      {/* Social Proof */}
+      <Section
+        eyebrow="Trusted by Industry Leaders"
+        title="Join thousands of businesses worldwide"
+        description="Companies trust Naveeg to build their online presence"
+        className="bg-muted/20"
+      >
+        <LogoCloud logos={companyLogos} />
+      </Section>
 
-            {/* Tablet/Mobile Flow Path */}
-            <div className="lg:hidden absolute left-1/2 top-0 bottom-0 w-px">
-              <div className="w-full h-full bg-gradient-to-b from-transparent via-muted-foreground/30 to-transparent"></div>
-            </div>
-
-            <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
-              {[
-                { icon: "MessageSquare", step: "01" },
-                { icon: "Sparkles", step: "02" },
-                { icon: "Rocket", step: "03" }
-              ].map((step, index) => (
-                <ScrollReveal key={index} delay={index * 200} direction="up">
-                  <div className="relative text-center group">
-                    {/* Background Card */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-card/50 to-muted/30 rounded-3xl blur-xl scale-110 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
-                    
-                    {/* Main Content */}
-                    <div className="relative bg-muted border border-border/50 rounded-3xl p-8 hover:border-muted-foreground/30 transition-all duration-300 hover:shadow-xl hover:shadow-muted-foreground/10">
-                      {/* Step Indicator */}
-                      <div className="absolute -top-4 left-6 bg-primary text-primary-foreground text-sm font-bold px-3 py-1 rounded-full">
-                        {step.step}
-                      </div>
-
-                      {/* Clean Icon */}
-                      <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-6 flex items-center justify-center">
-                        {step.icon === "MessageSquare" && <MessageSquare className="w-12 h-12 md:w-16 md:h-16 text-muted-foreground" />}
-                        {step.icon === "Sparkles" && <Sparkles className="w-12 h-12 md:w-16 md:h-16 text-muted-foreground" />}
-                        {step.icon === "Rocket" && <Rocket className="w-12 h-12 md:w-16 md:h-16 text-muted-foreground" />}
-                      </div>
-                      
-                      <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-4">
-                        {t(`howItWorks.steps.${index}.title`)}
-                      </h3>
-                      <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
-                        {t(`howItWorks.steps.${index}.description`)}
-                      </p>
-                    </div>
-
-                    {/* Connection Arrow (Desktop Only) */}
-                    {index < 2 && (
-                      <div className="hidden lg:block absolute top-1/2 -right-8 transform -translate-y-1/2 z-10">
-                        <ArrowRight className="w-6 h-6 text-muted-foreground/60" />
-                      </div>
-                    )}
-
-                    {/* Connection Arrow (Mobile/Tablet) */}
-                    {index < 2 && (
-                      <div className="lg:hidden absolute -bottom-6 left-1/2 transform -translate-x-1/2 z-10">
-                        <ArrowRight className="w-6 h-6 text-muted-foreground/60 rotate-90" />
-                      </div>
-                    )}
-                  </div>
-                </ScrollReveal>
-              ))}
-            </div>
-          </div>
+      {/* Value Props */}
+      <Section
+        eyebrow="Why Choose Naveeg"
+        title="Everything you need to succeed online"
+        description="Built specifically for business owners who want to focus on growth, not technology"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <FeatureItem
+            icon={Zap}
+            title="Lightning Fast"
+            body="Build and deploy your website in minutes, not days. Our AI handles the heavy lifting."
+          />
+          <FeatureItem
+            icon={Shield}
+            title="Enterprise Security"
+            body="Bank-level security with SSL certificates, automatic backups, and DDoS protection."
+          />
+          <FeatureItem
+            icon={Smartphone}
+            title="Mobile First"
+            body="Every website is automatically optimized for mobile devices and all screen sizes."
+          />
+          <FeatureItem
+            icon={Palette}
+            title="Beautiful Design"
+            body="Professional templates designed by experts. Customize colors, fonts, and layouts easily."
+          />
         </div>
-      </section>
+      </Section>
 
-      {/* 3. Why Choose Naveeg */}
-      <section className="py-24 bg-background">
-        <div className="container mx-auto px-4">
-          <ScrollReveal>
-            <div className="text-center mb-16">
-              <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
-                {t('whyNaveeg.title')}
-              </h2>
-            </div>
-          </ScrollReveal>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 max-w-6xl mx-auto">
-            {[0, 1, 2].map((index) => (
-              <ScrollReveal key={index} delay={index * 200} direction="scale">
-                <div className="relative group">
-                  {/* Animated Background */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-muted/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 scale-110"></div>
-                  
-                  {/* Main Card */}
-                  <div className="relative bg-card/90 backdrop-blur-sm border border-border/50 rounded-3xl p-8 hover:border-muted-foreground/30 transition-all duration-300 hover:shadow-2xl hover:shadow-muted-foreground/10 group-hover:scale-105">
-                    {/* Content */}
-                    <div className="text-center">
-                      <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-4">
-                        {t(`whyNaveeg.blocks.${index}.title`)}
-                      </h3>
-                      <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
-                        {t(`whyNaveeg.blocks.${index}.description`)}
-                      </p>
-                    </div>
-                  </div>
+      {/* How It Works */}
+      <Section
+        eyebrow="How It Works"
+        title="As simple as 1, 2, 3"
+        description="Building a website has never been easier. No technical skills required."
+        className="bg-muted/20"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-6xl mx-auto">
+          {[
+            {
+              icon: MessageSquare,
+              step: "01",
+              title: "Describe Your Business",
+              description: "Tell us about your company, services, and what makes you special. Use simple, everyday language."
+            },
+            {
+              icon: Sparkles,
+              step: "02",
+              title: "AI Generates Your Site",
+              description: "Our AI creates your complete website with content, design, and images. Everything is done for you."
+            },
+            {
+              icon: Rocket,
+              step: "03",
+              title: "Launch & Optimize",
+              description: "Your website goes live instantly. Update content easily through our simple dashboard."
+            }
+          ].map((step, index) => (
+            <div key={index} className="text-center group">
+              <div className="relative mb-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto shadow-lg">
+                  {step.step}
                 </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Everything You Need to Succeed Online */}
-      <section className="py-24 bg-muted/20">
-        <div className="container mx-auto px-4">
-          <ScrollReveal>
-            <div className="text-center mb-16">
-              <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
-                Everything You Need to Succeed Online
-              </h2>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-                {t('features.subtitle')}
-              </p>
-            </div>
-          </ScrollReveal>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[0, 1, 2, 3, 4, 5].map((index) => {
-              const iconName = t(`features.cards.${index}.icon`) as keyof typeof iconMap;
-              const IconComponent = iconMap[iconName] || Zap;
+                <div className="absolute inset-0 w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
+              </div>
               
-              return (
-                <ScrollReveal 
-                  key={index} 
-                  delay={index * 100} 
-                  direction={index % 2 === 0 ? 'left' : 'right'}
-                >
-                  <div className="group p-8 rounded-3xl bg-card border shadow-soft hover:shadow-medium hover:scale-105 hover:border-muted-foreground/30 transition-all duration-500 h-full">
-                    <div className="w-16 h-16 flex items-center justify-center mb-6">
-                      <IconComponent className="h-12 w-12 text-muted-foreground" />
-                    </div>
-                    <h3 className="font-sansation font-semibold text-xl md:text-2xl text-foreground mb-4">
-                      {t(`features.cards.${index}.title`)}
-                    </h3>
-                    <p className="text-muted-foreground text-lg leading-relaxed">
-                      {t(`features.cards.${index}.description`)}
-                    </p>
-                  </div>
-                </ScrollReveal>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* 5. Quote Block */}
-      <section className="py-24 bg-primary">
-        <div className="container mx-auto px-4">
-          <ScrollReveal>
-            <div className="max-w-5xl mx-auto text-center">
-              <div className="relative">
-                <blockquote className="text-xl md:text-2xl lg:text-3xl font-medium text-primary-foreground mb-12 font-sansation leading-relaxed relative z-10">
-                  If you can send an email, you can build your website with Naveeg
-                </blockquote>
-                
-                <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-                  <Button 
-                    variant="secondary"
-                    size="xl" 
-                    className="font-semibold shadow-lg hover:shadow-xl transition-all"
-                    onClick={handleStartOnboarding}
-                  >
-                    Try for Free
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="xl" 
-                    onClick={() => navigate({ to: '/gallery' })}
-                  >
-                    See Live Demo
-                  </Button>
+              <div className="card-clean card-clean-hover p-8 h-full">
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <step.icon className="w-8 h-8 text-primary" />
                 </div>
                 
-                <p className="text-sm text-primary-foreground/80">
-                  7 days free - no credit card required
+                <h3 className="text-xl font-semibold mb-4">
+                  {step.title}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {step.description}
                 </p>
               </div>
             </div>
-          </ScrollReveal>
+          ))}
         </div>
-      </section>
+      </Section>
 
-      {/* 6. Built with Naveeg */}
-      <section className="py-24 bg-background">
-        <div className="container mx-auto px-4">
-          <ScrollReveal>
-            <div className="text-center mb-16">
-              <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
-                Built with Naveeg
-              </h2>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-                {t('gallery.subtitle')}
+      {/* Deep Dive - Split Sections */}
+      <Section
+        eyebrow="Advanced Features"
+        title="Built for scale and performance"
+        description="Enterprise-grade features that grow with your business"
+      >
+        <div className="space-y-24">
+          {/* Feature 1 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h3 className="heading-display text-display-4 mb-6">
+                AI-Powered Content Generation
+              </h3>
+              <p className="text-lead mb-6">
+                Our AI understands your business and creates compelling content that converts visitors into customers.
               </p>
+              <ul className="space-y-3">
+                {[
+                  "SEO-optimized content that ranks",
+                  "Professional copywriting in your voice",
+                  "Automatic content updates",
+                  "Multi-language support"
+                ].map((feature, index) => (
+                  <li key={index} className="flex items-center gap-3">
+                    <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </ScrollReveal>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {Array.from({ length: 6 }, (_, index) => (
-              <ScrollReveal 
-                key={index} 
-                delay={index * 100} 
-                direction={index % 2 === 0 ? 'left' : 'right'}
-              >
-                <div className="group cursor-pointer hover:scale-105 transition-transform duration-300">
-                  <div className="aspect-video bg-muted rounded-3xl mb-6 relative overflow-hidden shadow-soft group-hover:shadow-medium transition-shadow duration-300">
-                    <div className="absolute inset-0 bg-gradient-to-br from-muted/20 to-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-muted-foreground text-lg font-medium">Website Preview</span>
-                    </div>
-                  </div>
-                  <h3 className="font-semibold text-foreground text-xl mb-2">Sample Website {index + 1}</h3>
-                  <p className="text-muted-foreground">Category name</p>
+            <div className="relative">
+              <div className="aspect-video bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl border border-border/50 flex items-center justify-center">
+                <div className="text-center">
+                  <Globe className="h-16 w-16 text-primary mx-auto mb-4" />
+                  <p className="text-muted-foreground">AI Content Preview</p>
                 </div>
-              </ScrollReveal>
-            ))}
-          </div>
-          
-          <ScrollReveal delay={600}>
-            <div className="text-center mt-12">
-              <Button variant="outline" size="lg" className="hover:bg-accent hover:text-accent-foreground" onClick={() => navigate({ to: '/gallery' })}>
-                View All Examples
-              </Button>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-
-      {/* Testimonial Carousel */}
-      <TestimonialCarousel />
-
-      {/* 8. Pricing */}
-      <section className="py-24 bg-background">
-        <div className="container mx-auto px-4">
-          <ScrollReveal>
-            <div className="text-center mb-16">
-              <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
-                {t('pricing.title')}
-              </h2>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-                {t('pricing.subtitle')}
-              </p>
-            </div>
-          </ScrollReveal>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {[0, 1, 2].map((index) => {
-              const plan = t(`pricing.plans.${index}`, { returnObjects: true }) as any;
-              return (
-                <ScrollReveal key={index} delay={index * 150} direction="scale">
-                  <div
-                    className={`group p-8 md:p-10 rounded-3xl border shadow-soft hover:shadow-xl hover:scale-105 transition-all duration-500 relative h-full ${
-                      plan.popular ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'bg-card hover:border-muted-foreground/30'
-                    }`}
-                  >
-                    {plan.popular && (
-                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                        <span className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
-                          Most Popular
-                        </span>
-                      </div>
-                    )}
-                    <div className="text-center mb-8">
-                      <h3 className="font-sansation font-semibold text-2xl text-foreground mb-4">
-                        {plan.name}
-                      </h3>
-                      <div className="flex items-center justify-center mb-4">
-                        <span className="text-5xl md:text-6xl font-bold text-foreground">{plan.currency}{plan.price}</span>
-                        <span className="text-muted-foreground ml-2 text-lg">{plan.period}</span>
-                      </div>
-                      <p className="text-muted-foreground text-lg">{plan.description}</p>
-                    </div>
-                    <ul className="space-y-4 mb-8">
-                      {plan.features?.slice(0, 5).map((feature: string, fIndex: number) => (
-                        <li key={fIndex} className="flex items-start">
-                          <CheckCircle className="h-6 w-6 text-primary mr-3 flex-shrink-0 mt-0.5" />
-                          <span className="text-foreground text-lg">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Button 
-                      className="w-full"
-                      variant={index === 2 ? 'outline' : 'default'}
-                      size="lg"
-                    >
-                      {index === 2 ? 'Contact Sales' : 'Start Free Trial'}
-                    </Button>
-                    <p className="text-center text-sm text-muted-foreground mt-4">
-                      7-day free trial · Cancel anytime · VAT included
-                    </p>
-                  </div>
-                </ScrollReveal>
-              );
-            })}
-          </div>
-          
-          <ScrollReveal delay={600}>
-            <div className="text-center mt-12">
-              <Button variant="outline" size="lg" className="hover:bg-accent hover:text-accent-foreground" onClick={() => navigate({ to: '/pricing' })}>
-                {t('pricing.viewAll')}
-              </Button>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* 9. FAQ */}
-      <section className="py-24 bg-muted/20">
-        <div className="container mx-auto px-4">
-          <ScrollReveal>
-            <div className="text-center mb-16">
-              <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
-                {t('faq.title')}
-              </h2>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-                {t('faq.subtitle')}
-              </p>
-            </div>
-          </ScrollReveal>
-          
-          <div className="max-w-4xl mx-auto space-y-6">
-            {[0, 1, 2].map((index) => (
-              <ScrollReveal key={index} delay={index * 150} direction="up">
-                <div className="p-8 rounded-3xl bg-card border shadow-soft hover:shadow-medium hover:border-muted-foreground/30 transition-all duration-300 group">
-                  <h3 className="font-semibold text-foreground text-xl md:text-2xl mb-4">
-                    {t(`faq.questions.${index}.question`)}
-                  </h3>
-                  <p className="text-muted-foreground text-lg leading-relaxed">
-                    {t(`faq.questions.${index}.answer`)}
-                  </p>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-          
-          <ScrollReveal delay={600}>
-            <div className="text-center mt-12">
-              <Button variant="outline" size="lg" className="hover:bg-accent hover:text-accent-foreground" onClick={() => navigate({ to: '/faq' })}>
-                {t('faq.viewAll')}
-              </Button>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* 10. Final CTA */}
-      <section className="py-24 bg-background">
-        <div className="container mx-auto px-4">
-          <ScrollReveal direction="scale">
-            <div className="bg-gradient-to-br from-primary via-primary to-primary/90 rounded-3xl p-12 md:p-16 text-center text-white shadow-2xl overflow-hidden relative">
-              {/* Background decoration */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32" />
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24" />
-              
-              <div className="relative z-10">
-                <h2 className="font-sansation text-2xl md:text-3xl lg:text-4xl font-bold mb-6 leading-tight">
-                  Ready to Build Your Dream Website?
-                </h2>
-                <p className="text-lg md:text-xl mb-10 opacity-95 max-w-3xl mx-auto leading-relaxed">
-                  Join thousands of businesses who've transformed their online presence with Naveeg. Start building today!
-                </p>
-                <Button 
-                  size="lg" 
-                  variant="secondary"
-                  className="font-semibold px-10 h-14 text-lg rounded-xl hover:scale-105 transition-transform duration-200 shadow-lg"
-                  onClick={handleStartOnboarding}
-                >
-                  Start Building Now
-                  <ArrowRight className="ml-3 h-6 w-6" />
-                </Button>
-                <p className="text-sm md:text-base mt-6 opacity-80">
-                  No credit card required • Launch in minutes
-                </p>
               </div>
             </div>
-          </ScrollReveal>
+          </div>
+
+          {/* Feature 2 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="lg:order-2">
+              <h3 className="heading-display text-display-4 mb-6">
+                One-Click Deploy & Hosting
+              </h3>
+              <p className="text-lead mb-6">
+                Deploy your website to our global CDN with automatic SSL, backups, and performance optimization.
+              </p>
+              <ul className="space-y-3">
+                {[
+                  "Global CDN for lightning-fast loading",
+                  "Automatic SSL certificates",
+                  "Daily backups and version control",
+                  "99.9% uptime guarantee"
+                ].map((feature, index) => (
+                  <li key={index} className="flex items-center gap-3">
+                    <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="relative lg:order-1">
+              <div className="aspect-video bg-gradient-to-br from-accent/10 to-primary/10 rounded-2xl border border-border/50 flex items-center justify-center">
+                <div className="text-center">
+                  <Rocket className="h-16 w-16 text-accent mx-auto mb-4" />
+                  <p className="text-muted-foreground">Deploy Preview</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
+      </Section>
+
+      {/* Testimonials */}
+      <Section
+        eyebrow="Customer Success"
+        title="What our customers say"
+        description="Join thousands of business owners who've transformed their online presence"
+        className="bg-muted/20"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {testimonials.map((testimonial, index) => (
+            <Testimonial
+              key={index}
+              avatar={testimonial.avatar}
+              name={testimonial.name}
+              role={testimonial.role}
+              quote={testimonial.quote}
+              logo={testimonial.logo}
+              company={testimonial.company}
+            />
+          ))}
+        </div>
+      </Section>
+
+      {/* Integrations */}
+      <Section
+        eyebrow="Integrations"
+        title="Works with your favorite tools"
+        description="Connect Naveeg with the services you already use and love"
+      >
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 max-w-4xl mx-auto">
+          {[
+            { name: "Stripe", icon: "💳" },
+            { name: "Mailchimp", icon: "📧" },
+            { name: "Google Analytics", icon: "📊" },
+            { name: "Zapier", icon: "🔗" },
+            { name: "Shopify", icon: "🛍️" },
+            { name: "HubSpot", icon: "🎯" }
+          ].map((integration, index) => (
+            <div key={index} className="text-center group">
+              <div className="w-16 h-16 bg-muted/50 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/10 transition-colors duration-200">
+                <span className="text-2xl">{integration.icon}</span>
+              </div>
+              <p className="text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-200">
+                {integration.name}
+              </p>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* Pricing Preview */}
+      <Section
+        eyebrow="Pricing"
+        title="Simple, transparent pricing"
+        description="Start free and scale as you grow. No hidden fees, ever."
+        className="bg-muted/20"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {[
+            {
+              name: "Starter",
+              price: "$29",
+              period: "/month",
+              description: "Perfect for small businesses",
+              features: ["AI website generation", "WordPress hosting", "SSL certificate", "Mobile responsive"]
+            },
+            {
+              name: "Pro",
+              price: "$79",
+              period: "/month",
+              description: "Everything you need to scale",
+              features: ["Everything in Starter", "E-commerce integration", "Advanced SEO tools", "Priority support"]
+            }
+          ].map((plan, index) => (
+            <div key={index} className="card-clean card-clean-hover p-8 text-center">
+              <h3 className="text-2xl font-semibold mb-2">{plan.name}</h3>
+              <div className="mb-4">
+                <span className="text-4xl font-bold">{plan.price}</span>
+                <span className="text-muted-foreground">{plan.period}</span>
+              </div>
+              <p className="text-muted-foreground mb-6">{plan.description}</p>
+              <ul className="space-y-2 mb-8 text-left">
+                {plan.features.map((feature, featureIndex) => (
+                  <li key={featureIndex} className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-success flex-shrink-0" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button variant="secondary" className="w-full">
+                See Pricing
+              </Button>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* Final CTA */}
+      <Section 
+        title="Ready to build your dream website?"
+        className="bg-gradient-to-br from-primary to-accent text-primary-contrast"
+      >
+        <CTA
+          headline="Ready to build your dream website?"
+          subcopy="Join thousands of businesses who've transformed their online presence with Naveeg. Start building today!"
+          primaryButton={{
+            text: "Start Building Now",
+            href: "/get-started"
+          }}
+          secondaryLink={{
+            text: "Book a Demo",
+            href: "/demo"
+          }}
+        />
+      </Section>
     </div>
-  );
-};
-
-export default Home;
+  )
+}

@@ -2,12 +2,14 @@ import React from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useTranslation } from 'react-i18next';
 
 export function TrialBanner() {
   const navigate = useNavigate();
   const { subscription, isTrialActive, getTrialDaysLeft } = useSubscription();
+  const { t } = useTranslation();
 
   // Show only when status='trialing'
   if (!subscription || subscription.status !== 'trialing') return null;
@@ -18,27 +20,34 @@ export function TrialBanner() {
     navigate({ to: '/plans' });
   };
 
+  const handleUpgrade = () => {
+    navigate({ to: '/plans' });
+  };
+
   return (
-    <Card className="mx-6 mt-4 mb-2 border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800/30">
-      <div className="flex items-center justify-between p-4">
+    <Card className="mx-6 mt-4 mb-2 border-accent bg-accent/10 dark:bg-accent/20 dark:border-accent/30">
+      <CardContent className="p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/40">
-            <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/20 dark:bg-accent/40">
+            <Clock className="h-4 w-4 text-accent-foreground" />
           </div>
-          <div>
-            <p className="text-sm font-medium text-orange-900 dark:text-orange-100">
-              🎉 You are on a 7-day free trial. {trialDaysLeft} day{trialDaysLeft !== 1 ? 's' : ''} left until your website is deactivated unless you subscribe.
+          <div className="flex-1">
+            <p className="text-sm font-medium text-foreground">
+              {t('trialBanner.message')}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t('trialBanner.subtitle')}
             </p>
           </div>
+          <Button
+            size="sm"
+            onClick={handleUpgrade}
+            className="bg-accent-foreground hover:bg-accent-foreground/90 text-accent font-medium"
+          >
+            {t('trialBanner.upgrade')}
+          </Button>
         </div>
-        <Button 
-          onClick={handleChoosePlan}
-          size="sm"
-          className="bg-primary hover:bg-primary/90 text-white font-medium"
-        >
-          Choose a Plan
-        </Button>
-      </div>
+      </CardContent>
     </Card>
   );
 }

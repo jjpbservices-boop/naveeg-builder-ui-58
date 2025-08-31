@@ -9,7 +9,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm",
+      "card-clean",
       className
     )}
     {...props}
@@ -76,4 +76,24 @@ const CardFooter = React.forwardRef<
 ))
 CardFooter.displayName = "CardFooter"
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+const ClickableCard = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & { href?: string }
+>(({ className, href, ...props }, ref) => {
+  const Component = href ? "a" : "div"
+  
+  return (
+    <Component
+      ref={ref}
+      href={href}
+      className={cn(
+        "card-clean card-clean-hover cursor-pointer",
+        className
+      )}
+      {...props}
+    />
+  )
+})
+ClickableCard.displayName = "ClickableCard"
+
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, ClickableCard }

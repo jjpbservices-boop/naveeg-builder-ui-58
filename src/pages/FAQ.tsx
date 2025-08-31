@@ -11,17 +11,38 @@ const FAQ: React.FC = () => {
 
   const questions = Array.from({ length: 10 }, (_, i) => i);
 
+  const handleStartOnboarding = () => {
+    navigate({ to: '/onboarding' });
+  };
+
   return (
     <div className="min-h-screen py-8">
       <div className="container mx-auto px-4">
-        {/* Header */}
+        {/* Hero Section */}
         <div className="text-center mb-16">
+          <div className="w-16 h-16 bg-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <MessageCircle className="h-8 w-8 text-accent-foreground" />
+          </div>
           <h1 className="font-sansation text-4xl md:text-5xl font-bold text-foreground mb-6">
-            {t('title')}
+            {t('faq.title')}
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            {t('subtitle')}
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            {t('faq.subtitle')}
           </p>
+        </div>
+
+        {/* CTA Section */}
+        <div className="text-center mb-16">
+          <p className="text-lg text-muted-foreground mb-6">
+            {t('faq.cta.subtitle')}
+          </p>
+          <Button
+            size="lg"
+            onClick={handleStartOnboarding}
+            className="bg-accent-foreground hover:bg-accent-foreground/90 text-accent font-semibold px-8 py-3 rounded-2xl"
+          >
+            {t('faq.cta.button')}
+          </Button>
         </div>
 
         {/* FAQ Accordion */}

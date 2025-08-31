@@ -1,264 +1,104 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Globe, Sun, Moon, Menu, Sparkles, Check, LogIn } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { useNavigate, useLocation } from '@tanstack/react-router';
-import { useTheme } from 'next-themes';
-import CookieBanner from '@/components/CookieBanner';
-import Footer from '@/components/Footer';
-import { HeroAnimation } from '@/components/HeroAnimation';
+import React from 'react'
+import { Outlet } from '@tanstack/react-router'
+import { NavBar } from '@/components/ui/nav-bar'
+import { Footer } from '@/components/ui/footer'
+import { companyLogos } from '@/data/logos'
 
-interface LayoutProps {
-  children: React.ReactNode;
-}
-
-const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { i18n } = useTranslation();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { theme, setTheme } = useTheme();
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-  const languages = [
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'fr', name: 'Français', flag: '🇫🇷' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
-    { code: 'it', name: 'Italiano', flag: '🇮🇹' },
-    { code: 'pt', name: 'Português', flag: '🇵🇹' },
-  ];
-
-  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
-
-  const changeLanguage = (languageCode: string) => {
-    i18n.changeLanguage(languageCode);
-  };
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
-
+export default function Layout() {
   const navigation = [
+    { name: 'Product', href: '/product' },
+    { name: 'Solutions', href: '/solutions' },
     { name: 'Pricing', href: '/pricing' },
-    { name: 'Gallery', href: '/gallery' },
-    { name: 'Contact', href: '/contact' }
-  ];
+    { name: 'Docs', href: '/docs' },
+    { name: 'About', href: '/about' }
+  ]
 
-  const handleGenerateClick = () => {
-    navigate({ to: '/onboarding/brief' });
-  };
+  const footerColumns = [
+    {
+      title: 'Product',
+      links: [
+        { name: 'Features', href: '/features' },
+        { name: 'Pricing', href: '/pricing' },
+        { name: 'API', href: '/api' },
+        { name: 'Integrations', href: '/integrations' }
+      ]
+    },
+    {
+      title: 'Company',
+      links: [
+        { name: 'About', href: '/about' },
+        { name: 'Blog', href: '/blog' },
+        { name: 'Careers', href: '/careers' },
+        { name: 'Contact', href: '/contact' }
+      ]
+    },
+    {
+      title: 'Resources',
+      links: [
+        { name: 'Documentation', href: '/docs' },
+        { name: 'Help Center', href: '/help' },
+        { name: 'Community', href: '/community' },
+        { name: 'Status', href: '/status' }
+      ]
+    }
+  ]
 
-  const handleLoginClick = () => {
-    navigate({ to: '/auth' });
-  };
-
-  // Check if current route is an onboarding page using proper router state
-  const currentPath = location.pathname;
-  const isOnboardingPage = currentPath.includes('/onboarding') || 
-                          currentPath.includes('/generating') || 
-                          currentPath.includes('/generate') || 
-                          currentPath.includes('/ready') ||
-                          currentPath.includes('/describe');
+  const socialLinks = [
+    {
+      name: 'Twitter',
+      href: 'https://twitter.com/naveeg',
+      icon: (
+        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
+        </svg>
+      )
+    },
+    {
+      name: 'LinkedIn',
+      href: 'https://linkedin.com/company/naveeg',
+      icon: (
+        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.047-1.852-3.047-1.853 0-2.136 1.445-2.136 2.939v5.677H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+        </svg>
+      )
+    }
+  ]
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-3 sm:px-4">
-          <div className="flex items-center justify-between h-14 sm:h-16">
-            {/* Logo */}
-            <div 
-              className="flex items-center space-x-2 cursor-pointer"
-              onClick={() => navigate({ to: '/' })}
-            >
-              <img 
-                src="/lovable-uploads/b874b017-8b73-4029-9431-6caffeaef48c.png" 
-                alt="Naveeg" 
-                className="h-6 sm:h-8 w-auto"
-              />
-              <span className="font-sansation text-lg sm:text-xl font-bold text-foreground">Naveeg</span>
+      <NavBar
+        logo={
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">N</span>
             </div>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-8">
-              {navigation.map((item) => (
-                <button
-                  key={item.name}
-                  onClick={() => navigate({ to: item.href })}
-                  className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
-                >
-                  {item.name}
-                </button>
-              ))}
-            </nav>
-
-            {/* Desktop Controls */}
-            <div className="hidden lg:flex items-center space-x-4">
-              {/* Language Selector */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <Globe className="mr-2" />
-                    <span>{currentLanguage.name}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  {languages.map((language) => (
-                    <DropdownMenuItem
-                      key={language.code}
-                      onClick={() => changeLanguage(language.code)}
-                      className="flex items-center justify-between"
-                    >
-                      <span>{language.name}</span>
-                      {i18n.language === language.code && (
-                        <Check className="h-4 w-4 text-primary" />
-                      )}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {/* Login Button */}
-              <Button 
-                variant="ghost" 
-                size="sm-icon" 
-                onClick={handleLoginClick}
-              >
-                <LogIn />
-              </Button>
-
-              {/* Theme Toggle */}
-              <Button variant="ghost" size="sm-icon" onClick={toggleTheme}>
-                <Sun className="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              </Button>
-
-              {/* CTA Button */}
-              <Button 
-                onClick={handleGenerateClick}
-                className="bg-primary hover:bg-primary/90 text-white font-semibold"
-              >
-                <Sparkles className="mr-2" />
-                Try Free
-              </Button>
-            </div>
-
-            {/* Mobile Controls */}
-            <div className="flex lg:hidden items-center space-x-2">
-              {/* Theme Toggle */}
-              <Button variant="ghost" size="sm-icon" onClick={toggleTheme}>
-                <Sun className="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              </Button>
-
-              {/* Mobile Menu */}
-              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm-icon">
-                    <Menu />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-80">
-                  <SheetHeader>
-                    <SheetTitle className="flex items-center space-x-2">
-                      <img 
-                        src="/lovable-uploads/b874b017-8b73-4029-9431-6caffeaef48c.png" 
-                        alt="Naveeg" 
-                        className="h-6 w-auto"
-                      />
-                      <span className="font-sansation text-lg font-bold">Naveeg</span>
-                    </SheetTitle>
-                  </SheetHeader>
-                  
-                  <div className="mt-8 space-y-6">
-                    {/* Navigation Links */}
-                    <nav className="space-y-4">
-                      {navigation.map((item) => (
-                        <button
-                          key={item.name}
-                          onClick={() => {
-                            navigate({ to: item.href });
-                            setIsSheetOpen(false);
-                          }}
-                          className="block text-muted-foreground hover:text-foreground transition-colors text-base font-medium w-full text-left"
-                        >
-                          {item.name}
-                        </button>
-                      ))}
-                    </nav>
-
-                    {/* Language Selector */}
-                    <div className="space-y-3">
-                      <h3 className="text-sm font-semibold text-foreground">Language</h3>
-                      <div className="grid grid-cols-2 gap-2">
-                        {languages.map((language) => (
-                          <button
-                            key={language.code}
-                            onClick={() => changeLanguage(language.code)}
-                            className={`flex items-center justify-center p-2 rounded-lg border transition-colors ${
-                              i18n.language === language.code
-                                ? 'bg-primary/10 border-primary text-primary'
-                                : 'border-border hover:bg-muted'
-                            }`}
-                          >
-                            <span className="text-sm">{language.name}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Login Button */}
-                    <Button 
-                      onClick={() => {
-                        handleLoginClick();
-                        setIsSheetOpen(false);
-                      }}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      <LogIn className="mr-2" />
-                      Login
-                    </Button>
-
-                    {/* CTA Button */}
-                    <Button 
-                      onClick={() => {
-                        handleGenerateClick();
-                        setIsSheetOpen(false);
-                      }}
-                      className="w-full bg-primary hover:bg-primary/90 text-white font-semibold"
-                    >
-                      <Sparkles className="mr-2" />
-                      Try Free
-                    </Button>
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
+            <span className="font-display font-bold text-xl">Naveeg</span>
           </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className={`flex-1 ${isOnboardingPage ? 'bg-gradient-to-br from-background via-muted/30 to-background pt-14 sm:pt-16 relative' : ''}`}>
-        {isOnboardingPage && (
-          <div className="absolute inset-0 w-full h-full">
-            <HeroAnimation />
-          </div>
-        )}
-        <div className={isOnboardingPage ? 'relative z-10' : ''}>
-          {children}
-        </div>
+        }
+        navigation={navigation}
+        cta={{
+          text: 'Get Started',
+          href: '/get-started'
+        }}
+      />
+      
+      <main className="flex-1">
+        <Outlet />
       </main>
-
-      {/* Footer */}
-      <Footer />
-
-      {/* Cookie Banner */}
-      <CookieBanner />
+      
+      <Footer
+        logo={
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">N</span>
+            </div>
+            <span className="font-display font-bold text-xl">Naveeg</span>
+          </div>
+        }
+        description="Build your website as easy as sending an email. AI-powered website builder for business owners."
+        columns={footerColumns}
+        socialLinks={socialLinks}
+      />
     </div>
-  );
-};
-
-export default Layout;
+  )
+}

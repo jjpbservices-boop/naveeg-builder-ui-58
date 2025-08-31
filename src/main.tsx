@@ -1,7 +1,10 @@
-import { createRoot } from 'react-dom/client'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
-import './index.css'
-import './utils/cacheBreaker' // Initialize cache breaking on app start
-import './utils/clearStaleStorage' // Clear stale localStorage on app start
+import './styles/globals.css'
 
-createRoot(document.getElementById("root")!).render(<App />);
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+)
