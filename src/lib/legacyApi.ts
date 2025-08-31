@@ -321,6 +321,24 @@ export const helpers = {
 };
 
 // Legacy exports for backward compatibility
-export { createWebsite, generateSitemap, updateDesign, generateFromWithPolling, publishAndFrontWithPolling } from './legacyApi';
+export const createWebsite = (businessName: string) => {
+  throw new Error('createWebsite moved to legacy API - use original api.ts');
+};
+
+export const generateSitemap = (website_id: number, params: any) => {
+  throw new Error('generateSitemap moved to legacy API - use original api.ts');
+};
+
+export const updateDesign = (siteId: number, design: any) => {
+  throw new Error('updateDesign moved to legacy API - use original api.ts');
+};
+
+export const generateFromWithPolling = (website_id: number, unique_id: string, params: any) => {
+  throw new Error('generateFromWithPolling moved to legacy API - use original api.ts');
+};
+
+export const publishAndFrontWithPolling = (website_id: number) => {
+  throw new Error('publishAndFrontWithPolling moved to legacy API - use original api.ts');
+};
 
 export default api;
