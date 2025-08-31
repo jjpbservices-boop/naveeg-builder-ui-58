@@ -106,7 +106,8 @@ export default function Plans() {
     console.log('[PLANS] Plan selected:', plan, 'Current site ID:', currentSiteId, 'Loading site:', loadingSite);
     
     if (plan === 'custom') {
-      window.open('mailto:sales@naveeg.com?subject=Custom Plan Inquiry', '_blank');
+      // Use location.assign for mailto links to open in same tab
+      window.location.assign('mailto:sales@naveeg.com?subject=Custom Plan Inquiry');
       return;
     }
 
