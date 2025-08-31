@@ -10,35 +10,9 @@ const CreateCheckoutSchema = z.object({
   site_id: z.string().uuid(),
 });
 
-const CreatePortalSchema = z.object({
-  action: z.literal('create-portal'),
-  customer_id: z.string().optional(),
-});
-
-const BillingRequestSchema = z.discriminatedUnion('action', [
-  CreateCheckoutSchema,
-  CreatePortalSchema,
-]);
-
 const CheckoutResponseSchema = z.object({
   url: z.string().url(),
 });
-
-// Server-side plan configuration
-const PLANS = {
-  starter: {
-    name: 'Starter Plan',
-    price: 999, // $9.99 in cents
-    currency: 'usd',
-    interval: 'month' as const,
-  },
-  pro: {
-    name: 'Pro Plan', 
-    price: 2999, // $29.99 in cents
-    currency: 'usd',
-    interval: 'month' as const,
-  },
-};
 
 async function handleCreateCheckout({ input, user, logger }: any) {
   const { plan, site_id } = input;
@@ -51,9 +25,28 @@ async function handleCreateCheckout({ input, user, logger }: any) {
   logger.step('Initializing Stripe client');
   const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
 
+  // Create Supabase service client for database operations
+  const supabaseService = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    { auth: { persistSession: false } }
+  );
+
+  // Get plan details from database
+  const { data: planData, error: planError } = await supabaseService
+    .from('plans')
+    .select('*')
+    .eq('code', plan)
+    .single();
+
+  if (planError || !planData) {
+    throw new Error(`Invalid plan: ${plan}`);
+  }
+
+  logger.step('Found plan', { plan: planData.name, price: planData.price_month_cents });
+
   // Get or create Stripe customer
-  logger.step('Looking up Stripe customer', { email: user.email });
-  let customers = await stripe.customers.list({ email: user.email, limit: 1 });
+  const customers = await stripe.customers.list({ email: user.email, limit: 1 });
   let customerId;
 
   if (customers.data.length > 0) {
@@ -72,88 +65,63 @@ async function handleCreateCheckout({ input, user, logger }: any) {
     logger.step('Created new customer', { customerId });
   }
 
-  // Get plan configuration
-  const planConfig = PLANS[plan];
-  if (!planConfig) {
-    throw new Error(`Invalid plan: ${plan}`);
-  }
-
-  logger.step('Creating checkout session', { plan, planConfig });
-
-  const origin = Deno.env.get('SITE_URL') || 'http://localhost:5173';
-
-  // Create checkout session
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    line_items: [
-      {
-        price_data: {
-          currency: planConfig.currency,
-          product_data: {
-            name: planConfig.name,
-            metadata: {
-              plan_type: plan,
-            },
-          },
-          unit_amount: planConfig.price,
-          recurring: {
-            interval: planConfig.interval,
+  // Use Stripe price ID if available, otherwise create price data
+  const lineItems = [];
+  if (planData.stripe_price_month_id) {
+    lineItems.push({
+      price: planData.stripe_price_month_id,
+      quantity: 1,
+    });
+  } else {
+    lineItems.push({
+      price_data: {
+        currency: planData.currency,
+        product_data: {
+          name: planData.name,
+          metadata: {
+            plan_code: plan,
           },
         },
-        quantity: 1,
+        unit_amount: planData.price_month_cents,
+        recurring: {
+          interval: 'month',
+        },
       },
-    ],
+      quantity: 1,
+    });
+  }
+
+  logger.step('Creating checkout session');
+
+  const origin = Deno.env.get('SITE_URL') || 'http://localhost:5173';
+  const session = await stripe.checkout.sessions.create({
+    customer: customerId,
+    line_items: lineItems,
     mode: 'subscription',
-    success_url: `${origin}/dashboard?checkout=success`,
+    success_url: `${origin}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/plans?checkout=cancelled`,
     metadata: {
       user_id: user.id,
       site_id,
-      plan_type: plan,
+      plan_code: plan,
     },
+  });
+
+  // Log the checkout creation
+  await supabaseService.from('api_audit').insert({
+    user_id: user.id,
+    service: 'stripe',
+    endpoint: '/checkout/sessions',
+    method: 'POST',
+    status_code: 200,
+    request: { plan, site_id },
+    response: { session_id: session.id },
   });
 
   logger.step('Checkout session created', { sessionId: session.id, url: session.url });
 
   return {
     url: session.url!,
-  };
-}
-
-async function handleCreatePortal({ input, user, logger }: any) {
-  const { customer_id } = input;
-  
-  const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
-  if (!stripeKey) {
-    throw new Error('STRIPE_SECRET_KEY environment variable is required');
-  }
-
-  logger.step('Initializing Stripe client');
-  const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
-
-  let customerId = customer_id;
-  if (!customerId) {
-    // Find customer by email
-    logger.step('Looking up customer by email', { email: user.email });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    if (customers.data.length === 0) {
-      throw new Error('No Stripe customer found for this user');
-    }
-    customerId = customers.data[0].id;
-  }
-
-  logger.step('Creating customer portal session', { customerId });
-
-  const origin = Deno.env.get('SITE_URL') || 'http://localhost:5173';
-  const portalSession = await stripe.billingPortal.sessions.create({
-    customer: customerId,
-    return_url: `${origin}/billing`,
-  });
-
-  logger.step('Customer portal session created', { sessionId: portalSession.id, url: portalSession.url });
-
-  return {
-    url: portalSession.url,
   };
 }
 
@@ -165,15 +133,12 @@ serve(
       case 'create-checkout':
         return handleCreateCheckout({ input, user, logger });
       
-      case 'create-portal':
-        return handleCreatePortal({ input, user, logger });
-      
       default:
         throw new Error(`Unknown action: ${action}`);
     }
   }, {
     requireAuth: true,
-    inputSchema: BillingRequestSchema,
+    inputSchema: CreateCheckoutSchema,
     outputSchema: CheckoutResponseSchema,
   })
 );

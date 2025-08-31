@@ -1,17 +1,15 @@
-import { getSupabaseClient } from '@/lib/supabase';
-import { z } from 'zod';
+// Generated TypeScript types from 10Web OpenAPI specification
+// This file contains type definitions for the 10Web API endpoints
 
-// 10Web API Types based on their OpenAPI spec
-export interface TenWebWebsiteResponse {
-  website_id: string;
-  site_url: string;
-  admin_url: string;
-  subdomain: string;
-  status: 'building' | 'active' | 'error';
-  progress?: number;
+export interface TenWebApiResponse<T = any> {
+  success: boolean;
+  data: T;
+  message?: string;
 }
 
-export interface TenWebGenerateSitemapRequest {
+// ========== AI ENDPOINTS ==========
+
+export interface GenerateSitemapRequest {
   business_description: string;
   business_type: string;
   website_title: string;
@@ -19,124 +17,222 @@ export interface TenWebGenerateSitemapRequest {
   website_keyphrase: string;
 }
 
-export interface TenWebGenerateSitemapResponse {
+export interface GenerateSitemapResponse {
   sitemap_id: string;
-  sitemap: any;
-  pages: Array<{
-    title: string;
-    description: string;
-    url: string;
-  }>;
+  sitemap: {
+    pages: SitemapPage[];
+    structure: any;
+  };
+  pages: SitemapPage[];
 }
 
-export interface TenWebCreateSiteRequest {
+export interface SitemapPage {
+  title: string;
+  description: string;
+  url: string;
+  type: 'home' | 'about' | 'services' | 'contact' | 'blog' | 'page';
+  parent?: string;
+}
+
+export interface CreateSiteFromSitemapRequest {
   sitemap_id: string;
-  primary_color?: string;
-  secondary_color?: string;
-  heading_font?: string;
-  body_font?: string;
+  design_preferences?: {
+    primary_color?: string;
+    secondary_color?: string;
+    heading_font?: string;
+    body_font?: string;
+  };
 }
 
-// Validation schemas
-export const TenWebGenerateSitemapSchema = z.object({
-  business_description: z.string().min(10),
-  business_type: z.string().min(1),
-  website_title: z.string().min(1),
-  website_description: z.string().min(10),
-  website_keyphrase: z.string().min(1),
-});
-
-export const TenWebCreateSiteSchema = z.object({
-  sitemap_id: z.string().min(1),
-  primary_color: z.string().optional(),
-  secondary_color: z.string().optional(),
-  heading_font: z.string().optional(),
-  body_font: z.string().optional(),
-});
-
-// API client for 10Web integration
-export class TenWebAPI {
-  private baseUrl: string;
-  private apiKey: string;
-
-  constructor() {
-    this.baseUrl = import.meta.env.TENWEB_API_BASE || 'https://api.10web.io';
-    this.apiKey = import.meta.env.TENWEB_API_KEY || '';
-    
-    if (!this.apiKey) {
-      throw new Error('TENWEB_API_KEY is required');
-    }
-  }
-
-  private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      ...options,
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`TenWeb API error: ${response.status} ${response.statusText}`);
-    }
-
-    return response.json();
-  }
-
-  async generateSitemap(request: TenWebGenerateSitemapRequest): Promise<TenWebGenerateSitemapResponse> {
-    const validatedRequest = TenWebGenerateSitemapSchema.parse(request);
-    
-    return this.makeRequest<TenWebGenerateSitemapResponse>('/v1/ai/generate_sitemap', {
-      method: 'POST',
-      body: JSON.stringify(validatedRequest),
-    });
-  }
-
-  async createWebsite(request: TenWebCreateSiteRequest): Promise<TenWebWebsiteResponse> {
-    const validatedRequest = TenWebCreateSiteSchema.parse(request);
-    
-    return this.makeRequest<TenWebWebsiteResponse>('/v1/ai/generate_site_from_sitemap', {
-      method: 'POST',
-      body: JSON.stringify(validatedRequest),
-    });
-  }
-
-  async getWebsiteStatus(websiteId: string): Promise<TenWebWebsiteResponse> {
-    return this.makeRequest<TenWebWebsiteResponse>(`/v1/hosting/ai-website/${websiteId}`);
-  }
-
-  async getWordPressLoginToken(websiteId: string): Promise<{ token: string; wp_admin_url: string }> {
-    return this.makeRequest<{ token: string; wp_admin_url: string }>(`/v1/hosting/ai-website/${websiteId}/wp-login-token`, {
-      method: 'POST',
-    });
-  }
+export interface CreateAiWebsiteRequest {
+  business_description: string;
+  business_type: string;
+  website_title: string;
+  website_description: string;
+  website_keyphrase: string;
+  design_preferences?: {
+    primary_color?: string;
+    secondary_color?: string;
+    heading_font?: string;
+    body_font?: string;
+  };
 }
 
-// Helper functions for common operations
-export async function saveWebsiteToDatabase(
-  userId: string,
-  websiteData: TenWebWebsiteResponse,
-  businessData: any
-): Promise<void> {
-  const supabase = getSupabaseClient();
-  
-  const { error } = await supabase.from('websites').insert({
-    user_id: userId,
-    title: businessData.website_title || 'My Website',
-    description: businessData.website_description || '',
-    site_url: websiteData.site_url,
-    admin_url: websiteData.admin_url,
-    tenweb_website_id: websiteData.website_id,
-    subdomain: websiteData.subdomain,
-    status: websiteData.status as any,
-    business_type: businessData.business_type,
-    primary_color: businessData.primary_color,
-    secondary_color: businessData.secondary_color,
-  } as any);
-  
-  if (error) {
-    throw new Error(`Failed to save website to database: ${error.message}`);
-  }
+export interface WebsiteCreationResponse {
+  website_id: number;
+  site_url: string;
+  admin_url: string;
+  subdomain: string;
+  status: 'creating' | 'active' | 'error';
+  progress?: number;
+}
+
+// ========== HOSTING ENDPOINTS ==========
+
+export interface WebsiteDetailsRequest {
+  website_id: number;
+  admin_url?: boolean;
+}
+
+export interface WebsiteDetailsResponse {
+  website_id: number;
+  name: string;
+  site_url: string;
+  admin_url: string;
+  subdomain: string;
+  status: 'active' | 'inactive' | 'suspended';
+  region: string;
+  created_at: string;
+  updated_at: string;
+  wp_admin_url?: string;
+  token?: string;
+}
+
+// ========== WORDPRESS MANAGEMENT ==========
+
+export interface WordPressLoginTokenResponse {
+  token: string;
+  wp_admin_url: string;
+  expires_at: string;
+}
+
+export interface PageCreateRequest {
+  title: string;
+  content: string;
+  status: 'publish' | 'draft' | 'private';
+  parent_id?: number;
+  template?: string;
+}
+
+export interface PageUpdateRequest {
+  id: number;
+  title?: string;
+  content?: string;
+  status?: 'publish' | 'draft' | 'private';
+  parent_id?: number;
+}
+
+export interface PageResponse {
+  id: number;
+  title: string;
+  content: string;
+  status: string;
+  url: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PagesListResponse {
+  pages: PageResponse[];
+  total: number;
+  page: number;
+  per_page: number;
+}
+
+// ========== DOMAIN MANAGEMENT ==========
+
+export interface DomainAddRequest {
+  domain: string;
+  website_id: number;
+}
+
+export interface DomainResponse {
+  id: number;
+  domain: string;
+  website_id: number;
+  status: 'active' | 'pending' | 'failed';
+  is_primary: boolean;
+  ssl_status: 'active' | 'pending' | 'failed';
+  created_at: string;
+}
+
+export interface DnsRecordRequest {
+  domain: string;
+  type: 'A' | 'CNAME' | 'MX' | 'TXT';
+  name: string;
+  value: string;
+  ttl?: number;
+}
+
+export interface DnsRecordResponse {
+  id: number;
+  domain: string;
+  type: string;
+  name: string;
+  value: string;
+  ttl: number;
+  created_at: string;
+}
+
+// ========== CACHE MANAGEMENT ==========
+
+export interface CacheControlRequest {
+  website_id: number;
+  action: 'enable' | 'disable' | 'purge';
+  cache_type: 'fastcgi' | 'object';
+}
+
+export interface CacheStatusResponse {
+  website_id: number;
+  fastcgi_cache: {
+    enabled: boolean;
+    size: string;
+    hit_rate: number;
+  };
+  object_cache: {
+    enabled: boolean;
+    type: 'redis' | 'memcached';
+    status: 'active' | 'inactive';
+  };
+}
+
+// ========== PHP MANAGEMENT ==========
+
+export interface PhpVersionRequest {
+  website_id: number;
+  version: '7.4' | '8.0' | '8.1' | '8.2' | '8.3';
+}
+
+export interface PhpStatusResponse {
+  website_id: number;
+  current_version: string;
+  available_versions: string[];
+  status: 'active' | 'updating';
+  last_restart: string;
+}
+
+// ========== LOG MANAGEMENT ==========
+
+export interface LogsRequest {
+  website_id: number;
+  type: 'access' | 'error' | 'php';
+  lines?: number;
+  since?: string;
+}
+
+export interface LogEntry {
+  timestamp: string;
+  level: 'info' | 'warning' | 'error';
+  message: string;
+  source: string;
+}
+
+export interface LogsResponse {
+  website_id: number;
+  type: string;
+  entries: LogEntry[];
+  total_lines: number;
+}
+
+// ========== ERROR TYPES ==========
+
+export interface TenWebError {
+  code: string;
+  message: string;
+  details?: any;
+}
+
+export interface TenWebErrorResponse {
+  success: false;
+  error: TenWebError;
 }
