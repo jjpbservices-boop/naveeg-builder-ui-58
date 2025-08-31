@@ -25,16 +25,14 @@ Deno.serve(async (req) => {
 
   try {
     const { path, method = "GET", query, body } = await req.json();
-    if (!path || typeof path !== "string")
-      return new Response(JSON.stringify({ error: "Missing path" }), {
-        status: 400, headers: { ...corsHeaders, "content-type": "application/json" },
-      });
+    if (!path) return new Response(JSON.stringify({ error: "Missing path" }), {
+      status: 400, headers: { ...corsHeaders, "content-type": "application/json" },
+    });
 
     const TENWEB_API_KEY = Deno.env.get("TENWEB_API_KEY");
-    if (!TENWEB_API_KEY)
-      return new Response(JSON.stringify({ error: "TENWEB_API_KEY not set" }), {
-        status: 500, headers: { ...corsHeaders, "content-type": "application/json" },
-      });
+    if (!TENWEB_API_KEY) return new Response(JSON.stringify({ error: "TENWEB_API_KEY not set" }), {
+      status: 500, headers: { ...corsHeaders, "content-type": "application/json" },
+    });
 
     const url = new URL(`https://api.10web.io${path}`);
     Object.entries(query ?? {}).forEach(([k, v]) => url.searchParams.set(k, String(v)));
@@ -45,9 +43,11 @@ Deno.serve(async (req) => {
       body: body ? JSON.stringify(body) : undefined,
     });
 
-    const contentType = upstream.headers.get("content-type") ?? "application/json";
     const text = await upstream.text();
-    return new Response(text, { status: upstream.status, headers: { ...corsHeaders, "content-type": contentType } });
+    return new Response(text, {
+      status: upstream.status,
+      headers: { ...corsHeaders, "content-type": upstream.headers.get("content-type") ?? "application/json" },
+    });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500, headers: { ...corsHeaders, "content-type": "application/json" },
