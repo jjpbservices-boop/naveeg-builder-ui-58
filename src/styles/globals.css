@@ -116,7 +116,7 @@
 
   /* Button utilities */
   .btn-primary {
-    @apply bg-gradient-to-r from-primary via-primary to-accent text-primary-contrast font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    @apply bg-gradient-to-r from-primary via-primary to-accent text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
   }
 
   .btn-secondary {
