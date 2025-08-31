@@ -1,190 +1,179 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
+import { z } from 'https://esm.sh/zod@3.22.4';
+import Stripe from 'https://esm.sh/stripe@14.21.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
+import { createHandler } from '../_shared/handler.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
-
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[BILLING] ${step}${detailsStr}`);
-};
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  // Only accept POST requests
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 405,
-    });
-  }
-
-  try {
-    logStep("Billing function started");
-
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-
-    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
-
-    // Get authenticated user
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
-
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
-    
-    const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    
-    logStep("User authenticated", { userId: user.id, email: user.email });
-
-    // Parse JSON body with proper error handling
-    let requestBody;
-    try {
-      const rawBody = await req.text();
-      logStep("Raw request body", { body: rawBody });
-      
-      if (!rawBody) {
-        throw new Error("Empty request body");
-      }
-      
-      requestBody = JSON.parse(rawBody);
-      logStep("Parsed request body", requestBody);
-    } catch (parseError) {
-      const errorMsg = `Failed to parse JSON body: ${parseError instanceof Error ? parseError.message : String(parseError)}`;
-      logStep("JSON parsing error", { error: errorMsg });
-      throw new Error(errorMsg);
-    }
-    
-    const { action, plan, site_id, customer_id } = requestBody;
-    // Use request origin as primary, APP_URL as secondary, localhost as last resort
-    const origin = req.headers.get("origin") || req.headers.get("host");
-    const appUrl = origin || Deno.env.get("APP_URL") || "http://localhost:3000";
-    
-    logStep("Using app URL", { origin, appUrl });
-    
-    // Validate required action parameter
-    if (!action) {
-      throw new Error("Missing required 'action' parameter in request body");
-    }
-    
-    logStep("Request parameters", { action, plan, site_id, customer_id });
-
-    // Create service role client for database queries
-    const supabaseService = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
-    );
-
-    if (action === 'create-checkout') {
-      if (!plan || !site_id) {
-        throw new Error("plan and site_id parameters are required");
-      }
-
-      logStep("Creating checkout session", { plan, site_id });
-
-      // Map plan to price ID from database
-      const { data: priceData, error: priceError } = await supabaseService
-        .from('stripe_prices')
-        .select('price_id')
-        .eq('plan_id', plan)
-        .single();
-      
-      logStep("Price lookup result", { priceData, priceError });
-      
-      if (priceError || !priceData) {
-        throw new Error(`Invalid plan: ${plan}. Error: ${priceError?.message}`);
-      }
-      
-      const priceId = priceData.price_id;
-
-      // Check if customer exists
-      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-      let customerId;
-      if (customers.data.length > 0) {
-        customerId = customers.data[0].id;
-        logStep("Found existing customer", { customerId });
-      }
-
-      const session = await stripe.checkout.sessions.create({
-        customer: customerId,
-        customer_email: customerId ? undefined : user.email,
-        line_items: [
-          {
-            price: priceId,
-            quantity: 1,
-          },
-        ],
-        mode: "subscription",
-        automatic_tax: { enabled: true },
-        success_url: `${appUrl}/dashboard?session_id={CHECKOUT_SESSION_ID}&success=true`,
-        cancel_url: `${appUrl}/dashboard`,
-        metadata: {
-          user_id: user.id,
-          site_id: site_id,
-          plan: plan,
-        },
-      });
-
-      logStep("Checkout session created", { sessionId: session.id, url: session.url });
-
-      return new Response(JSON.stringify({ url: session.url }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-
-    } else if (action === 'create-portal') {
-      // Create customer portal session
-      let customerId = customer_id;
-      if (!customerId) {
-        // Find customer by email
-        const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-        if (customers.data.length === 0) {
-          throw new Error("No Stripe customer found for this user");
-        }
-        customerId = customers.data[0].id;
-      }
-
-      logStep("Creating customer portal session", { customerId });
-
-      const portalSession = await stripe.billingPortal.sessions.create({
-        customer: customerId,
-        return_url: `${appUrl}/billing`,
-      });
-
-      logStep("Customer portal session created", { sessionId: portalSession.id, url: portalSession.url });
-
-      return new Response(JSON.stringify({ url: portalSession.url }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-
-    } else {
-      throw new Error(`Unknown action: ${action}`);
-    }
-
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in billing", { message: errorMessage });
-    
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
-  }
+const CreateCheckoutSchema = z.object({
+  action: z.literal('create-checkout'),
+  plan: z.enum(['starter', 'pro']),
+  site_id: z.string().uuid(),
 });
+
+const CreatePortalSchema = z.object({
+  action: z.literal('create-portal'),
+  customer_id: z.string().optional(),
+});
+
+const BillingRequestSchema = z.discriminatedUnion('action', [
+  CreateCheckoutSchema,
+  CreatePortalSchema,
+]);
+
+const CheckoutResponseSchema = z.object({
+  url: z.string().url(),
+});
+
+// Server-side plan configuration
+const PLANS = {
+  starter: {
+    name: 'Starter Plan',
+    price: 999, // $9.99 in cents
+    currency: 'usd',
+    interval: 'month' as const,
+  },
+  pro: {
+    name: 'Pro Plan', 
+    price: 2999, // $29.99 in cents
+    currency: 'usd',
+    interval: 'month' as const,
+  },
+};
+
+async function handleCreateCheckout({ input, user, logger }: any) {
+  const { plan, site_id } = input;
+  
+  const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+  if (!stripeKey) {
+    throw new Error('STRIPE_SECRET_KEY environment variable is required');
+  }
+
+  logger.step('Initializing Stripe client');
+  const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
+
+  // Get or create Stripe customer
+  logger.step('Looking up Stripe customer', { email: user.email });
+  let customers = await stripe.customers.list({ email: user.email, limit: 1 });
+  let customerId;
+
+  if (customers.data.length > 0) {
+    customerId = customers.data[0].id;
+    logger.step('Found existing customer', { customerId });
+  } else {
+    logger.step('Creating new customer');
+    const customer = await stripe.customers.create({
+      email: user.email,
+      metadata: {
+        user_id: user.id,
+        site_id,
+      },
+    });
+    customerId = customer.id;
+    logger.step('Created new customer', { customerId });
+  }
+
+  // Get plan configuration
+  const planConfig = PLANS[plan];
+  if (!planConfig) {
+    throw new Error(`Invalid plan: ${plan}`);
+  }
+
+  logger.step('Creating checkout session', { plan, planConfig });
+
+  const origin = Deno.env.get('SITE_URL') || 'http://localhost:5173';
+
+  // Create checkout session
+  const session = await stripe.checkout.sessions.create({
+    customer: customerId,
+    line_items: [
+      {
+        price_data: {
+          currency: planConfig.currency,
+          product_data: {
+            name: planConfig.name,
+            metadata: {
+              plan_type: plan,
+            },
+          },
+          unit_amount: planConfig.price,
+          recurring: {
+            interval: planConfig.interval,
+          },
+        },
+        quantity: 1,
+      },
+    ],
+    mode: 'subscription',
+    success_url: `${origin}/dashboard?checkout=success`,
+    cancel_url: `${origin}/plans?checkout=cancelled`,
+    metadata: {
+      user_id: user.id,
+      site_id,
+      plan_type: plan,
+    },
+  });
+
+  logger.step('Checkout session created', { sessionId: session.id, url: session.url });
+
+  return {
+    url: session.url!,
+  };
+}
+
+async function handleCreatePortal({ input, user, logger }: any) {
+  const { customer_id } = input;
+  
+  const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+  if (!stripeKey) {
+    throw new Error('STRIPE_SECRET_KEY environment variable is required');
+  }
+
+  logger.step('Initializing Stripe client');
+  const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
+
+  let customerId = customer_id;
+  if (!customerId) {
+    // Find customer by email
+    logger.step('Looking up customer by email', { email: user.email });
+    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    if (customers.data.length === 0) {
+      throw new Error('No Stripe customer found for this user');
+    }
+    customerId = customers.data[0].id;
+  }
+
+  logger.step('Creating customer portal session', { customerId });
+
+  const origin = Deno.env.get('SITE_URL') || 'http://localhost:5173';
+  const portalSession = await stripe.billingPortal.sessions.create({
+    customer: customerId,
+    return_url: `${origin}/billing`,
+  });
+
+  logger.step('Customer portal session created', { sessionId: portalSession.id, url: portalSession.url });
+
+  return {
+    url: portalSession.url,
+  };
+}
+
+serve(
+  createHandler('billing', async ({ input, user, logger }) => {
+    const { action } = input;
+
+    switch (action) {
+      case 'create-checkout':
+        return handleCreateCheckout({ input, user, logger });
+      
+      case 'create-portal':
+        return handleCreatePortal({ input, user, logger });
+      
+      default:
+        throw new Error(`Unknown action: ${action}`);
+    }
+  }, {
+    requireAuth: true,
+    inputSchema: BillingRequestSchema,
+    outputSchema: CheckoutResponseSchema,
+  })
+);
