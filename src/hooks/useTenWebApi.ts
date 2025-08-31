@@ -1,303 +1,226 @@
-import { useState, useCallback } from 'react'
-import { tenwebApi, TenWebApiError, TenWebResponse } from '@/lib/tenwebApi'
-import { useToast } from '@/hooks/use-toast'
-import { auditLogger } from '@/lib/auditLogger'
+import { useState } from 'react';
+import { tenwebFetch } from '@/lib/tenweb';
+import { useToast } from '@/hooks/use-toast';
 
 interface UseTenWebApiState<T = any> {
-  data: T | null
-  loading: boolean
-  error: string | null
+  data: T | null;
+  loading: boolean;
+  error: string | null;
 }
 
 interface UseTenWebApiOptions {
-  showSuccessToast?: boolean
-  showErrorToast?: boolean
-  successMessage?: string
-  onSuccess?: (data: any) => void
-  onError?: (error: TenWebApiError) => void
+  successMessage?: string;
+  errorMessage?: string;
+  showToast?: boolean;
+  showSuccessToast?: boolean;
+  showErrorToast?: boolean;
 }
 
 export function useTenWebApi<T = any>(options: UseTenWebApiOptions = {}) {
   const [state, setState] = useState<UseTenWebApiState<T>>({
     data: null,
     loading: false,
-    error: null
-  })
+    error: null,
+  });
+  const { toast } = useToast();
 
-  const { toast } = useToast()
-  const {
-    showSuccessToast = false,
-    showErrorToast = true,
-    successMessage = 'Operation completed successfully',
-    onSuccess,
-    onError
-  } = options
-
-  const execute = useCallback(async (
-    apiCall: () => Promise<TenWebResponse<T>>
-  ): Promise<T | null> => {
-    setState(prev => ({ ...prev, loading: true, error: null }))
-
+  const execute = async (apiCall: () => Promise<any>) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
+    
     try {
-      const response = await apiCall()
+      const result = await apiCall();
+      setState({ data: result, loading: false, error: null });
       
-      if (!response.success) {
-        throw new TenWebApiError(
-          response.error || response.message || 'API request failed',
-          400,
-          'API_ERROR',
-          response
-        )
-      }
-
-      setState({
-        data: response.data || null,
-        loading: false,
-        error: null
-      })
-
-      if (showSuccessToast) {
+      if ((options.showToast || options.showSuccessToast) && options.successMessage) {
         toast({
-          title: 'Success',
-          description: successMessage,
-          variant: 'default'
-        })
+          title: "Success",
+          description: options.successMessage,
+        });
       }
-
-      onSuccess?.(response.data)
-      return response.data || null
-
-    } catch (error) {
-      const apiError = error instanceof TenWebApiError 
-        ? error 
-        : new TenWebApiError('Unexpected error occurred', 500, 'UNKNOWN_ERROR')
-
-      setState({
-        data: null,
-        loading: false,
-        error: apiError.message
-      })
-
-      if (showErrorToast) {
+      
+      return result;
+    } catch (error: any) {
+      const errorMessage = error?.message || options.errorMessage || 'Operation failed';
+      setState({ data: null, loading: false, error: errorMessage });
+      
+      if (options.showToast || options.showErrorToast) {
         toast({
-          title: 'Error',
-          description: apiError.message,
-          variant: 'destructive'
-        })
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
       }
-
-      onError?.(apiError)
-      return null
+      
+      throw error;
     }
-  }, [toast, showSuccessToast, showErrorToast, successMessage, onSuccess, onError])
+  };
 
-  const reset = useCallback(() => {
-    setState({
-      data: null,
-      loading: false,
-      error: null
-    })
-  }, [])
+  const reset = () => {
+    setState({ data: null, loading: false, error: null });
+  };
 
-  return {
-    ...state,
-    execute,
-    reset
-  }
+  return { ...state, execute, reset };
 }
 
-// Specific hooks for common operations
+// Simplified API hooks for backward compatibility
 export function useDomainManagement(websiteId: string) {
-  const { execute, ...state } = useTenWebApi({
-    showSuccessToast: true,
-    showErrorToast: true
-  })
-
-  const listDomains = useCallback(() => 
-    execute(() => tenwebApi.listDomains(websiteId)), [execute, websiteId])
-
-  const addDomain = useCallback(async (domain: string) => {
-    const result = await execute(() => tenwebApi.addDomain(websiteId, domain));
-    await auditLogger.logDomainAction('add', websiteId, result ? 'success' : 'error', { domain });
-    return result;
-  }, [execute, websiteId])
-
-  const setDefaultDomain = useCallback(async (domainId: string) => {
-    const result = await execute(() => tenwebApi.setDefaultDomain(websiteId, domainId));
-    await auditLogger.logDomainAction('set_default', websiteId, result ? 'success' : 'error', { domainId });
-    return result;
-  }, [execute, websiteId])
-
-  const deleteDomain = useCallback(async (domainId: string) => {
-    const result = await execute(() => tenwebApi.deleteDomain(websiteId, domainId));
-    await auditLogger.logDomainAction('delete', websiteId, result ? 'success' : 'error', { domainId });
-    return result;
-  }, [execute, websiteId])
-
-  return {
-    ...state,
-    listDomains,
-    addDomain,
-    setDefaultDomain,
-    deleteDomain
-  }
+  const api = useTenWebApi({ showToast: true });
+  
+  const listDomains = () => api.execute(() => 
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/domains`)
+  );
+  
+  const addDomain = (domain: string) => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/domains`, {
+      method: 'POST',
+      body: { domain }
+    })
+  );
+  
+  const setDefaultDomain = (domain: string) => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/domains/default`, {
+      method: 'PUT',
+      body: { domain }
+    })
+  );
+  
+  const deleteDomain = (domain: string) => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/domains/${domain}`, {
+      method: 'DELETE'
+    })
+  );
+  
+  return { ...api, listDomains, addDomain, setDefaultDomain, deleteDomain };
 }
 
 export function useWordPressAdmin(websiteId: string) {
-  const { execute, ...state } = useTenWebApi({
-    showErrorToast: true
-  })
-
-  const generateAdminToken = useCallback((adminUrl: string) => 
-    execute(() => tenwebApi.generateAdminToken(websiteId, adminUrl)), [execute, websiteId])
-
-  return {
-    ...state,
-    generateAdminToken
-  }
-}
-
-export function useAnalytics(websiteId: string) {
-  const { execute, ...state } = useTenWebApi({
-    showErrorToast: true
-  })
-
-  const getVisitors = useCallback((period: 'day' | 'week' | 'month' | 'year') => {
-    if (!websiteId || websiteId === 'placeholder') {
-      console.log('[USE_ANALYTICS] Skipping API call - no valid websiteId');
-      return Promise.resolve(null);
-    }
-    console.log('[USE_ANALYTICS] Calling getVisitors:', { websiteId, period });
-    return execute(() => tenwebApi.getVisitors(websiteId, period));
-  }, [execute, websiteId])
-
-  return {
-    ...state,
-    getVisitors
-  }
+  const api = useTenWebApi({ showToast: true });
+  
+  const generateAdminToken = (adminUrl?: string) => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/wp-admin-token`, {
+      method: 'POST',
+      body: adminUrl ? { admin_url: adminUrl } : {}
+    })
+  );
+  
+  return { ...api, generateAdminToken };
 }
 
 export function useBackupManagement(websiteId: string) {
-  const { execute, ...state } = useTenWebApi({
-    showSuccessToast: true,
-    showErrorToast: true
-  })
-
-  const listBackups = useCallback(() => 
-    execute(() => tenwebApi.listBackups(websiteId)), [execute, websiteId])
-
-  const runBackup = useCallback(async () => {
-    const result = await execute(() => tenwebApi.runBackup(websiteId));
-    await auditLogger.logBackupAction('create', websiteId, result ? 'success' : 'error');
-    return result;
-  }, [execute, websiteId])
-
-  const restoreBackup = useCallback(async (backupId: string) => {
-    const result = await execute(() => tenwebApi.restoreBackup(websiteId, backupId));
-    await auditLogger.logBackupAction('restore', websiteId, result ? 'success' : 'error', { backupId });
-    return result;
-  }, [execute, websiteId])
-
-  return {
-    ...state,
-    listBackups,
-    runBackup,
-    restoreBackup
-  }
+  const api = useTenWebApi({ showToast: true });
+  
+  const listBackups = () => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/backups`)
+  );
+  
+  const runBackup = () => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/backups`, {
+      method: 'POST'
+    })
+  );
+  
+  const restoreBackup = (backupId: string) => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/backups/${backupId}/restore`, {
+      method: 'POST'
+    })
+  );
+  
+  return { ...api, listBackups, runBackup, restoreBackup };
 }
 
 export function useCacheManagement(websiteId: string) {
-  const { execute, ...state } = useTenWebApi({
-    showSuccessToast: true,
-    showErrorToast: true
-  })
-
-  const enableCache = useCallback(async (ttl?: number) => {
-    const result = await execute(() => tenwebApi.enableCache(websiteId, ttl));
-    await auditLogger.logCacheAction('enable', websiteId, result ? 'success' : 'error', { ttl });
-    return result;
-  }, [execute, websiteId])
-
-  const disableCache = useCallback(async () => {
-    const result = await execute(() => tenwebApi.disableCache(websiteId));
-    await auditLogger.logCacheAction('disable', websiteId, result ? 'success' : 'error');
-    return result;
-  }, [execute, websiteId])
-
-  const purgeCache = useCallback(async (recache?: boolean) => {
-    const result = await execute(() => tenwebApi.purgeCache(websiteId, recache));
-    await auditLogger.logCacheAction('purge', websiteId, result ? 'success' : 'error', { recache });
-    return result;
-  }, [execute, websiteId])
-
-  const toggleObjectCache = useCallback(async () => {
-    const result = await execute(() => tenwebApi.toggleObjectCache(websiteId));
-    await auditLogger.logCacheAction('toggle_object', websiteId, result ? 'success' : 'error');
-    return result;
-  }, [execute, websiteId])
-
-  const flushObjectCache = useCallback(async () => {
-    const result = await execute(() => tenwebApi.flushObjectCache(websiteId));
-    await auditLogger.logCacheAction('flush_object', websiteId, result ? 'success' : 'error');
-    return result;
-  }, [execute, websiteId])
-
-  return {
-    ...state,
-    enableCache,
-    disableCache,
-    purgeCache,
-    toggleObjectCache,
-    flushObjectCache
-  }
+  const api = useTenWebApi({ showToast: true });
+  
+  const purgeCache = (force?: boolean) => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/cache/purge`, {
+      method: 'POST',
+      body: force ? { force } : {}
+    })
+  );
+  
+  const enableCache = (ttl?: number) => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/cache`, {
+      method: 'PUT',
+      body: { enabled: true, ttl }
+    })
+  );
+  
+  const disableCache = () => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/cache`, {
+      method: 'PUT',
+      body: { enabled: false }
+    })
+  );
+  
+  const toggleObjectCache = (enabled?: boolean) => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/cache/object`, {
+      method: 'PUT',
+      body: { enabled: enabled !== undefined ? enabled : true }
+    })
+  );
+  
+  const flushObjectCache = () => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/cache/object/flush`, {
+      method: 'POST'
+    })
+  );
+  
+  return { ...api, purgeCache, enableCache, disableCache, toggleObjectCache, flushObjectCache };
 }
 
 export function useSecurityManagement(websiteId: string) {
-  const { execute, ...state } = useTenWebApi({
-    showSuccessToast: true,
-    showErrorToast: true
-  })
-
-  const togglePasswordProtection = useCallback((enabled: boolean, password?: string) => 
-    execute(() => tenwebApi.togglePasswordProtection(websiteId, enabled ? 'enable' : 'disable')), [execute, websiteId])
-
-  const updateIpWhitelist = useCallback((ipAddress: string) => 
-    execute(() => tenwebApi.whitelistIP(websiteId, ipAddress)), [execute, websiteId])
-
-  return {
-    ...state,
-    togglePasswordProtection,
-    updateIpWhitelist
-  }
+  const api = useTenWebApi({ showToast: true });
+  
+  const togglePasswordProtection = (enabled: boolean) => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/security/password-protection`, {
+      method: 'PUT',
+      body: { enabled }
+    })
+  );
+  
+  const whitelistIP = (ip: string) => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/security/whitelist`, {
+      method: 'POST',
+      body: { ip }
+    })
+  );
+  
+  return { ...api, togglePasswordProtection, whitelistIP };
 }
 
 export function usePagesManagement(websiteId: string) {
-  const { execute, ...state } = useTenWebApi({
-    showSuccessToast: true,
-    showErrorToast: true
-  })
-
-  const listPages = useCallback(() => 
-    execute(() => tenwebApi.listPages(websiteId)), [execute, websiteId])
-
-  const addBlankPage = useCallback((title: string, content?: string) => 
-    execute(() => tenwebApi.addBlankPage(websiteId, title)), [execute, websiteId])
-
-  const deletePages = useCallback((pageIds: string[]) => 
-    execute(() => tenwebApi.deletePages(websiteId, pageIds)), [execute, websiteId])
-
-  const publishPages = useCallback((pageIds: string[], status: 'publish' | 'draft') => 
-    execute(() => tenwebApi.publishPages(websiteId, pageIds, status)), [execute, websiteId])
-
-  const setFrontPage = useCallback((pageId: string) => 
-    execute(() => tenwebApi.setFrontPage(websiteId, pageId)), [execute, websiteId])
-
-  return {
-    ...state,
-    listPages,
-    addBlankPage,
-    deletePages,
-    publishPages,
-    setFrontPage
-  }
+  const api = useTenWebApi({ showToast: true });
+  
+  const listPages = () => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/pages`)
+  );
+  
+  const addBlankPage = (title: string) => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/pages`, {
+      method: 'POST',
+      body: { title, type: 'blank' }
+    })
+  );
+  
+  const deletePages = (pageIds: string[]) => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/pages/batch`, {
+      method: 'DELETE',
+      body: { pageIds }
+    })
+  );
+  
+  const publishPages = (pageIds: string[]) => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/pages/publish`, {
+      method: 'POST',
+      body: { pageIds }
+    })
+  );
+  
+  const setFrontPage = (pageId: string) => api.execute(() =>
+    tenwebFetch(`/v1/hosting/websites/${websiteId}/pages/${pageId}/front`, {
+      method: 'PUT'
+    })
+  );
+  
+  return { ...api, listPages, addBlankPage, deletePages, publishPages, setFrontPage };
 }

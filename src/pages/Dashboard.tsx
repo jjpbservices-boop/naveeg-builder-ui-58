@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { DashboardSkeleton } from '@/components/LoadingStates';
 import { DashboardOverview } from '@/components/dashboard/DashboardOverview';
-import { DashboardAnalytics } from '@/components/dashboard/DashboardAnalytics';
+import DashboardAnalytics from '@/components/dashboard/DashboardAnalytics';
 import { DashboardDesign } from '@/components/dashboard/DashboardDesign';
 import { DashboardDomain } from '@/components/dashboard/DashboardDomain';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -242,7 +242,7 @@ export default function Dashboard() {
         return (
           <ErrorBoundary>
             <DashboardAnalytics
-              currentWebsite={currentWebsite}
+              websiteId={currentWebsite?.id}
             />
           </ErrorBoundary>
         );
