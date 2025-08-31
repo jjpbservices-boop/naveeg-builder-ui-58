@@ -1,5 +1,6 @@
+// supabase/functions/tenweb-proxy/index.ts
 // deno-lint-ignore-file no-explicit-any
-const ORIGINS = new Set([
+const ALLOWED_ORIGINS = new Set([
   "https://naveeg.app",
   "https://www.naveeg.app",
   "http://localhost:5173",
@@ -8,7 +9,7 @@ const ORIGINS = new Set([
 
 function cors(req: Request) {
   const origin = req.headers.get("origin") ?? "";
-  const allow = ORIGINS.has(origin) ? origin : "https://naveeg.app";
+  const allow = ALLOWED_ORIGINS.has(origin) ? origin : "https://naveeg.app";
   const acrh =
     req.headers.get("access-control-request-headers") ??
     "authorization, x-client-info, apikey, content-type, x-api-key";
@@ -22,16 +23,15 @@ function cors(req: Request) {
   };
 }
 
-type CacheEntry = { status: number; body: string; ctype: string; ts: number };
-const CACHE = new Map<string, CacheEntry>();
-const TTL_MS = 90_000;               // fresh window
-const STALE_GRACE_MS = 180_000;      // serve-stale-if-error window
+// in-memory cache + coalescing
+type Entry = { status: number; body: string; type: string; ts: number };
+const CACHE = new Map<string, Entry>();
+const INFLIGHT = new Map<string, Promise<Entry>>();
+const TTL_MS = 90_000;       // fresh for 90s
+const STALE_MS = 180_000;    // serve-stale-if-error grace
 
-// Coalesce bursts hitting same key
-const INFLIGHT = new Map<string, Promise<{status:number; body:string; ctype:string; headers:Headers}>>();
-
-const keyOf = (m: string, path: string, q: Record<string, unknown> | undefined) =>
-  `${m}:${path}?${JSON.stringify(q ?? {})}`;
+const keyOf = (method: string, path: string, q?: Record<string, unknown>) =>
+  `${method}:${path}?${JSON.stringify(q ?? {})}`;
 
 Deno.serve(async (req) => {
   const corsHeaders = cors(req);
@@ -39,6 +39,7 @@ Deno.serve(async (req) => {
 
   try {
     const { path, method = "GET", query, body } = await req.json();
+
     if (!path || typeof path !== "string") {
       return new Response(JSON.stringify({ error: "Missing path" }), {
         status: 400, headers: { ...corsHeaders, "content-type": "application/json" },
@@ -52,25 +53,24 @@ Deno.serve(async (req) => {
       });
     }
 
-    const k = keyOf(method.toUpperCase(), path, query);
+    const k = keyOf(method, path, query);
     const now = Date.now();
     const cached = CACHE.get(k);
-    const hasFresh = !!(cached && now - cached.ts < TTL_MS);
-    const hasStale = !!(cached && now - cached.ts < TTL_MS + STALE_GRACE_MS);
+    const fresh = cached && now - cached.ts < TTL_MS;
+    const stale = cached && now - cached.ts < TTL_MS + STALE_MS;
 
-    if (method === "GET" && hasFresh) {
-      return new Response(cached.body, {
-        status: cached.status,
-        headers: { ...corsHeaders, "content-type": cached.ctype, "x-tenweb-proxy-cache": "hit" },
+    if (method === "GET" && fresh) {
+      return new Response(cached!.body, {
+        status: cached!.status,
+        headers: { ...corsHeaders, "content-type": cached!.type, "x-tenweb-proxy-cache": "hit" },
       });
     }
 
-    // Coalesce upstream fetches
-    const fetchOnce = async () => {
+    const doFetch = async (): Promise<Entry> => {
       const url = new URL(`https://api.10web.io${path}`);
-      Object.entries(query ?? {}).forEach(([k, v]) => url.searchParams.set(k, String(v)));
+      Object.entries(query ?? {}).forEach(([k2, v]) => url.searchParams.set(k2, String(v)));
 
-      const upstream = await fetch(url.toString(), {
+      const up = await fetch(url.toString(), {
         method,
         headers: {
           "x-api-key": TENWEB_API_KEY,
@@ -80,58 +80,37 @@ Deno.serve(async (req) => {
         body: body ? JSON.stringify(body) : undefined,
       });
 
-      const ctype = upstream.headers.get("content-type") ?? "application/json";
-      const txt = await upstream.text();
-      return { status: upstream.status, body: txt, ctype, headers: upstream.headers };
+      const type = up.headers.get("content-type") ?? "application/json";
+      const txt = await up.text();
+      // Normalize Cloudflare HTML rate-limit pages to 429
+      const html1015 = type.includes("text/html") && /1015|rate\s*limited|cloudflare/i.test(txt);
+      const status = html1015 && (up.status === 403 || up.status === 503) ? 429 : up.status;
+
+      return { status, body: txt, type, ts: Date.now() };
     };
 
-    if (!INFLIGHT.has(k)) INFLIGHT.set(k, fetchOnce().finally(() => INFLIGHT.delete(k)));
-    const { status: upStatusRaw, body: upBody, ctype: upType, headers: upHeaders } = await INFLIGHT.get(k)!;
+    if (!INFLIGHT.has(k)) INFLIGHT.set(k, doFetch().finally(() => INFLIGHT.delete(k)));
+    const res = await INFLIGHT.get(k)!;
 
-    // Detect Cloudflare HTML error pages and normalize to 429
-    const looksLikeCfHtml = upType.includes("text/html") && /1015|rate\s*limited|cloudflare/i.test(upBody);
-    const upStatus = looksLikeCfHtml && (upStatusRaw === 403 || upStatusRaw === 503) ? 429 : upStatusRaw;
-
-    // Success => cache GET
-    if (upStatus >= 200 && upStatus < 300) {
-      if (method === "GET") CACHE.set(k, { status: upStatus, body: upBody, ctype: upType, ts: now });
-      return new Response(upBody, {
-        status: upStatus,
-        headers: { ...corsHeaders, "content-type": upType, "x-tenweb-proxy-upstream-status": String(upStatusRaw) },
-      });
+    if (res.status >= 200 && res.status < 300 && method === "GET") {
+      CACHE.set(k, res);
     }
 
-    // Error path: serve stale if we can (429/5xx/403 HTML etc.)
-    const errorIsRateLike = upStatus === 429 || upStatus === 503 || looksLikeCfHtml;
-    if (method === "GET" && hasStale && errorIsRateLike) {
+    const rateLike = res.status === 429 || res.status === 503 || (res.type.includes("text/html") && /cloudflare/i.test(res.body));
+    if (method === "GET" && stale && rateLike) {
       return new Response(cached!.body, {
         status: 200,
-        headers: {
-          ...corsHeaders,
-          "content-type": cached!.ctype,
-          "x-tenweb-proxy-stale": "true",
-          "x-tenweb-proxy-upstream-status": String(upStatusRaw),
-        },
+        headers: { ...corsHeaders, "content-type": cached!.type, "x-tenweb-proxy-stale": "true" },
       });
     }
 
-    // Pass through, but ensure JSON for non-JSON errors so the client doesn't choke
-    const retryAfter = upHeaders.get("retry-after") ?? "";
-    const asJson = upType.includes("application/json");
-    const body = asJson ? upBody : JSON.stringify({
-      status: "error",
-      message: looksLikeCfHtml ? "Too many requests (Cloudflare 1015)" : "Upstream error",
-      upstream_status: upStatusRaw,
-    });
+    const passBody = res.type.includes("application/json")
+      ? res.body
+      : JSON.stringify({ status: "error", message: rateLike ? "Too many requests (Cloudflare 1015)" : "Upstream error" });
 
-    return new Response(body, {
-      status: errorIsRateLike ? 429 : upStatus,
-      headers: {
-        ...corsHeaders,
-        "content-type": "application/json",
-        "x-tenweb-proxy-upstream-status": String(upStatusRaw),
-        ...(retryAfter && { "retry-after": retryAfter }),
-      },
+    return new Response(passBody, {
+      status: res.status,
+      headers: { ...corsHeaders, "content-type": "application/json" },
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), {
