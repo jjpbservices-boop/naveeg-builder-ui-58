@@ -1,8 +1,5 @@
 import { supabase } from '@/integrations/supabase/client'
 
-// 10Web API Client Configuration
-const TENWEB_API_BASE = 'https://api.10web.io'
-
 interface TenWebApiOptions {
   timeout?: number
   retryAttempts?: number
@@ -31,85 +28,51 @@ class TenWebApiError extends Error {
 }
 
 class TenWebApiClient {
-  private apiKey: string | null = null
-  private baseUrl: string = TENWEB_API_BASE
-
-  async initialize() {
-    if (!this.apiKey) {
-      // Get API key from Supabase secrets via edge function
-      try {
-        const { data, error } = await supabase.functions.invoke('tenweb-proxy', {
-          body: { action: 'get-api-key' }
-        })
-        if (error) throw error
-        this.apiKey = data?.apiKey
-      } catch (error) {
-        console.error('[TENWEB_API] Failed to get API key:', error)
-        throw new TenWebApiError('Failed to initialize 10Web API client', 500, 'INIT_ERROR')
-      }
-    }
-  }
-
   private async request<T = any>(
-    endpoint: string,
-    options: RequestInit & TenWebApiOptions = {}
+    path: string,
+    options: { method?: string; query?: Record<string, any>; body?: any } & TenWebApiOptions = {}
   ): Promise<T> {
-    await this.initialize()
-
-    if (!this.apiKey) {
-      throw new TenWebApiError('API key not available', 401, 'UNAUTHORIZED')
-    }
+    console.log('[TENWEB_API] Making request:', { path, method: options.method || 'GET' })
 
     const {
+      method = 'GET',
+      query,
+      body,
       timeout = 30000,
       retryAttempts = 3,
       retryDelay = 1000,
-      ...fetchOptions
     } = options
-
-    const url = `${this.baseUrl}${endpoint}`
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), timeout)
-
-    const headers = {
-      'Content-Type': 'application/json',
-      'x-api-key': this.apiKey,
-      ...options.headers,
-    }
 
     let lastError: Error | null = null
 
     for (let attempt = 1; attempt <= retryAttempts; attempt++) {
       try {
-        const response = await fetch(url, {
-          ...fetchOptions,
-          headers,
-          signal: controller.signal,
+        console.log(`[TENWEB_API] Attempt ${attempt}/${retryAttempts} for ${path}`)
+        
+        const { data, error } = await supabase.functions.invoke('tenweb-proxy', {
+          body: {
+            path,
+            method,
+            query,
+            body
+          }
         })
 
-        clearTimeout(timeoutId)
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}))
-          
-          // Retry on 429 (rate limit) or 5xx errors
-          if ((response.status === 429 || response.status >= 500) && attempt < retryAttempts) {
-            await this.delay(retryDelay * attempt)
-            continue
-          }
-
+        if (error) {
+          console.error('[TENWEB_API] Supabase function error:', error)
           throw new TenWebApiError(
-            errorData.message || `HTTP ${response.status}`,
-            response.status,
-            errorData.code,
-            errorData
+            error.message || 'Proxy request failed',
+            500,
+            'PROXY_ERROR',
+            error
           )
         }
 
-        const data = await response.json()
+        console.log('[TENWEB_API] Request successful:', { path, dataReceived: !!data })
         return data
       } catch (error) {
         lastError = error as Error
+        console.error(`[TENWEB_API] Attempt ${attempt} failed:`, error)
         
         // Don't retry on auth errors or client errors (except rate limit)
         if (error instanceof TenWebApiError) {
@@ -125,8 +88,7 @@ class TenWebApiClient {
       }
     }
 
-    clearTimeout(timeoutId)
-    throw lastError || new TenWebApiError('Request failed', 500, 'REQUEST_FAILED')
+    throw lastError || new TenWebApiError('Request failed after all retries', 500, 'REQUEST_FAILED')
   }
 
   private delay(ms: number): Promise<void> {
@@ -141,7 +103,7 @@ class TenWebApiClient {
   async addDomain(websiteId: string, domain: string): Promise<TenWebResponse> {
     return this.request(`/v1/hosting/websites/${websiteId}/domain-name`, {
       method: 'POST',
-      body: JSON.stringify({ domain_name: domain })
+      body: { domain_name: domain }
     })
   }
 
@@ -178,15 +140,15 @@ class TenWebApiClient {
   async generateAdminToken(websiteId: string, adminUrl: string): Promise<TenWebResponse> {
     return this.request(`/v1/account/websites/${websiteId}/single`, {
       method: 'GET',
-      headers: {
-        'X-Admin-URL': adminUrl
-      }
+      query: { admin_url: adminUrl }
     })
   }
 
   // Analytics
   async getVisitors(websiteId: string, period: 'day' | 'week' | 'month' | 'year'): Promise<TenWebResponse> {
-    return this.request(`/v1/hosting/websites/${websiteId}/visitors?period=${period}`)
+    return this.request(`/v1/hosting/websites/${websiteId}/visitors`, {
+      query: { period }
+    })
   }
 
   // Backup Management
@@ -235,7 +197,7 @@ class TenWebApiClient {
   async enableCache(websiteId: string, ttl?: number): Promise<TenWebResponse> {
     return this.request(`/v1/hosting/websites/${websiteId}/cache/enable`, {
       method: 'PUT',
-      body: JSON.stringify({ ttl })
+      body: { ttl }
     })
   }
 
@@ -248,7 +210,7 @@ class TenWebApiClient {
   async purgeCache(websiteId: string, recache?: boolean): Promise<TenWebResponse> {
     return this.request(`/v1/hosting/websites/${websiteId}/cache`, {
       method: 'DELETE',
-      body: JSON.stringify({ recache })
+      body: { recache }
     })
   }
 
@@ -272,7 +234,7 @@ class TenWebApiClient {
   async switchPhpVersion(websiteId: string, version: string): Promise<TenWebResponse> {
     return this.request(`/v1/hosting/websites/${websiteId}/php-version/switch`, {
       method: 'POST',
-      body: JSON.stringify({ version })
+      body: { version }
     })
   }
 
@@ -291,14 +253,14 @@ class TenWebApiClient {
   async togglePasswordProtection(websiteId: string, action: 'enable' | 'disable'): Promise<TenWebResponse> {
     return this.request(`/v1/hosting/websites/${websiteId}/password-protection`, {
       method: 'POST',
-      body: JSON.stringify({ action })
+      body: { action }
     })
   }
 
   async whitelistIP(websiteId: string, ip: string): Promise<TenWebResponse> {
     return this.request(`/v1/hosting/websites/${websiteId}/whitelist/ip`, {
       method: 'POST',
-      body: JSON.stringify({ ip })
+      body: { ip }
     })
   }
 
@@ -310,28 +272,28 @@ class TenWebApiClient {
   async addBlankPage(websiteId: string, title: string): Promise<TenWebResponse> {
     return this.request(`/v1/builder/websites/${websiteId}/pages/blank/add`, {
       method: 'POST',
-      body: JSON.stringify({ title })
+      body: { title }
     })
   }
 
   async deletePages(websiteId: string, pageIds: string[]): Promise<TenWebResponse> {
     return this.request(`/v1/builder/websites/${websiteId}/pages/delete`, {
       method: 'POST',
-      body: JSON.stringify({ page_ids: pageIds })
+      body: { page_ids: pageIds }
     })
   }
 
   async publishPages(websiteId: string, pageIds: string[], action: 'publish' | 'draft'): Promise<TenWebResponse> {
     return this.request(`/v1/builder/websites/${websiteId}/pages/publish`, {
       method: 'POST',
-      body: JSON.stringify({ page_ids: pageIds, action })
+      body: { page_ids: pageIds, action }
     })
   }
 
   async setFrontPage(websiteId: string, pageId: string): Promise<TenWebResponse> {
     return this.request(`/v1/builder/websites/${websiteId}/pages/front/set`, {
       method: 'POST',
-      body: JSON.stringify({ page_id: pageId })
+      body: { page_id: pageId }
     })
   }
 
@@ -341,7 +303,9 @@ class TenWebApiClient {
   }
 
   async getLogs(websiteId: string, type: 'access' | 'error' | 'php', lines: number = 500): Promise<TenWebResponse> {
-    return this.request(`/v1/hosting/websites/${websiteId}/logs?type=${type}&lines=${lines}`)
+    return this.request(`/v1/hosting/websites/${websiteId}/logs`, {
+      query: { type, lines }
+    })
   }
 
   async getStorage(websiteId: string): Promise<TenWebResponse> {

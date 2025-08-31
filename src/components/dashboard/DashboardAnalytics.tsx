@@ -19,16 +19,30 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
   const { canUseAnalytics } = useFeatureGate();
   const [period, setPeriod] = useState<'day' | 'week' | 'month' | 'year'>('week');
   
-  // Always initialize the hook - never conditionally call hooks
+  console.log('[ANALYTICS] Component initialized:', { 
+    websiteId: currentWebsite?.id, 
+    canUseAnalytics,
+    period 
+  });
+  
+  // Always initialize the hook with a stable websiteId - never conditionally call hooks
+  const websiteId = currentWebsite?.id || 'placeholder';
   const { 
     getVisitors,
     data: analyticsData,
     loading,
     error 
-  } = useAnalytics(currentWebsite?.id || '');
+  } = useAnalytics(websiteId);
 
   const loadAnalytics = React.useCallback(async () => {
-    if (!currentWebsite?.id || !canUseAnalytics) return;
+    if (!currentWebsite?.id || !canUseAnalytics) {
+      console.log('[ANALYTICS] Skipping load:', { 
+        hasWebsiteId: !!currentWebsite?.id, 
+        canUseAnalytics 
+      });
+      return;
+    }
+    console.log('[ANALYTICS] Loading analytics for:', { websiteId: currentWebsite.id, period });
     await getVisitors(period);
   }, [currentWebsite?.id, period, canUseAnalytics, getVisitors]);
 
@@ -111,7 +125,22 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
     ];
   }, [processedAnalytics?.uniqueVisitors]);
 
+  // Early return for missing website ID before any processing
+  if (!currentWebsite?.id) {
+    console.log('[ANALYTICS] No website ID available');
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Select a Website</h3>
+          <p className="text-muted-foreground mb-4">Please select a website to view analytics data.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
+    console.log('[ANALYTICS] Loading state');
     return (
       <div className="flex items-center justify-center py-12">
         <div className="flex items-center space-x-2">
@@ -122,7 +151,25 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
     );
   }
 
+  if (error) {
+    console.error('[ANALYTICS] Error state:', error);
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <Activity className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Analytics Error</h3>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={loadAnalytics} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (!processedAnalytics) {
+    console.log('[ANALYTICS] No processed analytics data');
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">

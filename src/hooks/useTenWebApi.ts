@@ -162,8 +162,14 @@ export function useAnalytics(websiteId: string) {
     showErrorToast: true
   })
 
-  const getVisitors = useCallback((period: 'day' | 'week' | 'month' | 'year') => 
-    execute(() => tenwebApi.getVisitors(websiteId, period)), [execute, websiteId])
+  const getVisitors = useCallback((period: 'day' | 'week' | 'month' | 'year') => {
+    if (!websiteId || websiteId === 'placeholder') {
+      console.log('[USE_ANALYTICS] Skipping API call - no valid websiteId');
+      return Promise.resolve(null);
+    }
+    console.log('[USE_ANALYTICS] Calling getVisitors:', { websiteId, period });
+    return execute(() => tenwebApi.getVisitors(websiteId, period));
+  }, [execute, websiteId])
 
   return {
     ...state,
