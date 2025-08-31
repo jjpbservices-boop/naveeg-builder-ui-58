@@ -197,7 +197,20 @@ const normalizeGenerationParams = (raw: any, carry: any = {}) => {
 };
 
 // ───────────────── handlers
-const handleCreateWebsite = async (body: any, origin: string | null) => {
+const handleCreateWebsite = async (body: any, origin: string | null, req: Request) => {
+  // Get user_id from Authorization header
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader) {
+    return J(401, { error: "Authorization header required" }, origin);
+  }
+
+  // Extract user from JWT token
+  const token = authHeader.replace('Bearer ', '');
+  const { data: userData, error: userError } = await supabase.auth.getUser(token);
+  if (userError || !userData.user) {
+    return J(401, { error: "Invalid token or user not found" }, origin);
+  }
+
   const businessName = (body.businessName || body.business_name || "New Site").toString().trim();
   const base = slugify(businessName);
   const existing = await findBySub(base);
@@ -214,18 +227,44 @@ const handleCreateWebsite = async (body: any, origin: string | null) => {
 
   for (let i = 0; i < 12; i++) {
     try {
+      let websiteResult;
       try {
         const r = await tw("/v1/hosting/website", { method: "POST", body: JSON.stringify(payload(candidate, "europe-west3-b")), timeoutMs: 25_000 });
-        const d = r?.data ?? r;
-        return J(200, { ok: true, website_id: d?.website_id, subdomain: candidate, reused: false }, origin);
+        websiteResult = r?.data ?? r;
       } catch (e: any) {
         if (e?.status === 400 || e?.status === 422) {
           const r2 = await tw("/v1/hosting/website", { method: "POST", body: JSON.stringify(payload(candidate, "europe-west3")), timeoutMs: 25_000 });
-          const d2 = r2?.data ?? r2;
-          return J(200, { ok: true, website_id: d2?.website_id, subdomain: candidate, reused: false }, origin);
+          websiteResult = r2?.data ?? r2;
+        } else {
+          throw e;
         }
-        throw e;
       }
+
+      // Save website to Supabase immediately after 10Web creation
+      const { data: siteData, error: siteError } = await supabase
+        .from('sites')
+        .insert({
+          user_id: userData.user.id,
+          website_id: websiteResult?.website_id,
+          tenweb_website_id: websiteResult?.website_id,
+          title: businessName,
+          business_name: businessName,
+          subdomain: candidate,
+          status: 'created',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (siteError) {
+        console.error('Failed to save website to Supabase:', siteError);
+        // Continue anyway, the website was created in 10Web
+      } else {
+        console.log('Website saved to Supabase successfully:', siteData?.id);
+      }
+
+      return J(200, { ok: true, website_id: websiteResult?.website_id, subdomain: candidate, reused: false }, origin);
     } catch (e: any) {
       const msg = JSON.stringify(e?.json || e?.raw || e?.message || "");
       if (e?.status === 409 || /subdomain.*use/i.test(msg)) { candidate = subCandidate(base, Math.random().toString(36).slice(2, 8)); continue; }
@@ -233,7 +272,27 @@ const handleCreateWebsite = async (body: any, origin: string | null) => {
         for (let p = 0; p < 20; p++) {
           await new Promise(r => setTimeout(r, 2000));
           const polled = await findBySub(candidate);
-          if (polled) return J(200, { ok: true, website_id: polled.id, subdomain: candidate, reused: false }, origin);
+          if (polled) {
+            // Also save to Supabase if found via polling
+            try {
+              await supabase
+                .from('sites')
+                .insert({
+                  user_id: userData.user.id,
+                  website_id: polled.id,
+                  tenweb_website_id: polled.id,
+                  title: businessName,
+                  business_name: businessName,
+                  subdomain: candidate,
+                  status: 'created',
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString()
+                });
+            } catch (saveError) {
+              console.error('Failed to save polled website to Supabase:', saveError);
+            }
+            return J(200, { ok: true, website_id: polled.id, subdomain: candidate, reused: false }, origin);
+          }
         }
       }
       throw e;
@@ -525,7 +584,7 @@ serve(async (req) => {
     }
     if (req.method === "POST" && !action) return J(400, { code: "MISSING_ACTION" }, origin);
 
-    if (req.method === "POST" && action === "create-website")        return await handleCreateWebsite(body, origin);
+    if (req.method === "POST" && action === "create-website")        return await handleCreateWebsite(body, origin, req);
     if (req.method === "POST" && action === "generate-sitemap")      return await handleGenerateSitemap(body, origin);
     if (req.method === "POST" && action === "generate-from-sitemap") return await handleGenerateFromSitemap(body, origin);
     if (req.method === "POST" && action === "publish-and-frontpage") return await handlePublishAndFrontpage(body, origin);

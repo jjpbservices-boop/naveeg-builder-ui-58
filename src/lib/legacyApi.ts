@@ -1,14 +1,21 @@
 // src/lib/legacyApi.ts - Original API implementation
 
+import { getSupabase } from "./supabase";
+
 const BASE = (import.meta.env.VITE_SUPABASE_URL || "").replace(/\/$/, "");
 const ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 const FN = `${BASE}/functions/v1/ai-router`;
 
-const HEADERS: Record<string, string> = {
-  "content-type": "application/json",
-  accept: "application/json",
-  apikey: ANON,
-  Authorization: `Bearer ${ANON}`,
+const getHeaders = async (): Promise<Record<string, string>> => {
+  const supabase = getSupabase();
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  return {
+    "content-type": "application/json",
+    accept: "application/json",
+    apikey: ANON,
+    Authorization: `Bearer ${session?.access_token || ANON}`,
+  };
 };
 
 type HttpMethod = "GET" | "POST";
@@ -73,12 +80,13 @@ async function req(
 
   try {
     const url = method === "GET" ? `${FN}?action=${encodeURIComponent(action)}` : FN;
+    const headers = await getHeaders();
 
     const res = await fetch(url, {
       method,
       mode: "cors",
       credentials: "omit",
-      headers: HEADERS,
+      headers,
       body: method === "GET" ? undefined : JSON.stringify({ action, ...payload }),
       signal: ctl.signal,
     });
