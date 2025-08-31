@@ -6,16 +6,16 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { DashboardSkeleton } from '@/components/LoadingStates';
-import { DashboardOverview } from '@/components/dashboard/DashboardOverview';
-import DashboardAnalytics from '@/components/dashboard/DashboardAnalytics';
-import { DashboardDesign } from '@/components/dashboard/DashboardDesign';
-import { DashboardDomain } from '@/components/dashboard/DashboardDomain';
+import { Overview } from '@/components/dashboard/Overview';
+import { Analytics } from '@/components/dashboard/Analytics';
+import { DesignStudio } from '@/components/dashboard/DesignStudio';
+import { Media } from '@/components/dashboard/Media';
+import { Support } from '@/components/dashboard/Support';
+import { Advanced } from '@/components/dashboard/Advanced';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
-import { Shield, Archive, Store, Mail, Zap, Settings as SettingsIcon } from 'lucide-react';
+
 import { TrialBanner } from '@/components/TrialBanner';
-import { TrialExpiredScreen } from '@/components/TrialExpiredScreen';
-import { LockedFeature } from '@/components/LockedFeature';
 import { UpgradeModal } from '@/components/UpgradeModal';
 import { useSubscription } from '@/hooks/useSubscription';
 import { usePaymentSuccess } from '@/hooks/usePaymentSuccess';
@@ -31,17 +31,8 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [activeView, setActiveView] = useState<string>('overview');
-  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
-  const [upgradeType, setUpgradeType] = useState<'starter-to-pro' | 'pro-to-custom'>('starter-to-pro');
 
-  const { 
-    subscription,
-    fetchSubscription,
-    isTrialActive,
-    isSubscriptionActive,
-    canConnectDomain,
-    getTrialDaysLeft
-  } = useSubscription();
+  const { fetchSubscription } = useSubscription();
 
   // Fetch subscription when currentWebsite changes
   useEffect(() => {
@@ -125,45 +116,9 @@ export default function Dashboard() {
   };
 
   const handleViewChange = (view: string) => {
-    // Handle special navigation cases
-    if (view === 'plans') {
-      navigate({ to: '/plans' });
-      return;
-    }
-
-    const featureMap = {
-      analytics: 'analytics_advanced',
-      store: 'store',
-      automations: 'automations',
-      forms: 'forms_advanced',
-      security: 'security_advanced',
-    };
-
-    const requiredFeature = featureMap[view as keyof typeof featureMap];
-    
-    if (requiredFeature && !isSubscriptionActive()) {
-      const requiredPlan = getRequiredPlan(requiredFeature);
-      setUpgradeType(requiredPlan === 'custom' ? 'pro-to-custom' : 'starter-to-pro');
-      setUpgradeModalOpen(true);
-      return;
-    }
-
     setActiveView(view);
   };
 
-  const getRequiredPlan = (feature: string) => {
-    const customFeatures = ['multisite'];
-    return customFeatures.includes(feature) ? 'custom' : 'pro';
-  };
-
-  const handleUpgrade = () => {
-    setUpgradeModalOpen(false);
-    if (upgradeType === 'pro-to-custom') {
-      window.open('mailto:sales@naveeg.com?subject=Custom Plan Inquiry', '_blank');
-    } else {
-      navigate({ to: '/plans' });
-    }
-  };
 
   // Show loading while auth is resolving or while loading websites
   if (authLoading || isLoading) {
@@ -173,7 +128,7 @@ export default function Dashboard() {
           <div className="flex min-h-screen w-full">
             <AppSidebar 
               activeView={activeView}
-              onViewChange={setActiveView}
+              onViewChange={handleViewChange}
               user={user}
               onSignOut={handleSignOut}
             />
@@ -202,204 +157,33 @@ export default function Dashboard() {
   }
 
   const renderMainContent = () => {
-    // Check feature access for specific views
-    const featureRequirements = {
-      analytics: 'analytics_advanced',
-      store: 'store', 
-      automations: 'automations',
-      forms: 'forms_advanced',
-      security: 'security_advanced',
-    };
-
-    const requiredFeature = featureRequirements[activeView as keyof typeof featureRequirements];
-    
-    if (requiredFeature && !isSubscriptionActive()) {
-      const requiredPlan = getRequiredPlan(requiredFeature);
-      const planName = requiredPlan === 'custom' ? 'Custom' : 'Pro';
-      
-      return (
-        <LockedFeature
-          featureName={getFeatureName(activeView)}
-          description={getFeatureDescription(activeView)}
-          requiredPlan={requiredPlan}
-          onUpgrade={() => {
-            setUpgradeType(requiredPlan === 'custom' ? 'pro-to-custom' : 'starter-to-pro');
-            setUpgradeModalOpen(true);
-          }}
-        />
-      );
-    }
-
     switch (activeView) {
       case 'overview':
         return (
-          <DashboardOverview
-            currentWebsite={currentWebsite}
-            copied={copied}
-            onCopyUrl={handleCopyUrl}
-            onNavigate={handleNavigate}
+          <Overview
+            website={currentWebsite ? {
+              id: currentWebsite.tenweb_website_id || currentWebsite.website_id,
+              tenweb_website_id: currentWebsite.tenweb_website_id || currentWebsite.website_id,
+              site_url: currentWebsite.site_url || `https://${currentWebsite.subdomain}.naveeg.app`,
+              admin_url: currentWebsite.admin_url || `https://${currentWebsite.subdomain}.naveeg.app/wp-admin`,
+              name: currentWebsite.business_name || currentWebsite.title || 'My Website'
+            } : undefined}
           />
         );
       case 'analytics':
         return (
           <ErrorBoundary>
-            <DashboardAnalytics
-              website={currentWebsite}
-            />
+            <Analytics website={currentWebsite} />
           </ErrorBoundary>
         );
-      case 'design':
-        return (
-          <DashboardDesign
-            currentWebsite={currentWebsite}
-            onWebsiteUpdate={reloadWebsites}
-          />
-        );
-      case 'domain':
-        return (
-          <DashboardDomain
-            currentWebsite={currentWebsite}
-          />
-        );
-      case 'store':
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Store className="h-5 w-5" />
-                Online Store
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <Store className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">WooCommerce store management</p>
-                <p className="text-sm text-muted-foreground">
-                  Manage your products, orders, and store settings.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      case 'forms':
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Mail className="h-5 w-5" />
-                Forms & Leads
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <Mail className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">Advanced form builder and lead management</p>
-                <p className="text-sm text-muted-foreground">
-                  Create custom forms, manage leads, and export to CRM.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      case 'automations':
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5" />
-                Marketing Automations
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <Zap className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">Automated marketing workflows</p>
-                <p className="text-sm text-muted-foreground">
-                  Set up email sequences, triggers, and automated responses.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      case 'backups':
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Archive className="h-5 w-5" />
-                Website Backups
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <Archive className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">
-                  {subscription?.plan_id === 'pro' 
-                    ? 'Self-restore backups and staging environment' 
-                    : 'Daily automated backups'
-                  }
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {subscription?.plan_id === 'pro'
-                    ? 'Restore previous versions and manage staging sites.'
-                    : 'Automated daily backups are protecting your website. Contact support for restores.'
-                  }
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      case 'security':
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Security & Performance
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <Shield className="h-12 w-12 text-green-600 mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">
-                  {subscription?.plan_id === 'pro' 
-                    ? 'Advanced security with firewall and 2FA' 
-                    : 'Basic security protection active'
-                  }
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {subscription?.plan_id === 'pro'
-                    ? 'SSL certificate, firewall protection, malware scanning, and two-factor authentication.'
-                    : 'SSL certificate active and core security updates applied.'
-                  }
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      case 'plans':
-        // Already handled by sidebar navigation to /dashboard/plans
-        return null;
-      case 'settings':
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <SettingsIcon className="h-5 w-5" />
-                Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <SettingsIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">Account and site settings</p>
-                <p className="text-sm text-muted-foreground">
-                  Manage your profile, notifications, and preferences.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        );
+      case 'designstudio':
+        return <DesignStudio currentWebsite={currentWebsite} />;
+      case 'media':
+        return <Media currentWebsite={currentWebsite} />;
+      case 'support':
+        return <Support currentWebsite={currentWebsite} />;
+      case 'advanced':
+        return <Advanced currentWebsite={currentWebsite} />;
       default:
         return null;
     }
@@ -468,14 +252,6 @@ export default function Dashboard() {
             </main>
           </SidebarInset>
         </div>
-        
-        {/* Upgrade Modal */}
-        <UpgradeModal
-          isOpen={upgradeModalOpen}
-          onClose={() => setUpgradeModalOpen(false)}
-          upgradeType={upgradeType}
-          onUpgrade={handleUpgrade}
-        />
       </SidebarProvider>
     </ErrorBoundary>
   );

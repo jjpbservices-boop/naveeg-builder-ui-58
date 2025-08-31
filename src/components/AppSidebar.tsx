@@ -47,16 +47,11 @@ import { useSubscription } from '@/hooks/useSubscription';
 
 const navigationItems = [
   { title: 'Overview', icon: LayoutDashboard, id: 'overview', requiredFeature: null },
-  { title: 'Analytics', icon: BarChart3, id: 'analytics', requiredFeature: 'analytics_advanced' },
-  { title: 'Design Studio', icon: Palette, id: 'design', requiredFeature: null },
-  { title: 'Domain & SSL', icon: Globe, id: 'domain', requiredFeature: null },
-  { title: 'Store', icon: Store, id: 'store', requiredFeature: 'store' },
-  { title: 'Forms & Leads', icon: Mail, id: 'forms', requiredFeature: 'forms_advanced' },
-  { title: 'Automations', icon: Zap, id: 'automations', requiredFeature: 'automations' },
-  { title: 'Backups', icon: Archive, id: 'backups', requiredFeature: null },
-  { title: 'Security', icon: Shield, id: 'security', requiredFeature: null },
-  { title: 'My Plan', icon: CreditCard, id: 'plans', requiredFeature: null },
-  { title: 'Settings', icon: Settings, id: 'settings', requiredFeature: null },
+  { title: 'Analytics', icon: BarChart3, id: 'analytics', requiredFeature: null },
+  { title: 'Design Studio', icon: Palette, id: 'designstudio', requiredFeature: null },
+  { title: 'Media', icon: Archive, id: 'media', requiredFeature: null },
+  { title: 'Support', icon: Mail, id: 'support', requiredFeature: null },
+  { title: 'Advanced', icon: Settings, id: 'advanced', requiredFeature: null },
 ];
 
 interface AppSidebarProps {
