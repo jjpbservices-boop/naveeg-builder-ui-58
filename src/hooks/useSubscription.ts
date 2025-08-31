@@ -48,9 +48,9 @@ export function useSubscription() {
     
     // Always create new reference to ensure React re-renders
     const newSubscription = data?.[0] ? {
-      ...data[0],
-      plan_id: data[0].plan_id as Plan,
-      status: data[0].status as Status
+      ...(data[0] as any),
+      plan_id: (data[0] as any).plan_id as Plan,
+      status: (data[0] as any).status as Status
     } : null
     setSubscription(newSubscription)
     setLoading(false)

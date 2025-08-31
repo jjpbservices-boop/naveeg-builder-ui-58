@@ -61,8 +61,8 @@ export default function Plans() {
             throw error;
           }
           
-          if (sites?.id) {
-            siteId = sites.id;
+          if (sites) {
+            siteId = (sites as any).id;
             localStorage.setItem('currentSiteId', siteId);
             console.log('[PLANS] Cached new site ID:', siteId);
           }

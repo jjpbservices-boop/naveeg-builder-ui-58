@@ -45,7 +45,7 @@ export class AuditLogger {
           method: 'POST',
           user_id: logEntry.user_id || '00000000-0000-0000-0000-000000000000',
           status: entry.result === 'success' ? 200 : 500
-        });
+        } as any);
 
       if (error) {
         console.warn('Failed to write audit log:', error);

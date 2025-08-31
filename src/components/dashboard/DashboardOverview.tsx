@@ -52,10 +52,10 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
         .eq('site_id', currentWebsite.id);
 
       if (events) {
-        const pageViews = events.filter(e => e.label === 'page_view').length;
+        const pageViews = events.filter(e => (e as any).label === 'page_view').length;
         const uniqueVisitors = new Set(
           events.map(e => {
-            const data = e.data as any;
+            const data = (e as any).data as any;
             return data?.session_id || data?.user_id;
           }).filter(Boolean)
         ).size;

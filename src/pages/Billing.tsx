@@ -36,13 +36,13 @@ export function Billing() {
           .from('sites')
           .select('id')
           .limit(1)
-          .single();
+          .maybeSingle();
 
-        if (error || !sites?.id) {
+        if (error || !sites) {
           throw new Error('No site found. Please create a site first.');
         }
-        localStorage.setItem('currentSiteId', sites.id);
-        await createCheckout('starter', sites.id);
+        localStorage.setItem('currentSiteId', (sites as any).id);
+        await createCheckout('starter', (sites as any).id);
       } else {
         await createCheckout('starter', siteId);
       }
@@ -67,13 +67,13 @@ export function Billing() {
           .from('sites')
           .select('id')
           .limit(1)
-          .single();
+          .maybeSingle();
 
-        if (error || !sites?.id) {
+        if (error || !sites) {
           throw new Error('No site found. Please create a site first.');
         }
-        localStorage.setItem('currentSiteId', sites.id);
-        await createCheckout('pro', sites.id);
+        localStorage.setItem('currentSiteId', (sites as any).id);
+        await createCheckout('pro', (sites as any).id);
       } else {
         await createCheckout('pro', siteId);
       }

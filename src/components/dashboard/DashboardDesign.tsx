@@ -16,7 +16,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { getSupabase } from '@/lib/supabase';
 
 interface DashboardDesignProps {
   currentWebsite: any;
@@ -96,24 +96,25 @@ export function DashboardDesign({ currentWebsite, onWebsiteUpdate }: DashboardDe
 
     setIsLoading(true);
     try {
-      const { error } = await supabase
-        .from('sites')
+      const supabase = getSupabase()
+      const { error } = await ((supabase
+        .from('sites') as any)
         .update({
           button_style: buttonStyle,
           colors: {
-            ...currentWebsite.colors,
+            ...(currentWebsite.colors as any),
             primary_color: primaryColor,
             secondary_color: secondaryColor,
             accent_color: accentColor
           },
           fonts: {
-            ...currentWebsite.fonts,
+            ...(currentWebsite.fonts as any),
             heading: headingFont,
             body: bodyFont
           },
           updated_at: new Date().toISOString()
         })
-        .eq('id', currentWebsite.id);
+        .eq('id', currentWebsite.id));
 
       if (error) throw error;
 

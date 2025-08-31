@@ -132,17 +132,20 @@ export default function Generating() {
       const supabase = getSupabase()
       const { data: insertedWebsite, error: insertError } = await supabase
         .from('sites')
-        .insert(websiteData)
+        .insert(websiteData as any)
         .select()
-        .single();
+        .maybeSingle();
 
       if (insertError) {
         console.error('Failed to create database record:', insertError);
         return null;
-      } else {
+      } else if (insertedWebsite) {
         console.log('Database record created successfully:', insertedWebsite);
-        updateApiData({ database_id: insertedWebsite.id });
-        return insertedWebsite;
+        updateApiData({ database_id: (insertedWebsite as any).id });
+        return insertedWebsite as any;
+      } else {
+        console.error('No website data returned after insert');
+        return null;
       }
     } catch (error) {
       console.error('Error creating database record:', error);
@@ -189,8 +192,8 @@ export default function Generating() {
       // Use the database ID if available, otherwise fallback to website_id
       const supabase = getSupabase()
       const updateQuery = database_id 
-        ? supabase.from('sites').update(urlUpdateData).eq('id', database_id)
-        : supabase.from('sites').update(urlUpdateData).eq('website_id', website_id);
+        ? ((supabase.from('sites') as any).update(urlUpdateData).eq('id', database_id))
+        : ((supabase.from('sites') as any).update(urlUpdateData).eq('website_id', website_id));
       
       const { data: urlUpdateResult, error: urlUpdateError } = await updateQuery.select();
         
