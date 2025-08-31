@@ -1,21 +1,28 @@
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "../integrations/supabase/types";
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/integrations/supabase/types';
 
-let client: SupabaseClient<Database> | null = null;
+let supabaseClient: SupabaseClient<Database> | null = null;
 
-export function getSupabase() {
-  if (!client) {
-    client = createClient<Database>(
-      "https://eilpazegjrcrwgpujqni.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpbHBhemVnanJjcndncHVqcW5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NzYxNjksImV4cCI6MjA3MDE1MjE2OX0.LV5FvbQQGf0Kv-O1uA0tsS-Yam6rB1x937BgqFsJoX4",
-      { 
-        auth: { 
-          persistSession: true, 
-          autoRefreshToken: true,
-          storage: localStorage
-        }
-      }
-    );
+export function getSupabaseClient(): SupabaseClient<Database> {
+  if (!supabaseClient) {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Missing Supabase environment variables');
+    }
+    
+    supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        storage: localStorage,
+      },
+    });
   }
-  return client;
+  
+  return supabaseClient;
 }
+
+// Legacy compatibility
+export const getSupabase = getSupabaseClient;

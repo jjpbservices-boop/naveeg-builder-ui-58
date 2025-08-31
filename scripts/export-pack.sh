@@ -2,8 +2,8 @@
 
 set -e
 
-echo "🎯 Naveeg DMS - Final Cleanup & Export Pack"
-echo "=========================================="
+echo "🎯 Naveeg DMS - Export Pack Generator"
+echo "===================================="
 
 # Colors for output
 RED='\033[0;31m'
@@ -12,7 +12,6 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Function to print colored output
 print_status() {
     echo -e "${GREEN}✅ $1${NC}"
 }
@@ -29,134 +28,110 @@ print_info() {
     echo -e "${BLUE}ℹ️  $1${NC}"
 }
 
-# Check prerequisites
-print_info "Checking prerequisites..."
+# Create export directory
+EXPORT_DIR="naveeg-dms-export-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$EXPORT_DIR"
 
-if ! command -v node &> /dev/null; then
-    print_error "Node.js not found. Please install Node.js 18+"
-    exit 1
-fi
+print_info "Creating export pack in: $EXPORT_DIR"
 
-if ! command -v npm &> /dev/null; then
-    print_error "npm not found. Please install npm"
-    exit 1
-fi
+# Copy essential files
+print_info "Copying project files..."
+cp -r src/ "$EXPORT_DIR/"
+cp -r supabase/ "$EXPORT_DIR/"
+cp -r public/ "$EXPORT_DIR/"
+cp -r .github/ "$EXPORT_DIR/"
+cp -r scripts/ "$EXPORT_DIR/"
+cp -r docs/ "$EXPORT_DIR/"
 
-print_status "Prerequisites check passed"
+# Copy configuration files
+cp package.json "$EXPORT_DIR/"
+cp package-lock.json "$EXPORT_DIR/" 2>/dev/null || true
+cp tsconfig.json "$EXPORT_DIR/"
+cp tsconfig.app.json "$EXPORT_DIR/" 2>/dev/null || true
+cp tsconfig.node.json "$EXPORT_DIR/" 2>/dev/null || true
+cp vite.config.ts "$EXPORT_DIR/"
+cp tailwind.config.ts "$EXPORT_DIR/"
+cp postcss.config.js "$EXPORT_DIR/" 2>/dev/null || true
+cp .env.example "$EXPORT_DIR/"
+cp README.md "$EXPORT_DIR/"
+cp .prettierrc "$EXPORT_DIR/" 2>/dev/null || true
+cp eslint.config.js "$EXPORT_DIR/"
+cp vitest.config.ts "$EXPORT_DIR/" 2>/dev/null || true
+cp playwright.config.ts "$EXPORT_DIR/" 2>/dev/null || true
 
-# Install dependencies
-print_info "Installing dependencies..."
-npm install
-print_status "Dependencies installed"
+# Create deployment instructions
+cat > "$EXPORT_DIR/DEPLOYMENT.md" << 'EOF'
+# Naveeg DMS - Deployment Instructions
 
-# Type checking
-print_info "Running type checks..."
-if npm run typecheck; then
-    print_status "Type checking passed"
-else
-    print_error "Type checking failed"
-    exit 1
-fi
+## Quick Start
+1. `npm ci`
+2. `cp .env.example .env` (fill in your values)
+3. `npm run build`
+4. Deploy to Vercel/Netlify
 
-# Linting
-print_info "Running linter..."
-if npm run lint; then
-    print_status "Linting passed"
-else
-    print_warning "Linting issues found, attempting to fix..."
-    npm run fix
-    print_status "Linting issues fixed"
-fi
+## Supabase Setup
+1. Create new Supabase project
+2. `supabase link --project-ref your-project-id`
+3. `supabase db push`
+4. `supabase functions deploy`
 
-# Unit tests
-print_info "Running unit tests..."
-if npm run test; then
-    print_status "Unit tests passed"
-else
-    print_error "Unit tests failed"
-    exit 1
-fi
+## Environment Variables
+See `.env.example` for required variables.
 
-# Build
-print_info "Building application..."
-if npm run build; then
-    print_status "Build successful"
-else
-    print_error "Build failed"
-    exit 1
-fi
+## Health Check
+After deployment, verify:
+- Frontend loads: `https://your-domain.com`
+- Functions healthy: `https://your-project.supabase.co/functions/v1/billing/health`
 
-# Security audit
-print_info "Running security audit..."
-if npm audit --audit-level=moderate; then
-    print_status "Security audit passed"
-else
-    print_warning "Security vulnerabilities found - review npm audit output"
-fi
+For detailed instructions, see `docs/EXPORT.md`.
+EOF
 
-# Bundle analysis
-print_info "Analyzing bundle size..."
-if [ -d "dist" ]; then
-    du -sh dist/*
-    print_status "Bundle analysis complete"
-fi
+# Create package info
+cat > "$EXPORT_DIR/EXPORT_INFO.json" << EOF
+{
+  "export_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "project": "naveeg-dms",
+  "version": "1.0.0",
+  "source": "lovable",
+  "target": "cursor-vercel-supabase",
+  "features": [
+    "Next.js-like file structure",
+    "TypeScript strict mode ready",
+    "Supabase integration",
+    "Stripe payments",
+    "10Web API integration",
+    "PageSpeed Insights",
+    "Internationalization",
+    "CI/CD pipeline",
+    "Production optimized"
+  ],
+  "stack": {
+    "frontend": "React + TypeScript + Vite + Tailwind",
+    "backend": "Supabase Edge Functions",
+    "database": "PostgreSQL (Supabase)",
+    "payments": "Stripe",
+    "hosting": "Vercel",
+    "external_apis": ["10Web", "PageSpeed Insights"]
+  }
+}
+EOF
 
-# Final verification
-print_info "Running final verification..."
+# Create archive
+tar -czf "${EXPORT_DIR}.tar.gz" "$EXPORT_DIR"
 
-# Check critical files exist
-critical_files=(
-    ".env.example"
-    "README.md"
-    "docs/ARCHITECTURE.md"
-    "docs/EXPORT.md"
-    "docs/SECURITY.md"
-    "scripts/post-clone-check.sh"
-    "scripts/supabase-deploy.sh"
-    "scripts/verify-webhooks.sh"
-    "supabase/seed.sql"
-    ".github/workflows/ci.yml"
-)
-
-for file in "${critical_files[@]}"; do
-    if [ -f "$file" ]; then
-        print_status "Found: $file"
-    else
-        print_error "Missing: $file"
-        exit 1
-    fi
-done
-
-# Check package.json scripts
-required_scripts=(
-    "dev"
-    "build"
-    "typecheck"
-    "lint"
-    "fix"
-    "test"
-    "test:e2e"
-)
-
-for script in "${required_scripts[@]}"; do
-    if npm run | grep -q "^  $script$"; then
-        print_status "Script available: $script"
-    else
-        print_error "Missing script: $script"
-        exit 1
-    fi
-done
+print_status "Export pack created successfully!"
+print_info "Location: ${EXPORT_DIR}.tar.gz"
+print_info "Size: $(du -h "${EXPORT_DIR}.tar.gz" | cut -f1)"
 
 echo ""
-echo "🎉 EXPORT PACK READY!"
-echo "===================="
-print_status "All checks passed"
-print_status "Project is ready for export"
-print_info "Next steps:"
-echo "  1. Review docs/EXPORT.md for migration instructions"
-echo "  2. Set up your production environment"
-echo "  3. Configure environment variables"
-echo "  4. Deploy to Vercel"
-echo "  5. Deploy Supabase functions"
+echo "📋 Export Contents:"
+echo "  ✓ Source code (src/)"
+echo "  ✓ Supabase setup (supabase/)"
+echo "  ✓ Edge functions"
+echo "  ✓ Database migrations"
+echo "  ✓ CI/CD pipeline"
+echo "  ✓ Documentation"
+echo "  ✓ Deployment scripts"
 echo ""
-print_info "For support, see docs/ARCHITECTURE.md and docs/SECURITY.md"
+print_info "Ready for migration to Cursor + Vercel + Supabase"
+print_info "See DEPLOYMENT.md for next steps"

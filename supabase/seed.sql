@@ -1,4 +1,7 @@
--- Seed data for plans
+-- Seed data for plans and initial setup
+-- File: supabase/seed.sql
+
+-- Insert default plans
 INSERT INTO public.plans (id, name, description, price, currency, interval, features, stripe_price_id, active) VALUES
 ('starter', 'Starter Plan', 'Perfect for individuals and small projects', 999, 'usd', 'month', 
  '["1 Website", "10GB Storage", "SSL Certificate", "Basic Support", "Website Analytics"]'::jsonb, 
@@ -16,7 +19,12 @@ ON CONFLICT (id) DO UPDATE SET
   features = EXCLUDED.features,
   updated_at = now();
 
--- Update Stripe price IDs (to be filled in with actual Stripe price IDs)
--- UPDATE public.plans SET stripe_price_id = 'price_starter_id' WHERE id = 'starter';
--- UPDATE public.plans SET stripe_price_id = 'price_pro_id' WHERE id = 'pro';
--- UPDATE public.plans SET stripe_price_id = 'price_enterprise_id' WHERE id = 'enterprise';
+-- Sample events for testing
+INSERT INTO public.events (event_type, event_data) VALUES
+('system.migration_complete', '{"version": "20240101000000", "timestamp": "2024-01-01T00:00:00Z"}'),
+('system.seed_data_inserted', '{"plans_count": 3, "timestamp": "2024-01-01T00:00:00Z"}');
+
+-- TODO: Update these with actual Stripe price IDs from your Stripe dashboard
+-- UPDATE public.plans SET stripe_price_id = 'price_starter_monthly' WHERE id = 'starter';
+-- UPDATE public.plans SET stripe_price_id = 'price_pro_monthly' WHERE id = 'pro';
+-- UPDATE public.plans SET stripe_price_id = 'price_enterprise_monthly' WHERE id = 'enterprise';

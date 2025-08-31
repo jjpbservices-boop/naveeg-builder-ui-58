@@ -9,17 +9,17 @@ const PsiRequestSchema = z.object({
 
 const PsiResponseSchema = z.object({
   url: z.string().url(),
-  metrics: z.object({
-    performance_score: z.number().min(0).max(100),
-    accessibility_score: z.number().min(0).max(100),
-    best_practices_score: z.number().min(0).max(100),
-    seo_score: z.number().min(0).max(100),
-    first_contentful_paint: z.number().min(0),
-    largest_contentful_paint: z.number().min(0),
-    cumulative_layout_shift: z.number().min(0),
-  }),
+  desktop_score: z.number().min(0).max(100),
+  mobile_score: z.number().min(0).max(100),
+  performance: z.number().min(0).max(100),
+  accessibility: z.number().min(0).max(100),
+  best_practices: z.number().min(0).max(100),
+  seo: z.number().min(0).max(100),
+  first_contentful_paint: z.number(),
+  largest_contentful_paint: z.number(),
+  time_to_interactive: z.number(),
+  cumulative_layout_shift: z.number(),
   tested_at: z.string(),
-  report_id: z.string(),
 });
 
 async function handlePsiReport({ input, logger }: any) {
@@ -32,35 +32,42 @@ async function handlePsiReport({ input, logger }: any) {
 
   logger.step('Calling PageSpeed Insights API', { url });
 
-  const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&category=performance&category=accessibility&category=best-practices&category=seo`;
-  
-  const psiResponse = await fetchJson(psiUrl);
+  // Get both desktop and mobile scores
+  const [desktopData, mobileData] = await Promise.all([
+    fetchJson(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&category=performance&category=accessibility&category=best-practices&category=seo&strategy=desktop`),
+    fetchJson(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&category=performance&category=accessibility&category=best-practices&category=seo&strategy=mobile`)
+  ]);
 
   logger.step('Processing PSI response');
 
-  // Extract metrics from PSI response
-  const lighthouseResult = psiResponse.lighthouseResult;
-  const categories = lighthouseResult.categories;
-  const audits = lighthouseResult.audits;
+  // Extract metrics from desktop data
+  const desktopLighthouse = desktopData.lighthouseResult;
+  const desktopCategories = desktopLighthouse.categories;
+  const desktopAudits = desktopLighthouse.audits;
+
+  // Extract metrics from mobile data
+  const mobileLighthouse = mobileData.lighthouseResult;
+  const mobileCategories = mobileLighthouse.categories;
+  const mobileAudits = mobileLighthouse.audits;
 
   const metrics = {
-    performance_score: Math.round(categories.performance.score * 100),
-    accessibility_score: Math.round(categories.accessibility.score * 100),
-    best_practices_score: Math.round(categories['best-practices'].score * 100),
-    seo_score: Math.round(categories.seo.score * 100),
-    first_contentful_paint: audits['first-contentful-paint'].numericValue,
-    largest_contentful_paint: audits['largest-contentful-paint'].numericValue,
-    cumulative_layout_shift: audits['cumulative-layout-shift'].numericValue,
+    url,
+    desktop_score: Math.round(desktopCategories.performance.score * 100),
+    mobile_score: Math.round(mobileCategories.performance.score * 100),
+    performance: Math.round(desktopCategories.performance.score * 100),
+    accessibility: Math.round(desktopCategories.accessibility.score * 100),
+    best_practices: Math.round(desktopCategories['best-practices'].score * 100),
+    seo: Math.round(desktopCategories.seo.score * 100),
+    first_contentful_paint: desktopAudits['first-contentful-paint'].numericValue,
+    largest_contentful_paint: desktopAudits['largest-contentful-paint'].numericValue,
+    time_to_interactive: desktopAudits['interactive'].numericValue,
+    cumulative_layout_shift: desktopAudits['cumulative-layout-shift'].numericValue,
+    tested_at: new Date().toISOString(),
   };
 
   logger.step('PSI report generated', { metrics });
 
-  return {
-    url,
-    metrics,
-    tested_at: new Date().toISOString(),
-    report_id: crypto.randomUUID(),
-  };
+  return metrics;
 }
 
 serve(

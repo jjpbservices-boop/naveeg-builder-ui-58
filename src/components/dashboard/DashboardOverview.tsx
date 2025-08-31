@@ -219,7 +219,7 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
                             </div>
                             <Button
                               variant="outline"
-                              onClick={() => window.open(currentWebsite.site_url, '_blank')}
+                              onClick={() => window.location.assign(currentWebsite.site_url)}
                               className="mt-4"
                             >
                               <ExternalLink className="h-4 w-4 mr-2" />
@@ -250,7 +250,7 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
                           {/* Clickable overlay */}
                           <div 
                             className="absolute inset-0 bg-transparent cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"
-                            onClick={() => window.open(currentWebsite.site_url, '_blank')}
+                            onClick={() => window.location.assign(currentWebsite.site_url)}
                           >
                             <div className="bg-black/80 text-white px-4 py-2 rounded-lg flex items-center gap-2">
                               <ExternalLink className="h-4 w-4" />
@@ -267,7 +267,7 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
                   {currentWebsite.site_url && (
                     <Button 
                       className="flex-1"
-                      onClick={() => window.open(currentWebsite.site_url, '_blank')}
+                      onClick={() => window.location.assign(currentWebsite.site_url)}
                     >
                       <ExternalLink className="h-4 w-4 mr-2" />
                       Visit Live Site
@@ -277,7 +277,7 @@ export function DashboardOverview({ currentWebsite, copied, onCopyUrl, onNavigat
                     <Button 
                       variant={currentWebsite.site_url ? "outline" : "default"}
                       className="flex-1"
-                      onClick={() => window.open(currentWebsite.admin_url, '_blank')}
+                      onClick={() => window.location.assign(`${currentWebsite.admin_url}?advanced=true`)}
                     >
                       <Settings className="h-4 w-4 mr-2" />
                       WP Admin
