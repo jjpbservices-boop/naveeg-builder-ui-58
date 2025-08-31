@@ -240,9 +240,11 @@ export default function Dashboard() {
         );
       case 'analytics':
         return (
-          <DashboardAnalytics
-            currentWebsite={currentWebsite}
-          />
+          <ErrorBoundary>
+            <DashboardAnalytics
+              currentWebsite={currentWebsite}
+            />
+          </ErrorBoundary>
         );
       case 'design':
         return (

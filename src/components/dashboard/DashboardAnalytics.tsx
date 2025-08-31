@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,46 +9,45 @@ import { RefreshCw, TrendingUp, Users, Eye, Clock, BarChart3, Smartphone, Globe,
 import { useAnalytics } from '@/hooks/useTenWebApi';
 import { useFeatureGate } from '@/hooks/useFeatureGate';
 import { LockedFeature } from '../LockedFeature';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 interface DashboardAnalyticsProps {
   currentWebsite: any;
 }
 
-export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) {
+// Memoized component to prevent unnecessary re-renders
+export const DashboardAnalytics = React.memo(function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) {
   const { t } = useTranslation('analytics');
   const { canUseAnalytics } = useFeatureGate();
   const [period, setPeriod] = useState<'day' | 'week' | 'month' | 'year'>('week');
   
-  console.log('[ANALYTICS] Component initialized:', { 
-    websiteId: currentWebsite?.id, 
-    canUseAnalytics,
-    period 
-  });
+  // Stable websiteId to prevent hook call order changes
+  const websiteId = useMemo(() => currentWebsite?.id || '', [currentWebsite?.id]);
   
-  // Always initialize the hook with a stable websiteId - never conditionally call hooks
-  const websiteId = currentWebsite?.id || 'placeholder';
+  // Always call hooks in the same order - use stable websiteId
   const { 
     getVisitors,
     data: analyticsData,
     loading,
     error 
-  } = useAnalytics(websiteId);
+  } = useAnalytics(websiteId || 'placeholder');
 
-  const loadAnalytics = React.useCallback(async () => {
-    if (!currentWebsite?.id || !canUseAnalytics) {
-      console.log('[ANALYTICS] Skipping load:', { 
-        hasWebsiteId: !!currentWebsite?.id, 
-        canUseAnalytics 
-      });
+  const loadAnalytics = useCallback(async () => {
+    if (!websiteId || !canUseAnalytics) {
       return;
     }
-    console.log('[ANALYTICS] Loading analytics for:', { websiteId: currentWebsite.id, period });
-    await getVisitors(period);
-  }, [currentWebsite?.id, period, canUseAnalytics, getVisitors]);
+    try {
+      await getVisitors(period);
+    } catch (err) {
+      console.error('[ANALYTICS] Load error:', err);
+    }
+  }, [websiteId, period, canUseAnalytics, getVisitors]);
 
   useEffect(() => {
-    loadAnalytics();
-  }, [loadAnalytics]);
+    if (websiteId && canUseAnalytics) {
+      loadAnalytics();
+    }
+  }, [loadAnalytics, websiteId, canUseAnalytics]);
 
   // Feature gating for analytics
   if (!canUseAnalytics) {
@@ -63,7 +62,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
   }
 
 
-  const processedAnalytics = React.useMemo(() => {
+  const processedAnalytics = useMemo(() => {
     if (!analyticsData) return null;
 
     // Process real analytics data
@@ -105,7 +104,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
   }, [analyticsData]);
 
   // Enhanced device breakdown with colors (mock data for now)
-  const deviceBreakdown = React.useMemo(() => {
+  const deviceBreakdown = useMemo(() => {
     const uniqueVisitors = Number(processedAnalytics?.uniqueVisitors) || 0;
     return [
       { device: 'Desktop', count: Math.floor(uniqueVisitors * 0.6), percentage: 60, fill: 'hsl(var(--chart-1))' },
@@ -115,7 +114,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
   }, [processedAnalytics?.uniqueVisitors]);
 
   // Enhanced traffic sources with colors (mock data for now)
-  const trafficSources = React.useMemo(() => {
+  const trafficSources = useMemo(() => {
     const uniqueVisitors = Number(processedAnalytics?.uniqueVisitors) || 0;
     return [
       { source: 'Direct', count: Math.floor(uniqueVisitors * 0.4), percentage: 40, fill: 'hsl(var(--chart-1))' },
@@ -126,8 +125,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
   }, [processedAnalytics?.uniqueVisitors]);
 
   // Early return for missing website ID before any processing
-  if (!currentWebsite?.id) {
-    console.log('[ANALYTICS] No website ID available');
+  if (!websiteId) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
@@ -140,7 +138,6 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
   }
 
   if (loading) {
-    console.log('[ANALYTICS] Loading state');
     return (
       <div className="flex items-center justify-center py-12">
         <div className="flex items-center space-x-2">
@@ -152,7 +149,6 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
   }
 
   if (error) {
-    console.error('[ANALYTICS] Error state:', error);
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
@@ -169,7 +165,6 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
   }
 
   if (!processedAnalytics) {
-    console.log('[ANALYTICS] No processed analytics data');
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
@@ -186,6 +181,7 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
   }
 
   return (
+    <ErrorBoundary>
     <div className="space-y-6">
       {/* Enhanced Header */}
       <div className="flex items-center justify-between">
@@ -488,5 +484,6 @@ export function DashboardAnalytics({ currentWebsite }: DashboardAnalyticsProps) 
         </Card>
       </div>
     </div>
+    </ErrorBoundary>
   );
-}
+});
