@@ -1,3 +1,6 @@
+import React from "react";
+import { useAnalytics } from "@/hooks/useAnalytics";
+
 type TenwebVisitors = {
   status: "ok";
   data: { date: string; count: number }[];
@@ -12,6 +15,7 @@ export default function DashboardAnalytics({ websiteId }: { websiteId: number })
 
   if (!websiteId) return <>Select a site to see analytics.</>;
   if (loading) return <>Loading…</>;
+  if (error === "rate_limited") return <div className="text-red-600">Analytics temporarily rate limited.</div>;
   if (error) return <>Analytics unavailable. Try again later.</>;
   if (!data) return <>No data.</>;
 
