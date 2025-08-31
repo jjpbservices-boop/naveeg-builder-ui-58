@@ -7,7 +7,7 @@ import { useOnboardingStore } from '@/lib/stores/useOnboardingStore';
 import { api, updateDesign } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { EnhancedLoading } from '@/components/EnhancedLoading';
-import { supabase } from '@/integrations/supabase/client';
+import { getSupabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 
 const generationSteps = [
@@ -81,6 +81,7 @@ export default function Generating() {
       setProgress(60);
       
       // Check if user is already authenticated
+      const supabase = getSupabase()
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         console.log('No authenticated user, showing auth modal');
@@ -128,6 +129,7 @@ export default function Generating() {
 
       console.log('Inserting website data:', websiteData);
       
+      const supabase = getSupabase()
       const { data: insertedWebsite, error: insertError } = await supabase
         .from('sites')
         .insert(websiteData)
@@ -185,6 +187,7 @@ export default function Generating() {
       console.log('Updating website with data:', urlUpdateData);
       
       // Use the database ID if available, otherwise fallback to website_id
+      const supabase = getSupabase()
       const updateQuery = database_id 
         ? supabase.from('sites').update(urlUpdateData).eq('id', database_id)
         : supabase.from('sites').update(urlUpdateData).eq('website_id', website_id);

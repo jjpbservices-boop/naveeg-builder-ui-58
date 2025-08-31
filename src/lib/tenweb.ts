@@ -1,9 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  "https://eilpazegjrcrwgpujqni.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpbHBhemVnanJjcndncHVqcW5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NzYxNjksImV4cCI6MjA3MDE1MjE2OX0.LV5FvbQQGf0Kv-O1uA0tsS-Yam6rB1x937BgqFsJoX4"
-);
+import { getSupabase } from "./supabase";
 
 type InvokeOpts = { 
   method?: "GET"|"POST"|"PUT"|"PATCH"|"DELETE"; 
@@ -12,6 +7,7 @@ type InvokeOpts = {
 };
 
 export async function tenwebFetch(path: string, opts: InvokeOpts = {}) {
+  const supabase = getSupabase();
   const { data, error } = await supabase.functions.invoke("tenweb-proxy", {
     body: { path, method: opts.method ?? "GET", query: opts.query ?? {}, body: opts.body ?? null },
   });

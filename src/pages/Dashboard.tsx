@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
+import { getSupabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -73,9 +73,10 @@ export default function Dashboard() {
 
   const loadUserWebsites = async (userId: string) => {
     try {
+      const supabase = getSupabase();
       const { data, error } = await supabase
         .from('sites')
-        .select('*')
+        .select('id, title, subdomain, site_url, plan, website_id, tenweb_website_id, business_name, business_type, created_at')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -98,6 +99,7 @@ export default function Dashboard() {
   };
 
   const handleSignOut = async () => {
+    const supabase = getSupabase();
     await supabase.auth.signOut();
     // AuthProvider will handle the state change and redirect
   };
@@ -242,7 +244,7 @@ export default function Dashboard() {
         return (
           <ErrorBoundary>
             <DashboardAnalytics
-              websiteId={currentWebsite?.id}
+              website={currentWebsite}
             />
           </ErrorBoundary>
         );

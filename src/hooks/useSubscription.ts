@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { supabase } from '@/integrations/supabase/client'
+import { getSupabase } from '@/lib/supabase'
 
 type Plan = 'starter' | 'pro' | 'custom'
 type Status = 'trialing' | 'active' | 'past_due' | 'canceled'
@@ -26,6 +26,7 @@ export function useSubscription() {
 
   const fetchSubscription = useCallback(async (siteId?: string) => {
     setLoading(true)
+    const supabase = getSupabase()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { 
       setSubscription(null)
@@ -63,6 +64,7 @@ export function useSubscription() {
   // Realtime push on any change to this user's subscriptions
   useEffect(() => {
     let channel: any
+    const supabase = getSupabase()
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
       channel = supabase
@@ -84,12 +86,14 @@ export function useSubscription() {
         .subscribe()
     })
     return () => { 
+      const supabase = getSupabase()
       if (channel) supabase.removeChannel(channel) 
     }
   }, [])
 
   // Legacy methods for compatibility
   const createCheckout = async (plan: 'starter' | 'pro', siteId: string) => {
+    const supabase = getSupabase()
     const { data, error } = await supabase.functions.invoke('billing', {
       body: { action: 'create-checkout', plan, site_id: siteId }
     })
@@ -99,6 +103,7 @@ export function useSubscription() {
   }
 
   const createPortal = async () => {
+    const supabase = getSupabase()
     const { data, error } = await supabase.functions.invoke('billing', {
       body: { action: 'create-portal' }
     })
@@ -107,6 +112,7 @@ export function useSubscription() {
   }
 
   const syncSubscription = async (siteId?: string) => {
+    const supabase = getSupabase()
     const { data, error } = await supabase.functions.invoke('sync-subscription', {
       body: { site_id: siteId }
     })

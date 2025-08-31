@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { getSupabase } from '@/lib/supabase';
 
 export interface AuditLogEntry {
   action: string;
@@ -22,6 +22,7 @@ export class AuditLogger {
   async log(entry: AuditLogEntry): Promise<void> {
     try {
       // Get current user
+      const supabase = getSupabase();
       const { data: { user } } = await supabase.auth.getUser();
       
       // Create audit log entry

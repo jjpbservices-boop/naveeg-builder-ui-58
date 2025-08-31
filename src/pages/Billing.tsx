@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { getSupabase } from '@/lib/supabase';
 
 export function Billing() {
   const navigate = useNavigate();
@@ -31,6 +31,7 @@ export function Billing() {
       const siteId = localStorage.getItem('currentSiteId');
       if (!siteId) {
         // Fallback: fetch from database
+        const supabase = getSupabase();
         const { data: sites, error } = await supabase
           .from('sites')
           .select('id')
@@ -61,6 +62,7 @@ export function Billing() {
       const siteId = localStorage.getItem('currentSiteId');
       if (!siteId) {
         // Fallback: fetch from database
+        const supabase = getSupabase();
         const { data: sites, error } = await supabase
           .from('sites')
           .select('id')

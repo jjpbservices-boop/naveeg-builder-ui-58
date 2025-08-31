@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { getSupabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
@@ -42,6 +42,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     console.log('[AUTH] Setting up auth state listener');
     
     // Set up auth state listener
+    const supabase = getSupabase();
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log('[AUTH] Auth state changed:', event, !!session, session?.user?.id);
@@ -107,6 +108,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      const supabase = getSupabase();
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -133,6 +135,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signUp = async (email: string, password: string) => {
     try {
+      const supabase = getSupabase();
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -164,6 +167,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signOut = async () => {
     try {
+      const supabase = getSupabase();
       await supabase.auth.signOut();
     } catch (error: any) {
       toast({
@@ -176,6 +180,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const resetPassword = async (email: string) => {
     try {
+      const supabase = getSupabase();
       const { error } = await supabase.auth.resetPasswordForEmail(email);
       
       if (error) {
