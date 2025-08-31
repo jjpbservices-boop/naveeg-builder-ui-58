@@ -264,6 +264,32 @@ export const api = {
     ]);
     
     return { mobile, desktop };
+  },
+
+  // Legacy functions for backward compatibility
+  async createWebsite(businessName: string) {
+    const { createWebsite } = await import('./legacyApi');
+    return createWebsite(businessName);
+  },
+
+  async generateSitemap(website_id: number, params: any) {
+    const { generateSitemap } = await import('./legacyApi');
+    return generateSitemap(website_id, params);
+  },
+
+  async updateDesign(siteId: number, design: any) {
+    const { updateDesign } = await import('./legacyApi');
+    return updateDesign(siteId, design);
+  },
+
+  async generateFromWithPolling(website_id: number, unique_id: string, params: any) {
+    const { generateFromWithPolling } = await import('./legacyApi');
+    return generateFromWithPolling(website_id, unique_id, params);
+  },
+
+  async publishAndFrontWithPolling(website_id: number) {
+    const { publishAndFrontWithPolling } = await import('./legacyApi');
+    return publishAndFrontWithPolling(website_id);
   }
 };
 

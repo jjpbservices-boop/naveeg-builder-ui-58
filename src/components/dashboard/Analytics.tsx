@@ -123,7 +123,7 @@ export function Analytics({ website }: AnalyticsProps) {
     
     return opportunities.map(([key, audit]) => ({
       id: key,
-      title: audit.title || key.replace(/-/g, ' '),
+      title: key.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
       savings: audit.details?.overallSavingsMs || 0
     }));
   };
@@ -178,7 +178,7 @@ export function Analytics({ website }: AnalyticsProps) {
             <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh PSI
           </Button>
-          <PeriodSelector period={period} onPeriodChange={setPeriod} />
+          <PeriodSelector value={period} onChange={setPeriod} />
         </div>
       </div>
 
