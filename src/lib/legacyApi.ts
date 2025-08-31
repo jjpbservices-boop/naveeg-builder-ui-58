@@ -1,344 +1,176 @@
-// Enhanced API layer for dashboard functionality
-import { supabase } from "@/integrations/supabase/client";
+// src/lib/legacyApi.ts - Original API implementation
 
-// TypeScript interfaces for API responses
-export type Period = 'day' | 'week' | 'month' | 'year';
-export type PSIStrategy = 'mobile' | 'desktop';
+const BASE = (import.meta.env.VITE_SUPABASE_URL || "").replace(/\/$/, "");
+const ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+const FN = `${BASE}/functions/v1/ai-router`;
 
-export interface VisitorsPoint {
-  count: number;
-  date: string;
-}
-
-export interface VisitorsResponse {
-  status: 'ok' | 'error';
-  data: VisitorsPoint[];
-  start_date: string;
-  end_date: string;
-  sum: number;
-}
-
-export interface StorageResponse {
-  status: 'ok' | 'error';
-  db_size: number;
-  files_size: number;
-}
-
-export interface BackupItem {
-  backup_id: number;
-  backup_size: number;
-  backup_time: string;
-  created_at: string;
-  type: string;
-}
-
-export interface BackupListResponse {
-  status: 'ok' | 'error';
-  data: BackupItem[];
-}
-
-export interface DomainItem {
-  id: number;
-  name: string;
-  default: 0 | 1;
-  site_url: string;
-  admin_url: string;
-  scheme: 'http' | 'https';
-  created_at: string;
-  updated_at: string;
-  website_id?: number;
-}
-
-export interface DomainListResponse {
-  data: DomainItem[];
-}
-
-export interface Certificate {
-  id: number;
-  common_name: string;
-  domain_name: string;
-  issuer: string;
-  status: string;
-  type: 'custom' | 'free';
-  valid_from: string;
-  valid_to: string;
-}
-
-export interface CertificateListResponse {
-  status: 'ok' | 'error';
-  data: Certificate[];
-}
-
-export interface SettingsData {
-  cache_enabled: boolean;
-  cache_time: number;
-  object_cache: boolean;
-  php_version: string;
-  staging_enabled: boolean;
-  password_protection: boolean;
-  id?: number;
-}
-
-export interface SettingsResponse {
-  status: 'ok' | 'error';
-  data: SettingsData;
-}
-
-export interface AutologinResponse {
-  status: 'ok' | 'error';
-  token?: string;
-  admin_url?: string;
-}
-
-export interface PSIRequest {
-  url: string;
-  strategy?: PSIStrategy;
-  locale?: string;
-  categories?: string[];
-}
-
-export interface PSIResponse {
-  lighthouseResult?: {
-    categories: {
-      performance?: { score: number };
-      seo?: { score: number };
-      'best-practices'?: { score: number };
-      accessibility?: { score: number };
-    };
-    audits: {
-      [key: string]: {
-        numericValue?: number;
-        score?: number;
-        details?: any;
-      };
-    };
-  };
-  loadingExperience?: {
-    metrics: {
-      [key: string]: {
-        percentile: number;
-        category: string;
-      };
-    };
-  };
-  originLoadingExperience?: {
-    metrics: {
-      [key: string]: {
-        percentile: number;
-        category: string;
-      };
-    };
-  };
-  error?: {
-    message: string;
-  };
-}
-
-// API client functions
-export const api = {
-  // Visitors/Traffic data
-  async getVisitors(websiteId: number, period: Period = 'month'): Promise<VisitorsResponse> {
-    const { data, error } = await supabase.functions.invoke('tenweb-proxy', {
-      body: {
-        path: `/v1/hosting/websites/${websiteId}/visitors`,
-        method: 'GET',
-        query: { period }
-      }
-    });
-    
-    if (error) throw error;
-    return data;
-  },
-
-  // Storage usage
-  async getStorage(websiteId: number): Promise<StorageResponse> {
-    const { data, error } = await supabase.functions.invoke('tenweb-proxy', {
-      body: {
-        path: `/v1/hosting/websites/${websiteId}/storage`,
-        method: 'GET'
-      }
-    });
-    
-    if (error) throw error;
-    return data;
-  },
-
-  // Backups
-  async getBackups(websiteId: number): Promise<BackupListResponse> {
-    const { data, error } = await supabase.functions.invoke('tenweb-proxy', {
-      body: {
-        path: `/v1/hosting/websites/${websiteId}/backup/list`,
-        method: 'GET'
-      }
-    });
-    
-    if (error) throw error;
-    return data;
-  },
-
-  async restoreBackup(websiteId: number, backupId: number): Promise<any> {
-    const { data, error } = await supabase.functions.invoke('tenweb-proxy', {
-      body: {
-        path: `/v1/hosting/websites/${websiteId}/backup/${backupId}/restore`,
-        method: 'POST'
-      }
-    });
-    
-    if (error) throw error;
-    return data;
-  },
-
-  // Domains
-  async getDomains(websiteId: number): Promise<DomainListResponse> {
-    const { data, error } = await supabase.functions.invoke('tenweb-proxy', {
-      body: {
-        path: `/v1/hosting/websites/${websiteId}/domain-name`,
-        method: 'GET'
-      }
-    });
-    
-    if (error) throw error;
-    return data;
-  },
-
-  // SSL Certificates
-  async getCertificates(websiteId: number): Promise<CertificateListResponse> {
-    const { data, error } = await supabase.functions.invoke('tenweb-proxy', {
-      body: {
-        path: `/v1/hosting/websites/${websiteId}/certificate`,
-        method: 'GET'
-      }
-    });
-    
-    if (error) throw error;
-    return data;
-  },
-
-  // Settings
-  async getSettings(websiteId: number): Promise<SettingsResponse> {
-    const { data, error } = await supabase.functions.invoke('tenweb-proxy', {
-      body: {
-        path: `/v1/hosting/websites/${websiteId}/settings`,
-        method: 'GET'
-      }
-    });
-    
-    if (error) throw error;
-    return data;
-  },
-
-  // WordPress Admin Autologin
-  async getAutologin(websiteId: number, adminUrl: string): Promise<AutologinResponse> {
-    const { data, error } = await supabase.functions.invoke('tenweb-proxy', {
-      body: {
-        path: `/v1/account/websites/${websiteId}/single`,
-        method: 'GET',
-        query: { admin_url: adminUrl }
-      }
-    });
-    
-    if (error) throw error;
-    return data;
-  },
-
-  // PageSpeed Insights
-  async runPSI(request: PSIRequest): Promise<PSIResponse> {
-    const { data, error } = await supabase.functions.invoke('psi-proxy', {
-      body: {
-        url: request.url,
-        strategy: request.strategy || 'mobile',
-        locale: request.locale || 'en',
-        categories: request.categories || ['performance', 'seo', 'best-practices', 'accessibility']
-      }
-    });
-    
-    if (error) throw error;
-    return data;
-  },
-
-  // Run PSI for both mobile and desktop
-  async runPSIBoth(url: string, locale = 'en'): Promise<{ mobile: PSIResponse; desktop: PSIResponse }> {
-    const [mobile, desktop] = await Promise.all([
-      this.runPSI({ url, strategy: 'mobile', locale }),
-      this.runPSI({ url, strategy: 'desktop', locale })
-    ]);
-    
-    return { mobile, desktop };
-  }
+const HEADERS: Record<string, string> = {
+  "content-type": "application/json",
+  accept: "application/json",
+  apikey: ANON,
+  Authorization: `Bearer ${ANON}`,
 };
 
-// Helper functions for data processing
-export const helpers = {
-  // Calculate percentage change
-  calculateChange(current: number, previous: number): number {
-    if (previous === 0) return current > 0 ? 100 : 0;
-    return ((current - previous) / previous) * 100;
-  },
+type HttpMethod = "GET" | "POST";
 
-  // Format bytes to human readable
-  formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
-  },
+function hexOk(v?: string) {
+  return typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v);
+}
 
-  // Calculate days remaining for SSL certificates
-  getDaysRemaining(validTo: string): number {
-    const expiry = new Date(validTo);
-    const now = new Date();
-    const diffTime = expiry.getTime() - now.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  },
+function sanitizeColors(c?: any) {
+  if (!c || typeof c !== "object") return undefined;
+  const out: any = {};
+  if (hexOk(c.primary_color)) out.primary_color = c.primary_color;
+  if (hexOk(c.secondary_color)) out.secondary_color = c.secondary_color;
+  if (hexOk(c.background_dark)) out.background_dark = c.background_dark;
+  return Object.keys(out).length ? out : undefined;
+}
 
-  // Get PSI score and rating
-  getPSIScore(score?: number): { score: number; rating: 'good' | 'needs-improvement' | 'poor' } {
-    if (!score) return { score: 0, rating: 'poor' };
-    const percentage = Math.round(score * 100);
-    let rating: 'good' | 'needs-improvement' | 'poor' = 'poor';
-    
-    if (percentage >= 90) rating = 'good';
-    else if (percentage >= 50) rating = 'needs-improvement';
-    
-    return { score: percentage, rating };
-  },
+function sanitizeFonts(f?: any) {
+  if (!f || typeof f !== "object") return undefined;
+  const name = f.primary_font || f.heading || f.body;
+  return typeof name === "string" ? { primary_font: name } : undefined;
+}
 
-  // Format Core Web Vitals metrics
-  formatCWV(metric: string, value: number): string {
-    switch (metric) {
-      case 'LARGEST_CONTENTFUL_PAINT':
-      case 'FIRST_CONTENTFUL_PAINT':
-        return `${(value / 1000).toFixed(1)}s`;
-      case 'INTERACTION_TO_NEXT_PAINT':
-        return `${value}ms`;
-      case 'CUMULATIVE_LAYOUT_SHIFT':
-        return value.toFixed(3);
-      default:
-        return value.toString();
+function sanitizeGenerateParams(p: any) {
+  const src = { ...(p || {}) };
+
+  // enforce fonts schema
+  const fonts = sanitizeFonts(src.fonts);
+  if (fonts) src.fonts = fonts; else delete src.fonts;
+
+  // enforce colors schema
+  const colors = sanitizeColors(src.colors);
+  if (colors) src.colors = colors; else delete src.colors;
+
+  // align website_type with business_type
+  src.website_type = src.business_type === "ecommerce" ? "ecommerce" : "basic";
+
+  // whitelist only allowed fields
+  const out: any = {
+    business_name: String(src.business_name || ""),
+    business_description: String(src.business_description || ""),
+    business_type: String(src.business_type || "informational"),
+    website_title: String(src.website_title || src.seo?.website_title || src.business_name || "Website"),
+    website_description: String(src.website_description || src.seo?.website_description || src.business_description || ""),
+    website_keyphrase: String(src.website_keyphrase || src.seo?.website_keyphrase || src.website_title || ""),
+    website_type: src.website_type,
+    pages_meta: Array.isArray(src.pages_meta) ? src.pages_meta : [],
+  };
+  if (colors) out.colors = colors;
+  if (fonts) out.fonts = fonts;
+  return out;
+}
+
+async function req(
+  action: string,
+  payload: Record<string, any> = {},
+  timeout = 120_000,
+  method: HttpMethod = "POST"
+) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), timeout);
+
+  try {
+    const url = method === "GET" ? `${FN}?action=${encodeURIComponent(action)}` : FN;
+
+    const res = await fetch(url, {
+      method,
+      mode: "cors",
+      credentials: "omit",
+      headers: HEADERS,
+      body: method === "GET" ? undefined : JSON.stringify({ action, ...payload }),
+      signal: ctl.signal,
+    });
+
+    const text = await res.text();
+    const json = text ? (() => { try { return JSON.parse(text); } catch { return { raw: text }; } })() : null;
+
+    if (!res.ok) {
+      const err: any = new Error(json?.code || res.statusText || "Request failed");
+      err.status = res.status;
+      err.code = json?.code || json?.error || undefined;
+      err.detail = json || undefined;
+      throw err;
     }
-  }
+    return json;
+  } catch (error: any) {
+    if (error?.name === "AbortError") {
+      const e: any = new Error("CLIENT_TIMEOUT");
+      e.code = "CLIENT_TIMEOUT"; e.status = 408; e.originalError = error;
+      throw e;
+    }
+    const msg = String(error?.message || "");
+    if (!error?.status && (error?.name === "TypeError" || /NetworkError|Failed to fetch|Load failed/i.test(msg))) {
+      const e: any = new Error("TRANSIENT_NETWORK_ERROR");
+      e.code = "TRANSIENT_NETWORK_ERROR"; e.status = 503; e.originalError = error;
+      throw e;
+    }
+    throw error;
+  } finally { clearTimeout(t); }
+}
+
+function shouldRetry(err: any) {
+  const code = err?.code, status = err?.status;
+  return code === "CLIENT_TIMEOUT" || code === "GENERATE_TIMEOUT" || code === "PUBLISH_RETRY" ||
+         code === "TRANSIENT_NETWORK_ERROR" || status === 504 || status === 503;
+}
+
+async function backoffWait(attempt: number, baseMs = 2000, maxMs = 10_000) {
+  const ms = Math.min(Math.round(baseMs * Math.pow(1.5, attempt - 1)), maxMs);
+  await new Promise(r => setTimeout(r, ms));
+}
+
+export const api = {
+  health: () => req("health", {}, 30_000, "GET"),
+
+  createWebsite: (businessName: string) =>
+    req("create-website", { businessName }, 120_000),
+
+  generateSitemap: (website_id: number, params: any) =>
+    req("generate-sitemap", { website_id, params }, 180_000),
+
+  updateDesign: (siteId: number, design: any) =>
+    req("update-design", { siteId, design }, 45_000),
+
+  generateFrom: (website_id: number, unique_id: string, params: any) =>
+    req("generate-from-sitemap", { website_id, unique_id, params: sanitizeGenerateParams(params) }, 240_000),
+
+  publishAndFront: (website_id: number) =>
+    req("publish-and-frontpage", { website_id }, 180_000),
+
+  generateFromWithPolling: async (website_id: number, unique_id: string, params: any) => {
+    const maxAttempts = 10; const attemptTimeout = 240_000;
+    const clean = sanitizeGenerateParams(params);
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try { return await req("generate-from-sitemap", { website_id, unique_id, params: clean }, attemptTimeout); }
+      catch (error: any) {
+        if (attempt < maxAttempts && shouldRetry(error)) { await backoffWait(attempt, 3000, 12_000); continue; }
+        throw error;
+      }
+    }
+    throw new Error("Generation timeout after maximum attempts");
+  },
+
+  publishAndFrontWithPolling: async (website_id: number) => {
+    const maxAttempts = 8; const attemptTimeout = 180_000;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try { return await req("publish-and-frontpage", { website_id }, attemptTimeout); }
+      catch (error: any) {
+        if (attempt < maxAttempts && shouldRetry(error)) { await backoffWait(attempt, 3000, 12_000); continue; }
+        throw error;
+      }
+    }
+    throw new Error("Publishing timeout after maximum attempts");
+  },
 };
 
-// Legacy exports for backward compatibility
-export const createWebsite = (businessName: string) => {
-  throw new Error('createWebsite moved to legacy API - use original api.ts');
-};
-
-export const generateSitemap = (website_id: number, params: any) => {
-  throw new Error('generateSitemap moved to legacy API - use original api.ts');
-};
-
-export const updateDesign = (siteId: number, design: any) => {
-  throw new Error('updateDesign moved to legacy API - use original api.ts');
-};
-
-export const generateFromWithPolling = (website_id: number, unique_id: string, params: any) => {
-  throw new Error('generateFromWithPolling moved to legacy API - use original api.ts');
-};
-
-export const publishAndFrontWithPolling = (website_id: number) => {
-  throw new Error('publishAndFrontWithPolling moved to legacy API - use original api.ts');
-};
-
-export default api;
+// Legacy exports
+export const createWebsite = api.createWebsite;
+export const generateSitemap = api.generateSitemap;
+export const generateFromSitemap = (websiteId: number, uniqueId: string, params: any) =>
+  api.generateFrom(websiteId, uniqueId, params);
+export const publishAndFrontpage = api.publishAndFront;
+export const updateDesign = api.updateDesign;
+export const generateFromWithPolling = api.generateFromWithPolling;
+export const publishAndFrontWithPolling = api.publishAndFrontWithPolling;
