@@ -1,7 +1,6 @@
 import { useState, useEffect, createContext, useContext, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { getSupabase } from '@/lib/supabase';
-import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
   user: User | null;
@@ -31,12 +30,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
   
   // Track last session to prevent duplicate events
   const lastSessionRef = useRef<Session | null>(null);
   const lastEventRef = useRef<string | null>(null);
-  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     console.log('[AUTH] Setting up auth state listener');
@@ -63,28 +60,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-
-        // Rate-limit toast notifications to prevent spam
-        if (toastTimeoutRef.current) {
-          clearTimeout(toastTimeoutRef.current);
-        }
-
-        // Handle auth events with debouncing
-        if (event === 'SIGNED_IN' && sessionChanged) {
-          toastTimeoutRef.current = setTimeout(() => {
-            toast({
-              title: "Welcome back!",
-              description: "You have successfully signed in.",
-            });
-          }, 500);
-        } else if (event === 'SIGNED_OUT') {
-          toastTimeoutRef.current = setTimeout(() => {
-            toast({
-              title: "Signed out",
-              description: "You have been signed out successfully.",
-            });
-          }, 500);
-        }
       }
     );
 
@@ -98,13 +73,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     });
 
     return () => {
-      console.log('[AUTH] Cleaning up auth listener');
-      if (toastTimeoutRef.current) {
-        clearTimeout(toastTimeoutRef.current);
-      }
       subscription.unsubscribe();
     };
-  }, [toast]);
+  }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -113,22 +84,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         email,
         password,
       });
-
-      if (error) {
-        toast({
-          title: "Sign in failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
-
       return { error };
-    } catch (error: any) {
-      toast({
-        title: "Sign in failed",
-        description: "An unexpected error occurred.",
-        variant: "destructive",
-      });
+    } catch (error) {
       return { error };
     }
   };
@@ -140,27 +97,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         email,
         password,
       });
-
-      if (error) {
-        toast({
-          title: "Sign up failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Account created successfully",
-          description: "You are now signed in.",
-        });
-      }
-
       return { error };
-    } catch (error: any) {
-      toast({
-        title: "Sign up failed",
-        description: "An unexpected error occurred.",
-        variant: "destructive",
-      });
+    } catch (error) {
       return { error };
     }
   };
@@ -169,12 +107,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       const supabase = getSupabase();
       await supabase.auth.signOut();
-    } catch (error: any) {
-      toast({
-        title: "Sign out failed",
-        description: "An error occurred while signing out.",
-        variant: "destructive",
-      });
+    } catch (error) {
+      console.error('Error signing out:', error);
     }
   };
 
@@ -182,27 +116,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       const supabase = getSupabase();
       const { error } = await supabase.auth.resetPasswordForEmail(email);
-      
-      if (error) {
-        toast({
-          title: "Reset failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Reset email sent",
-          description: "Check your email for the reset link.",
-        });
-      }
-
       return { error };
-    } catch (error: any) {
-      toast({
-        title: "Reset failed",
-        description: "An unexpected error occurred.",
-        variant: "destructive",
-      });
+    } catch (error) {
       return { error };
     }
   };

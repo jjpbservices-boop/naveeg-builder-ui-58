@@ -51,59 +51,7 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
-      fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Sora", "system-ui", "sans-serif"],
-      },
-      fontSize: {
-        "display-1": ["3.5rem", { lineHeight: "1.1", letterSpacing: "-0.02em" }],
-        "display-2": ["3rem", { lineHeight: "1.1", letterSpacing: "-0.02em" }],
-        "display-3": ["2.5rem", { lineHeight: "1.1", letterSpacing: "-0.02em" }],
-        "display-4": ["2rem", { lineHeight: "1.1", letterSpacing: "-0.02em" }],
-      },
-      spacing: {
-        "18": "4.5rem",
-        "88": "22rem",
-        "128": "32rem",
-      },
-      animation: {
-        "fade-in": "fadeIn 0.5s ease-out",
-        "fade-in-up": "fadeInUp 0.5s ease-out",
-        "fade-in-down": "fadeInDown 0.5s ease-out",
-        "scale-in": "scaleIn 0.2s ease-out",
-        "slide-in-up": "slideInUp 0.3s ease-out",
-        "slide-in-down": "slideInDown 0.3s ease-out",
-      },
-      keyframes: {
-        fadeIn: {
-          "0%": { opacity: "0" },
-          "100%": { opacity: "1" },
-        },
-        fadeInUp: {
-          "0%": { opacity: "0", transform: "translateY(20px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
-        },
-        fadeInDown: {
-          "0%": { opacity: "0", transform: "translateY(-20px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
-        },
-        scaleIn: {
-          "0%": { opacity: "0", transform: "scale(0.95)" },
-          "100%": { opacity: "1", transform: "scale(1)" },
-        },
-        slideInUp: {
-          "0%": { opacity: "0", transform: "translateY(40px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
-        },
-        slideInDown: {
-          "0%": { opacity: "0", transform: "translateY(-40px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
-        },
-      },
-      backdropBlur: {
-        xs: "2px",
-      },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-} satisfies Config;
+  plugins: [],
+};

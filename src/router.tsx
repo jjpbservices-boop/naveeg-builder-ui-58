@@ -1,5 +1,4 @@
 import { createRouter, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
-import Layout from '@/components/Layout';
 
 // Type declarations for TanStack Router
 declare module '@tanstack/react-router' {
@@ -8,247 +7,50 @@ declare module '@tanstack/react-router' {
   }
 }
 
-// Import pages
-import Home from '@/pages/Home';
-import Features from '@/pages/Features';
-import Pricing from '@/pages/Pricing';
-import Gallery from '@/pages/Gallery';
-import FAQ from '@/pages/FAQ';
-import Contact from '@/pages/Contact';
-import Legal from '@/pages/Legal';
-import Blog from '@/pages/Blog';
-import HowItWorks from '@/pages/HowItWorks';
-import Describe from '@/pages/Describe';
-import Brief from '@/pages/Brief';
-import Design from '@/pages/Design';
-import Generate from '@/pages/Generate';
-import Generating from '@/pages/Generating';
-import Ready from '@/pages/Ready';
-import Preview from '@/pages/Preview';
-import Dashboard from '@/pages/Dashboard';
-import Workspace from '@/pages/Workspace';
-import Settings from '@/pages/Settings';
-import Plans from '@/pages/Plans';
-import { Billing } from '@/pages/Billing';
-import Auth from '@/pages/Auth';
-import NotFound from '@/pages/NotFound';
-
-// Root route with layout
+// Root route
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
 });
 
-// Layout wrapper for non-dashboard routes
-const layoutRoute = createRoute({
+// Simple index route for now
+const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
-  id: 'layout',
+  path: '/',
   component: () => (
-    <Layout>
-      <Outlet />
-    </Layout>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold mb-4">Naveeg Backend</h1>
+        <p className="text-gray-600">Backend integrations ready for new UI</p>
+      </div>
+    </div>
   ),
 });
 
-// Define routes with layout
-const indexRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/',
-  component: Home,
-});
-
-const featuresRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/features',
-  component: Features,
-});
-
-const pricingRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/pricing',
-  component: Pricing,
-});
-
-const galleryRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/gallery',
-  component: Gallery,
-});
-
-const faqRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/faq',
-  component: FAQ,
-});
-
-const contactRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/contact',
-  component: Contact,
-});
-
-const legalRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/legal',
-  component: Legal,
-});
-
-const blogRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/blog',
-  component: Blog,
-});
-
-const howItWorksRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/how-it-works',
-  component: HowItWorks,
-});
-
-// Onboarding routes
-const onboardingBriefRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/onboarding/brief',
-  component: Brief,
-});
-
-const onboardingDesignRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/onboarding/design',
-  component: Design,
-});
-
-const generateRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/generate',
-  component: Generate,
-});
-
-const generatingRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/generating',
-  component: Generating,
-});
-
-const readyRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/ready',
-  component: Ready,
-});
-
-// Legacy routes for backward compatibility
-const describeRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/describe',
-  component: Describe,
-});
-
-const briefRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/brief',
-  component: Brief,
-});
-
-const designRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/design',
-  component: Design,
-});
-
-const previewRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/preview',
-  component: Preview,
-});
-
-// Dashboard routes WITHOUT layout (no header/footer)
-const dashboardRoute = createRoute({
+// API health check route
+const healthRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/dashboard',
-  component: Dashboard,
+  path: '/health',
+  component: () => (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold mb-2 text-green-600">✅ Healthy</h1>
+        <p className="text-gray-600">Backend services are running</p>
+      </div>
+    </div>
+  ),
 });
-
-// Dashboard nested routes
-const dashboardPlansRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/dashboard/plans',
-  component: Plans,
-});
-
-const workspaceRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/workspace',
-  component: Workspace,
-});
-
-const settingsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/settings',
-  component: Settings,
-});
-
-const plansRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/plans',
-  component: Plans,
-});
-
-const billingRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/billing',
-  component: Billing,
-});
-
-const authRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/auth',
-  component: Auth,
-  validateSearch: (search: Record<string, unknown>) => {
-    return {
-      context: (search.context as string) || undefined,
-    }
-  },
-});
-
-const notFoundRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/$',
-  component: NotFound,
-});
-
-// Create route tree
-const routeTree = rootRoute.addChildren([
-  layoutRoute.addChildren([
-    indexRoute,
-    featuresRoute,
-    pricingRoute,
-    galleryRoute,
-    faqRoute,
-    contactRoute,
-    legalRoute,
-    blogRoute,
-    howItWorksRoute,
-    onboardingBriefRoute,
-    onboardingDesignRoute,
-    describeRoute,
-    briefRoute,
-    designRoute,
-    generateRoute,
-    generatingRoute,
-    readyRoute,
-    previewRoute,
-    authRoute,
-    notFoundRoute,
-  ]),
-  dashboardRoute.addChildren([
-    dashboardPlansRoute,
-  ]),
-  workspaceRoute,
-  settingsRoute,
-  plansRoute,
-  billingRoute,
-]);
 
 // Create router
-export const router = createRouter({ 
-  routeTree,
-}) as const;
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  healthRoute,
+]);
+
+export const router = createRouter({ routeTree });
+
+// Register router for type safety
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
