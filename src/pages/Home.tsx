@@ -15,7 +15,8 @@ import {
   BarChart3,
   FileText,
   Settings,
-  HeadphonesIcon
+  HeadphonesIcon,
+  Play
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -46,50 +47,57 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="section-clean pt-32 pb-24 text-center bg-gradient-to-br from-background via-muted/20 to-background">
-        <div className="container-clean">
-          <div className="max-w-4xl mx-auto">
-            {/* Eyebrow */}
-            <Badge variant="accent" className="mb-6">
-              ✨ AI-Powered Website Builder
-            </Badge>
-            
-            {/* Main Headline */}
-            <h1 className="heading-display text-display-1 mb-6 text-balance">
-              Launch a polished website in{' '}
-              <span className="gradient-text">hours, not weeks</span>
-            </h1>
-            
-            {/* Sub-headline */}
-            <p className="text-lead mb-10 max-w-3xl mx-auto text-balance">
-              Tell us about your business. Naveeg creates your site, hosts it, and keeps it fast. No tech skills needed.
-            </p>
-            
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button size="xl" onClick={handleStartOnboarding}>
-                <Sparkles className="mr-3 h-5 w-5" />
-                Start free
-                <ArrowRight className="ml-3 h-5 w-5" />
-              </Button>
-              <Button variant="secondary" size="xl" onClick={handleSeePricing}>
-                See pricing
-              </Button>
-            </div>
-            
-            {/* Trust Indicators */}
-            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-success" />
-                GDPR-ready
+      <section className="relative overflow-hidden bg-gradient-to-br from-background via-muted/20 to-background">
+        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:60px_60px]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5" />
+        
+        <div className="container-clean relative">
+          <div className="section-clean-lg text-center">
+            <div className="max-w-4xl mx-auto">
+              {/* Eyebrow */}
+              <Badge variant="accent" className="mb-8 px-4 py-2 text-sm">
+                ✨ AI-Powered Website Builder
+              </Badge>
+              
+              {/* Main Headline */}
+              <h1 className="heading-display text-4xl sm:text-5xl lg:text-6xl mb-8 text-balance leading-tight">
+                Launch a polished website in{' '}
+                <span className="gradient-text">hours, not weeks</span>
+              </h1>
+              
+              {/* Sub-headline */}
+              <p className="text-lead mb-12 max-w-3xl mx-auto text-balance">
+                Tell us about your business. Naveeg creates your site, hosts it, and keeps it fast. No tech skills needed.
+              </p>
+              
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+                <Button size="lg" onClick={handleStartOnboarding} className="text-lg px-8 py-4">
+                  <Sparkles className="mr-3 h-5 w-5" />
+                  Start free
+                  <ArrowRight className="ml-3 h-5 w-5" />
+                </Button>
+                <Button variant="secondary" size="lg" onClick={handleSeePricing} className="text-lg px-8 py-4">
+                  See pricing
+                </Button>
               </div>
-              <div className="flex items-center gap-2">
-                <Star className="h-4 w-4 text-warning" />
-                Fast hosting
-              </div>
-              <div className="flex items-center gap-2">
-                <Rocket className="h-4 w-4 text-primary" />
-                Cancel anytime
+              
+              {/* Trust Indicators */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-success" />
+                  GDPR-ready
+                </div>
+                <div className="hidden sm:block text-muted-foreground/30">•</div>
+                <div className="flex items-center gap-2">
+                  <Star className="h-4 w-4 text-warning" />
+                  Fast hosting
+                </div>
+                <div className="hidden sm:block text-muted-foreground/30">•</div>
+                <div className="flex items-center gap-2">
+                  <Rocket className="h-4 w-4 text-primary" />
+                  Cancel anytime
+                </div>
               </div>
             </div>
           </div>
@@ -112,7 +120,7 @@ export default function Home() {
         title="Everything you need to succeed online"
         description="Built specifically for business owners who want to focus on growth, not technology"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid-clean-4">
           <FeatureItem
             icon={MessageSquare}
             title="AI website setup"
@@ -143,7 +151,7 @@ export default function Home() {
         description="Building a website has never been easier. No technical skills required."
         className="bg-muted/20"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-6xl mx-auto">
+        <div className="grid-clean-3 max-w-6xl mx-auto">
           {[
             {
               icon: MessageSquare,
@@ -164,17 +172,17 @@ export default function Home() {
               description: "Go live on a free subdomain or connect your domain."
             }
           ].map((item, index) => (
-            <div key={index} className="text-center">
-              <div className="relative mb-6">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <item.icon className="h-8 w-8 text-primary" />
+            <div key={index} className="text-center group">
+              <div className="relative mb-8">
+                <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <item.icon className="h-10 w-10 text-primary" />
                 </div>
                 <div className="absolute -top-2 -right-2 bg-primary text-white text-sm font-bold rounded-full w-8 h-8 flex items-center justify-center">
                   {item.step}
                 </div>
               </div>
-              <h3 className="heading-display text-xl mb-3">{item.title}</h3>
-              <p className="text-muted-foreground">{item.description}</p>
+              <h3 className="heading-display text-xl mb-4">{item.title}</h3>
+              <p className="text-muted-foreground leading-relaxed">{item.description}</p>
             </div>
           ))}
         </div>
@@ -186,116 +194,124 @@ export default function Home() {
         title="Features that make sense for SMEs"
         description="Everything you need to succeed online, nothing you don't"
       >
-        <div className="space-y-24">
+        <div className="space-y-32">
           {/* Row 1 */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid-clean-2 items-center">
             <div>
-              <h3 className="heading-display text-2xl mb-4">Editor you can't break</h3>
-              <p className="text-lead mb-6">
+              <h3 className="heading-display text-3xl mb-6">Editor you can't break</h3>
+              <p className="text-lead mb-8">
                 Click, type, save. Undo any change. Our editor is designed so you can't accidentally break your site.
               </p>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                  <span>Visual editing with live preview</span>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-4">
+                  <CheckCircle className="h-6 w-6 text-success mt-0.5 flex-shrink-0" />
+                  <span className="text-lg">Visual editing with live preview</span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                  <span>Unlimited undo/redo</span>
+                <li className="flex items-start gap-4">
+                  <CheckCircle className="h-6 w-6 text-success mt-0.5 flex-shrink-0" />
+                  <span className="text-lg">Unlimited undo/redo</span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                  <span>Auto-save every change</span>
+                <li className="flex items-start gap-4">
+                  <CheckCircle className="h-6 w-6 text-success mt-0.5 flex-shrink-0" />
+                  <span className="text-lg">Auto-save every change</span>
                 </li>
               </ul>
             </div>
-            <div className="bg-muted/20 rounded-2xl p-8 text-center">
-              <FileText className="h-24 w-24 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Visual editor preview</p>
+            <div className="card-clean p-12 text-center group hover:scale-105 transition-transform duration-300">
+              <div className="w-32 h-32 bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                <FileText className="h-16 w-16 text-primary" />
+              </div>
+              <p className="text-muted-foreground font-medium">Visual editor preview</p>
             </div>
           </div>
 
           {/* Row 2 */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid-clean-2 items-center">
             <div className="lg:order-2">
-              <h3 className="heading-display text-2xl mb-4">Speed & SEO</h3>
-              <p className="text-lead mb-6">
+              <h3 className="heading-display text-3xl mb-6">Speed & SEO</h3>
+              <p className="text-lead mb-8">
                 Automatic speed tests and simple tips to rank better. We handle the technical stuff so you don't have to.
               </p>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                  <span>Real-time speed monitoring</span>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-4">
+                  <CheckCircle className="h-6 w-6 text-success mt-0.5 flex-shrink-0" />
+                  <span className="text-lg">Real-time speed monitoring</span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                  <span>SEO checklist and tips</span>
+                <li className="flex items-start gap-4">
+                  <CheckCircle className="h-6 w-6 text-success mt-0.5 flex-shrink-0" />
+                  <span className="text-lg">SEO checklist and tips</span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                  <span>Mobile optimization included</span>
+                <li className="flex items-start gap-4">
+                  <CheckCircle className="h-6 w-6 text-success mt-0.5 flex-shrink-0" />
+                  <span className="text-lg">Mobile optimization included</span>
                 </li>
               </ul>
             </div>
-            <div className="bg-muted/20 rounded-2xl p-8 text-center lg:order-1">
-              <BarChart3 className="h-24 w-24 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Performance dashboard</p>
+            <div className="card-clean p-12 text-center group hover:scale-105 transition-transform duration-300 lg:order-1">
+              <div className="w-32 h-32 bg-gradient-to-br from-accent/10 to-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                <BarChart3 className="h-16 w-16 text-accent" />
+              </div>
+              <p className="text-muted-foreground font-medium">Performance dashboard</p>
             </div>
           </div>
 
           {/* Row 3 */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid-clean-2 items-center">
             <div>
-              <h3 className="heading-display text-2xl mb-4">One-click admin</h3>
-              <p className="text-lead mb-6">
+              <h3 className="heading-display text-3xl mb-6">One-click admin</h3>
+              <p className="text-lead mb-8">
                 Access WordPress admin safely when you need advanced changes. We keep it secure so you can focus on your business.
               </p>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                  <span>Secure admin access</span>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-4">
+                  <CheckCircle className="h-6 w-6 text-success mt-0.5 flex-shrink-0" />
+                  <span className="text-lg">Secure admin access</span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                  <span>Plugin management</span>
+                <li className="flex items-start gap-4">
+                  <CheckCircle className="h-6 w-6 text-success mt-0.5 flex-shrink-0" />
+                  <span className="text-lg">Plugin management</span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                  <span>Advanced customization</span>
+                <li className="flex items-start gap-4">
+                  <CheckCircle className="h-6 w-6 text-success mt-0.5 flex-shrink-0" />
+                  <span className="text-lg">Advanced customization</span>
                 </li>
               </ul>
             </div>
-            <div className="bg-muted/20 rounded-2xl p-8 text-center">
-              <Settings className="h-24 w-24 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Admin panel access</p>
+            <div className="card-clean p-12 text-center group hover:scale-105 transition-transform duration-300">
+              <div className="w-32 h-32 bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                <Settings className="h-16 w-16 text-primary" />
+              </div>
+              <p className="text-muted-foreground font-medium">Admin panel access</p>
             </div>
           </div>
 
           {/* Row 4 */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid-clean-2 items-center">
             <div className="lg:order-2">
-              <h3 className="heading-display text-2xl mb-4">Security & backups</h3>
-              <p className="text-lead mb-6">
+              <h3 className="heading-display text-3xl mb-6">Security & backups</h3>
+              <p className="text-lead mb-8">
                 SSL, daily backups, and monitoring included. Your site is protected so you can sleep soundly.
               </p>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                  <span>SSL certificates included</span>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-4">
+                  <CheckCircle className="h-6 w-6 text-success mt-0.5 flex-shrink-0" />
+                  <span className="text-lg">SSL certificates included</span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                  <span>Daily automated backups</span>
+                <li className="flex items-start gap-4">
+                  <CheckCircle className="h-6 w-6 text-success mt-0.5 flex-shrink-0" />
+                  <span className="text-lg">Daily automated backups</span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                  <span>24/7 security monitoring</span>
+                <li className="flex items-start gap-4">
+                  <CheckCircle className="h-6 w-6 text-success mt-0.5 flex-shrink-0" />
+                  <span className="text-lg">24/7 security monitoring</span>
                 </li>
               </ul>
             </div>
-            <div className="bg-muted/20 rounded-2xl p-8 text-center lg:order-1">
-              <Shield className="h-24 w-24 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Security dashboard</p>
+            <div className="card-clean p-12 text-center group hover:scale-105 transition-transform duration-300 lg:order-1">
+              <div className="w-32 h-32 bg-gradient-to-br from-accent/10 to-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                <Shield className="h-16 w-16 text-accent" />
+              </div>
+              <p className="text-muted-foreground font-medium">Security dashboard</p>
             </div>
           </div>
         </div>
@@ -308,7 +324,7 @@ export default function Home() {
         description="See how Naveeg is helping SMEs get online and grow"
         className="bg-muted/20"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid-clean-2 max-w-5xl mx-auto">
           {testimonials.slice(0, 2).map((testimonial, index) => (
             <Testimonial key={index} {...testimonial} />
           ))}
@@ -321,15 +337,15 @@ export default function Home() {
         title="Start free, grow when you're ready"
         description="No setup fees. Cancel anytime. Choose the plan that fits your business."
       >
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-6 text-lg font-semibold mb-6">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-8 text-xl font-semibold mb-8">
             <span>Starter €49/mo</span>
-            <span>•</span>
+            <span className="text-muted-foreground">•</span>
             <span>Growth €99/mo</span>
-            <span>•</span>
+            <span className="text-muted-foreground">•</span>
             <span>Business Custom</span>
           </div>
-          <Button size="lg" onClick={handleSeePricing}>
+          <Button size="lg" onClick={handleSeePricing} className="text-lg px-8 py-4">
             See pricing
           </Button>
         </div>

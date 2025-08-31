@@ -25,7 +25,8 @@ export default function Pricing() {
         "Email support"
       ],
       cta: "Start free",
-      ctaVariant: "default" as const
+      ctaVariant: "default" as const,
+      icon: Zap
     },
     {
       name: "Growth",
@@ -42,7 +43,8 @@ export default function Pricing() {
         "Advanced SEO tips and speed reports"
       ],
       cta: "Start free",
-      ctaVariant: "default" as const
+      ctaVariant: "default" as const,
+      icon: Shield
     },
     {
       name: "Business",
@@ -57,7 +59,8 @@ export default function Pricing() {
         "Dedicated support"
       ],
       cta: "Talk to sales",
-      ctaVariant: "secondary" as const
+      ctaVariant: "secondary" as const,
+      icon: Crown
     }
   ]
 
@@ -89,56 +92,63 @@ export default function Pricing() {
         className="text-center pt-32"
       >
         {/* Pricing Toggle */}
-        <div className="flex items-center justify-center gap-4 mb-16">
-          <span className={`text-sm ${!isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
+        <div className="flex items-center justify-center gap-6 mb-20">
+          <span className={`text-lg font-medium ${!isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
             Monthly
           </span>
           <button
             onClick={() => setIsYearly(!isYearly)}
-            className={`relative w-16 h-8 rounded-full transition-colors duration-200 ${
+            className={`relative w-20 h-10 rounded-full transition-colors duration-300 ${
               isYearly ? 'bg-primary' : 'bg-muted'
             }`}
           >
             <div
-              className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-transform duration-200 ${
-                isYearly ? 'translate-x-8' : 'translate-x-1'
+              className={`absolute top-1 w-8 h-8 bg-white rounded-full transition-transform duration-300 shadow-sm ${
+                isYearly ? 'translate-x-10' : 'translate-x-1'
               }`}
             />
           </button>
-          <span className={`text-sm ${isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
-            Yearly
-            <span className="ml-1 text-xs text-primary font-medium">(save 2 months)</span>
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={`text-lg font-medium ${isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
+              Yearly
+            </span>
+            <Badge variant="accent" className="text-xs">
+              Save 2 months
+            </Badge>
+          </div>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
+        <div className="grid-clean-3 max-w-7xl mx-auto mb-20">
           {plans.map((plan, index) => (
             <div
               key={index}
               className={`relative card-clean p-8 ${
                 plan.popular 
-                  ? 'ring-2 ring-primary shadow-xl scale-105' 
+                  ? 'ring-2 ring-primary shadow-xl scale-105 border-primary/20' 
                   : 'hover:scale-105'
               } transition-all duration-300`}
             >
               {plan.popular && (
-                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 px-4 py-1">
                   Most Popular
                 </Badge>
               )}
               
               <div className="text-center mb-8">
-                <h3 className="heading-display text-2xl mb-2">{plan.name}</h3>
-                <p className="text-muted-foreground mb-4">{plan.description}</p>
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <plan.icon className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="heading-display text-2xl mb-3">{plan.name}</h3>
+                <p className="text-muted-foreground mb-6">{plan.description}</p>
                 <div className="mb-6">
-                  <span className="text-4xl font-bold">
+                  <span className="text-5xl font-bold">
                     {isYearly && plan.name !== "Business" 
                       ? `€${Math.round(parseInt(plan.price.replace('€', '')) * 10 / 12)}`
                       : plan.price
                     }
                   </span>
-                  <span className="text-muted-foreground">
+                  <span className="text-xl text-muted-foreground">
                     {isYearly && plan.name !== "Business" ? "/mo" : plan.period}
                   </span>
                 </div>
@@ -148,7 +158,7 @@ export default function Pricing() {
                 {plan.features.map((feature, featureIndex) => (
                   <li key={featureIndex} className="flex items-start gap-3">
                     <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">{feature}</span>
+                    <span className="text-base">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -156,7 +166,7 @@ export default function Pricing() {
               <Button
                 variant={plan.ctaVariant}
                 size="lg"
-                className="w-full"
+                className="w-full text-lg py-4"
                 onClick={() => handleCtaClick(plan)}
               >
                 {plan.cta}
@@ -166,9 +176,9 @@ export default function Pricing() {
         </div>
 
         {/* Legal Note */}
-        <div className="text-center text-sm text-muted-foreground mb-8">
-          <p>14-day free trial on a Naveeg subdomain. No credit card required to start.</p>
-          <p className="mt-2">Prices exclude VAT where applicable.</p>
+        <div className="text-center text-base text-muted-foreground mb-12">
+          <p className="mb-2">14-day free trial on a Naveeg subdomain. No credit card required to start.</p>
+          <p>Prices exclude VAT where applicable.</p>
         </div>
       </Section>
 
@@ -179,7 +189,7 @@ export default function Pricing() {
         description="Common questions about Naveeg's pricing and service"
         className="bg-muted/20"
       >
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="max-w-4xl mx-auto space-y-6">
           {[
             {
               question: "Do I need any tech skills?",
@@ -206,9 +216,9 @@ export default function Pricing() {
               answer: "Monthly plans are pay-as-you-go. Talk to us if something goes wrong."
             }
           ].map((faq, index) => (
-            <div key={index} className="card-clean p-6">
-              <h3 className="font-semibold mb-3">{faq.question}</h3>
-              <p className="text-muted-foreground">{faq.answer}</p>
+            <div key={index} className="card-clean p-8">
+              <h3 className="font-semibold text-lg mb-3">{faq.question}</h3>
+              <p className="text-muted-foreground text-base">{faq.answer}</p>
             </div>
           ))}
         </div>
