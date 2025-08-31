@@ -104,14 +104,28 @@ Deno.serve(async (req) => {
       });
     }
 
-    const passBody = res.type.includes("application/json")
-      ? res.body
-      : JSON.stringify({ status: "error", message: rateLike ? "Too many requests (Cloudflare 1015)" : "Upstream error" });
+    // after computing `rateLike`, `passBody`, etc.
+    const retryAfter = res.headers.get("retry-after") ?? "60";
+    const headers: Record<string, string> = { ...corsHeaders, "content-type": "application/json" };
 
-    return new Response(passBody, {
-      status: res.status,
-      headers: { ...corsHeaders, "content-type": "application/json" },
-    });
+    if (rateLike) {
+      headers["x-tenweb-proxy-error"] = "rate_limited";
+      headers["retry-after"] = retryAfter;
+    }
+
+    // If the upstream body wasn't JSON, replace with our JSON payload that includes retry_after
+    const body =
+      res.type.includes("application/json")
+        ? res.body
+        : JSON.stringify({
+            status: "error",
+            code: "rate_limited",
+            message: "Too many requests (Cloudflare 1015)",
+            retry_after: Number(retryAfter),
+            upstream_status: res.status,
+          });
+
+    return new Response(body, { status: res.status, headers });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500, headers: { ...corsHeaders, "content-type": "application/json" },

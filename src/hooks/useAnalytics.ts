@@ -64,14 +64,19 @@ export function useAnalytics(websiteId?: number, period: Period = "week") {
         const { res, err }: any = await PENDING.get(key)!;
         if (!mounted.current) return;
 
+        if (err && err.status === 429) {
+          // fixed 60s unless function passed a retry_after in error.message/body
+          // supabase.functions.invoke hides body; use fixed 60s fallback
+          const retryMs = 60_000;
+          COOLDOWN_UNTIL.set(key, Date.now() + retryMs);
+          if (LAST_GOOD.has(key)) setData(LAST_GOOD.get(key)); // show cached
+          setError("rate_limited");
+          setLoading(false);
+          return;
+        }
+
         if (err) {
-          const st = err.status ?? 0;
-          if (st === 429) {
-            COOLDOWN_UNTIL.set(key, Date.now() + 60_000);
-            setError("rate_limited");
-          } else {
-            setError(err.message ?? "error");
-          }
+          setError(err.message ?? "error");
           setLoading(false);
           return;
         }
