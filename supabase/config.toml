@@ -2,3 +2,6 @@ project_id = "eilpazegjrcrwgpujqni"
 
 [functions.ai-router]
 verify_jwt = false
+
+[functions.psi-collect]
+verify_jwt = false

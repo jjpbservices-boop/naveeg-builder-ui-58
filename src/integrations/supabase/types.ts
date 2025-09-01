@@ -181,6 +181,39 @@ export type Database = {
         }
         Relationships: []
       }
+      site_perf: {
+        Row: {
+          analysis_ts: string
+          created_at: string
+          crux: Json | null
+          id: string
+          lhr: Json | null
+          performance_score: number | null
+          site_id: string
+          strategy: string
+        }
+        Insert: {
+          analysis_ts: string
+          created_at?: string
+          crux?: Json | null
+          id?: string
+          lhr?: Json | null
+          performance_score?: number | null
+          site_id: string
+          strategy: string
+        }
+        Update: {
+          analysis_ts?: string
+          created_at?: string
+          crux?: Json | null
+          id?: string
+          lhr?: Json | null
+          performance_score?: number | null
+          site_id?: string
+          strategy?: string
+        }
+        Relationships: []
+      }
       sites: {
         Row: {
           admin_url: string | null
