@@ -1,33 +1,20 @@
 // deno-lint-ignore-file no-explicit-any
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-
-const ORIGINS = (Deno.env.get("FRONTEND_ORIGINS") ?? "")
-  .split(",")
-  .map(s => s.trim())
-  .filter(Boolean)
+import { isOriginAllowed, buildCorsHeaders, handlePreflight } from '../_shared/cors.ts';
+import { slugify, validateBusinessType, generateCredentials } from '../_shared/sanitize.ts';
+import { insertSiteDraft } from '../_shared/supabase.ts';
 
 const ok = (data: any, origin: string | null, status = 200) =>
   new Response(JSON.stringify(data), {
     status,
     headers: {
       "content-type": "application/json",
-      "access-control-allow-origin": allowOrigin(origin),
-      "access-control-allow-methods": "POST,OPTIONS",
-      "access-control-allow-headers": "authorization,content-type",
-      "vary": "origin",
+      ...buildCorsHeaders(origin),
     },
   })
 
 const err = (message: string, origin: string | null, status = 400) =>
   ok({ ok: false, message }, origin, status)
-
-const allowOrigin = (origin: string | null) =>
-  origin && ORIGINS.includes(origin) ? origin : "*"
-
-const isAllowedOrigin = (origin: string | null) => {
-  if (!origin) return false
-  return ORIGINS.includes(origin) || ORIGINS.includes("*")
-}
 
 // ---- 10Web API client - official endpoint compliance
 const TW_BASE = Deno.env.get("TENWEB_API_BASE") ?? "https://api.10web.io"
@@ -78,22 +65,6 @@ async function createWebsite(payload: {
 // ---- Region handling for Frankfurt zones
 const ALLOWED_ZONES = ["europe-west3-a", "europe-west3-b", "europe-west3-c"] as const
 const FALLBACK_REGION = "europe-west3"
-
-function slugify(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "")
-    .replace(/--+/g, "-") // collapse double hyphens
-    .slice(0, 30);
-}
-
-function generateCredentials() {
-  return {
-    admin_username: `admin_${crypto.randomUUID().substring(0, 8)}`,
-    admin_password: crypto.randomUUID()
-  }
-}
 
 async function createWebsiteWithFallback(
   subdomain: string, 
@@ -151,70 +122,33 @@ async function createWebsiteWithFallback(
   }
 }
 
-// ---- Database operations
-const SB_URL = Deno.env.get("SUPABASE_URL") ?? ""
-const SB_SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-
-async function saveDraft(draft: {
-  subdomain: string;
-  region: string;
-  brief: Record<string, unknown>;
-  website_id?: string;
-  status?: string;
-  message?: string;
-}) {
-  const payload = {
-    subdomain: draft.subdomain,
-    region: draft.region,
-    brief: draft.brief,
-    website_id: draft.website_id || null,
-    status: draft.status || 'created',
-    message: draft.message || null,
-    pages_meta: [],
-    colors: {},
-    fonts: {},
-  }
-
-  const response = await fetch(`${SB_URL}/rest/v1/site_drafts`, {
-    method: "POST",
-    headers: {
-      "apikey": SB_SVC,
-      "authorization": `Bearer ${SB_SVC}`,
-      "content-type": "application/json",
-      "prefer": "return=representation",
-    },
-    body: JSON.stringify(payload),
-  })
-
-  const data = await response.json().catch(() => ({}))
-  
-  if (!response.ok) {
-    const error: any = new Error("Database insert failed")
-    error.status = response.status
-    error.body = data
-    throw error
-  }
-
-  return data
-}
-
 // ---- Handler
 Deno.serve(async (req) => {
-  const origin = req.headers.get("origin") ?? "";
-  if (!isAllowedOrigin(origin)) {
-    return err("Origin not allowed", origin, 400);
+  const origin = req.headers.get("origin") || req.headers.get("x-forwarded-origin");
+  
+  // CORS preflight
+  if (req.method === "OPTIONS") return handlePreflight(req);
+  
+  // Origin validation
+  if (!isOriginAllowed(origin)) {
+    return new Response(JSON.stringify({ ok: false, message: "Origin not allowed" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" }
+    });
   }
-
-  if (req.method === "OPTIONS") return ok({ ok: true }, origin)
 
   if (req.method !== "POST") return err("Method not allowed", origin, 405)
 
   let body: any = {}
-  try { body = await req.json() } catch { return err("Invalid JSON", origin, 400) }
+  try { 
+    body = await req.json() 
+  } catch { 
+    return err("Invalid JSON", origin, 400) 
+  }
 
   const action = String(body?.action ?? "")
   if (action !== "create-website") {
-    return err("Invalid action", origin, 400)
+    return err("Invalid action. Expected 'create-website'", origin, 400)
   }
 
   // Extract and validate brief data
@@ -227,6 +161,11 @@ Deno.serve(async (req) => {
 
   if (!businessType || !businessName || !businessDescription) {
     return err("Missing required fields: business_type, business_name, business_description", origin, 400);
+  }
+
+  // Validate business type against allowed slugs
+  if (!validateBusinessType(businessType)) {
+    return err(`Invalid business_type. Must be one of: service, retail, restaurant, healthcare, education, technology, finance, real-estate, nonprofit, consulting, manufacturing, creative, fitness, legal, automotive`, origin, 400);
   }
 
   // Generate subdomain if empty
@@ -251,7 +190,7 @@ Deno.serve(async (req) => {
     )
 
     // Save successful draft
-    const draftRow = await saveDraft({
+    const draftRow = await insertSiteDraft({
       subdomain,
       region,
       brief: briefData,
@@ -259,20 +198,22 @@ Deno.serve(async (req) => {
       status: 'created',
     })
 
+    console.log(`AI Router: Created draft ${draftRow.id} with website_id ${website_id}`)
+
     return ok({
       ok: true,
-      draft_id: draftRow?.id,
+      draft_id: draftRow.id,
       region,
       subdomain,
       website_id,
     }, origin)
 
   } catch (error: any) {
-    console.error("AI Router Error:", error)
+    console.error("AI Router Error:", error.message)
     
     // Save failed draft with error details
     try {
-      const draftRow = await saveDraft({
+      const draftRow = await insertSiteDraft({
         subdomain,
         region: 'europe-west3',
         brief: briefData,
@@ -281,18 +222,20 @@ Deno.serve(async (req) => {
         message: error?.body?.message || error?.message || "10Web API failed",
       })
 
+      console.log(`AI Router: Created failed draft ${draftRow.id}`)
+
       // Return error response but with draft_id for tracking
       return ok({
         ok: false,
         code: "TENWEB_ERROR",
         message: error?.body?.message || error?.message || "Website creation failed",
         details: { http: error?.status || 500 },
-        draft_id: draftRow?.id,
+        draft_id: draftRow.id,
         subdomain,
-      }, origin, error?.status || 500)
+      }, origin, 502)
       
     } catch (dbError: any) {
-      console.error("Failed to save error draft:", dbError)
+      console.error("Failed to save error draft:", dbError.message)
       return err("Creation failed and could not save draft", origin, 500)
     }
   }

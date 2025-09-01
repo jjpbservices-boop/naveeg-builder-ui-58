@@ -1,6 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { PSIClient, extractMetrics, type PSIRequest } from '../_shared/psi.ts';
+import { validateStrategy, validatePsiCategories } from '../_shared/sanitize.ts';
+import { insertSitePerf } from '../_shared/supabase.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -41,17 +42,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      console.error('PSI Collect: Supabase credentials not configured');
-      return new Response(
-        JSON.stringify({ ok: false, error: 'Database not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const { site_id, url, strategy = 'mobile', locale, categories }: CollectRequest = await req.json();
 
     if (!site_id || !url) {
@@ -62,9 +52,17 @@ Deno.serve(async (req) => {
     }
 
     // Validate strategy
-    if (!['mobile', 'desktop'].includes(strategy)) {
+    if (!validateStrategy(strategy)) {
       return new Response(
         JSON.stringify({ ok: false, error: 'Invalid strategy. Must be mobile or desktop' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate categories if provided
+    if (categories && !validatePsiCategories(categories)) {
+      return new Response(
+        JSON.stringify({ ok: false, error: 'Invalid categories. Must be PERFORMANCE, ACCESSIBILITY, BEST_PRACTICES, or SEO' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -74,7 +72,7 @@ Deno.serve(async (req) => {
     // Initialize PSI client
     const psiClient = new PSIClient(PSI_API_KEY);
     
-    // Build PSI request
+    // Build PSI request with only allowed parameters
     const psiRequest: PSIRequest = {
       url,
       strategy,
@@ -88,32 +86,17 @@ Deno.serve(async (req) => {
     // Extract metrics
     const metrics = extractMetrics(psiResponse);
 
-    // Initialize Supabase client with service role
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    // Insert into site_perf table using shared utility
+    const data = await insertSitePerf({
+      site_id,
+      strategy,
+      analysis_ts: metrics.analysis_ts,
+      performance_score: metrics.performance_score,
+      crux: metrics.crux,
+      lhr: metrics.lhr,
+    });
 
-    // Insert into site_perf table
-    const { data, error } = await supabase
-      .from('site_perf')
-      .insert({
-        site_id,
-        strategy,
-        analysis_ts: metrics.analysis_ts,
-        performance_score: metrics.performance_score,
-        crux: metrics.crux,
-        lhr: metrics.lhr,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('PSI Collect: Database insert error:', error);
-      return new Response(
-        JSON.stringify({ ok: false, error: 'Failed to save PSI data' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log(`PSI Collect: Successfully saved PSI data for site ${site_id}`);
+    console.log(`PSI Collect: Successfully saved PSI data for site ${site_id}, record ${data.id}`);
 
     return new Response(
       JSON.stringify({

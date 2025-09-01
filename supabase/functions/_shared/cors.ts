@@ -1,36 +1,43 @@
-const ALLOWED_ORIGINS = new Set([
-  'https://naveeg.app',
-  'https://www.naveeg.app',
-  'https://naveeg.com',
-  'https://www.naveeg.com',
-  'https://*.naveeg.com',
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:4311', // Marketing app
-  'http://localhost:4312', // Dashboard app
-]);
+// CORS utilities for edge functions
+export function getAllowedOrigins(): string[] {
+  return (Deno.env.get("FRONTEND_ORIGINS") ?? "")
+    .split(",")
+    .map(s => s.trim())
+    .filter(Boolean);
+}
 
-export const corsHeaders = (req: Request) => {
-  const origin = req.headers.get('origin') || '';
-  const allowedOrigin = ALLOWED_ORIGINS.has(origin) 
-    ? origin 
-    : 'https://naveeg.app';
+export function isOriginAllowed(origin: string | null): boolean {
+  if (!origin) return false;
+  const allowed = getAllowedOrigins();
+  return allowed.includes(origin) || allowed.includes("*");
+}
 
+export function getAllowedOrigin(origin: string | null): string {
+  return origin && isOriginAllowed(origin) ? origin : "*";
+}
+
+export function buildCorsHeaders(origin: string | null) {
   return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-api-key',
-    'Access-Control-Max-Age': '86400',
-    'Vary': 'Origin',
+    "Access-Control-Allow-Origin": getAllowedOrigin(origin),
+    "Access-Control-Allow-Methods": "POST,OPTIONS",
+    "Access-Control-Allow-Headers": "authorization,content-type,x-client-info,apikey",
+    "Access-Control-Allow-Credentials": "true",
+    "Vary": "Origin",
   };
-};
+}
 
-export const handleCors = (req: Request) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 200,
-      headers: corsHeaders(req),
+export function handlePreflight(req: Request) {
+  const origin = req.headers.get("origin") || req.headers.get("x-forwarded-origin");
+  
+  if (!isOriginAllowed(origin)) {
+    return new Response(null, { 
+      status: 403,
+      headers: { "Content-Type": "text/plain" }
     });
   }
-  return null;
-};
+
+  return new Response(null, { 
+    status: 200, 
+    headers: buildCorsHeaders(origin) 
+  });
+}

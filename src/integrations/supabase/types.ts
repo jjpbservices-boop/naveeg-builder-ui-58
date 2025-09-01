@@ -131,8 +131,10 @@ export type Database = {
           created_at: string | null
           fonts: Json | null
           id: string
+          message: string | null
           pages_meta: Json
           region: string | null
+          status: string
           subdomain: string | null
           tenweb_website_id: number | null
           unique_id: string
@@ -149,8 +151,10 @@ export type Database = {
           created_at?: string | null
           fonts?: Json | null
           id?: string
+          message?: string | null
           pages_meta: Json
           region?: string | null
+          status?: string
           subdomain?: string | null
           tenweb_website_id?: number | null
           unique_id: string
@@ -167,8 +171,10 @@ export type Database = {
           created_at?: string | null
           fonts?: Json | null
           id?: string
+          message?: string | null
           pages_meta?: Json
           region?: string | null
+          status?: string
           subdomain?: string | null
           tenweb_website_id?: number | null
           unique_id?: string

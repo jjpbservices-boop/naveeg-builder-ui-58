@@ -1,0 +1,49 @@
+name: Deploy Supabase Functions
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Supabase Link
+        run: |
+          supabase link --project-ref $SUPABASE_PROJECT_ID
+
+      - name: Push Database Changes
+        run: |
+          supabase db push
+
+      - name: Deploy AI Router Function
+        run: |
+          supabase functions deploy ai-router
+
+      - name: Deploy PSI Collect Function
+        run: |
+          supabase functions deploy psi-collect
+
+      - name: Deployment Summary
+        run: |
+          echo "✅ Database migrations pushed"
+          echo "✅ ai-router function deployed"
+          echo "✅ psi-collect function deployed"
+          echo "🚀 All backend components deployed successfully"
