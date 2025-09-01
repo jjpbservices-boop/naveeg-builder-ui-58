@@ -48,6 +48,8 @@ export class PSIClient {
     await this.throttle();
 
     const url = new URL(this.baseUrl);
+    
+    // Only allowed query parameters
     url.searchParams.set('url', request.url);
     url.searchParams.set('key', this.apiKey);
     
@@ -75,9 +77,7 @@ export class PSIClient {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       if (response.status === 429) {
-        // Exponential backoff for rate limits
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        throw new Error(`PSI rate limit exceeded: ${errorData.error?.message || 'Rate limited'}`);
+        throw new Error(`PSI rate limit: ${errorData.error?.message || 'Rate limited'}`);
       }
       throw new Error(`PSI API error ${response.status}: ${errorData.error?.message || response.statusText}`);
     }
@@ -105,6 +105,24 @@ export class PSIClient {
     
     throw lastError!;
   }
+}
+
+export function extractMetrics(psiResponse: PSIResponse) {
+  const { categories } = psiResponse.lighthouseResult;
+  const crux = {
+    loadingExperience: psiResponse.loadingExperience?.metrics || {},
+    originLoadingExperience: psiResponse.originLoadingExperience?.metrics || {},
+  };
+
+  return {
+    performance_score: categories.performance?.score || null,
+    analysis_ts: psiResponse.analysisUTCTimestamp,
+    crux,
+    lhr: {
+      categories,
+      audits: psiResponse.lighthouseResult.audits,
+    },
+  };
 }
 
 export function extractMetrics(psiResponse: PSIResponse) {
