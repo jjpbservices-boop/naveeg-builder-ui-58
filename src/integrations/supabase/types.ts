@@ -184,6 +184,7 @@ export type Database = {
       sites: {
         Row: {
           admin_url: string | null
+          brief: Json
           business_description: string | null
           business_name: string | null
           business_type: string | null
@@ -198,22 +199,27 @@ export type Database = {
           pages_meta: Json | null
           payload: Json | null
           plan: string | null
+          region: string
           seo_description: string | null
           seo_keyphrase: string | null
           seo_title: string | null
           site_url: string | null
           status: string | null
           subdomain: string | null
-          tenweb_website_id: number
+          tenweb_website_id: string
           title: string | null
           unique_id: string | null
           updated_at: string | null
           user_id: string
+          website_description: string | null
           website_id: number
+          website_keyphrase: string | null
+          website_title: string | null
           website_type: string | null
         }
         Insert: {
           admin_url?: string | null
+          brief?: Json
           business_description?: string | null
           business_name?: string | null
           business_type?: string | null
@@ -228,22 +234,27 @@ export type Database = {
           pages_meta?: Json | null
           payload?: Json | null
           plan?: string | null
+          region?: string
           seo_description?: string | null
           seo_keyphrase?: string | null
           seo_title?: string | null
           site_url?: string | null
           status?: string | null
           subdomain?: string | null
-          tenweb_website_id: number
+          tenweb_website_id: string
           title?: string | null
           unique_id?: string | null
           updated_at?: string | null
           user_id: string
+          website_description?: string | null
           website_id: number
+          website_keyphrase?: string | null
+          website_title?: string | null
           website_type?: string | null
         }
         Update: {
           admin_url?: string | null
+          brief?: Json
           business_description?: string | null
           business_name?: string | null
           business_type?: string | null
@@ -258,18 +269,22 @@ export type Database = {
           pages_meta?: Json | null
           payload?: Json | null
           plan?: string | null
+          region?: string
           seo_description?: string | null
           seo_keyphrase?: string | null
           seo_title?: string | null
           site_url?: string | null
           status?: string | null
           subdomain?: string | null
-          tenweb_website_id?: number
+          tenweb_website_id?: string
           title?: string | null
           unique_id?: string | null
           updated_at?: string | null
           user_id?: string
+          website_description?: string | null
           website_id?: number
+          website_keyphrase?: string | null
+          website_title?: string | null
           website_type?: string | null
         }
         Relationships: []
@@ -306,6 +321,7 @@ export type Database = {
           current_period_end: string | null
           id: string
           metadata: Json | null
+          plan: string
           plan_id: string
           site_id: string | null
           status: string
@@ -320,6 +336,7 @@ export type Database = {
           current_period_end?: string | null
           id?: string
           metadata?: Json | null
+          plan?: string
           plan_id: string
           site_id?: string | null
           status: string
@@ -334,6 +351,7 @@ export type Database = {
           current_period_end?: string | null
           id?: string
           metadata?: Json | null
+          plan?: string
           plan_id?: string
           site_id?: string | null
           status?: string
@@ -396,6 +414,15 @@ export type Database = {
     Functions: {
       create_trial_subscription: {
         Args: { p_site_id: string; p_user_id: string }
+        Returns: string
+      }
+      promote_draft_to_site: {
+        Args: {
+          p_draft_id: string
+          p_region: string
+          p_subdomain: string
+          p_user_id: string
+        }
         Returns: string
       }
       user_owns_site: {
