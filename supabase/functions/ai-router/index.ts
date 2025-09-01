@@ -1,242 +1,127 @@
-// deno-lint-ignore-file no-explicit-any
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { isOriginAllowed, buildCorsHeaders, handlePreflight } from '../_shared/cors.ts';
-import { slugify, validateBusinessType, generateCredentials } from '../_shared/sanitize.ts';
-import { insertSiteDraft } from '../_shared/supabase.ts';
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { isOriginAllowed, handlePreflight, json } from "../_shared/cors.ts";
 
-const ok = (data: any, origin: string | null, status = 200) =>
-  new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "content-type": "application/json",
-      ...buildCorsHeaders(origin),
-    },
-  })
-
-const err = (message: string, origin: string | null, status = 400) =>
-  ok({ ok: false, message }, origin, status)
-
-// ---- 10Web API client - official endpoint compliance
-const TW_BASE = Deno.env.get("TENWEB_API_BASE") ?? "https://api.10web.io"
-const TW_KEY = Deno.env.get("TENWEB_API_KEY") ?? ""
+// ---- 10Web API client - single instance
+const TW_BASE = Deno.env.get("TENWEB_API_BASE") ?? "https://api.10web.io";
+const TW_KEY  = Deno.env.get("TENWEB_API_KEY") ?? "";
 
 async function createWebsite(payload: {
-  subdomain: string;
-  region: string;
-  site_title: string;
-  admin_username: string;
-  admin_password: string;
-}, timeoutMs = 25000): Promise<{ website_id: string; [key: string]: any }> {
-  const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs)
-  
+  subdomain: string; region: string; site_title: string;
+  admin_username: string; admin_password: string;
+}, timeoutMs = 25_000): Promise<{ website_id: string; [k: string]: unknown }> {
+  const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const response = await fetch(`${TW_BASE}/websites`, {
+    const res = await fetch(`${TW_BASE}/websites`, {
       method: "POST",
-      headers: {
-        "x-api-key": TW_KEY,
-        "Content-Type": "application/json",
-      },
+      headers: { "x-api-key": TW_KEY, "Content-Type": "application/json" },
       body: JSON.stringify(payload),
       signal: ctrl.signal,
-    })
-
-    const data = await response.json().catch(() => ({}))
-    
-    if (!response.ok) {
-      const error: any = new Error("10Web API error")
-      error.status = response.status
-      error.body = data
-      error.code = "TENWEB_ERROR"
-      error.details = { http: response.status }
-      throw error
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const e: any = new Error("TENWEB_ERROR"); e.status = res.status; e.body = json; throw e;
     }
-
-    // Return website_id from response
-    return {
-      website_id: data.website_id || data.id || "",
-      ...data
-    }
-  } finally {
-    clearTimeout(timer)
-  }
+    return { website_id: json.website_id || json.id || "", ...json };
+  } finally { clearTimeout(t); }
 }
 
-// ---- Region handling for Frankfurt zones
-const ALLOWED_ZONES = ["europe-west3-a", "europe-west3-b", "europe-west3-c"] as const
-const FALLBACK_REGION = "europe-west3"
+// ---- Region fallback logic - single instance
+const ALLOWED_ZONES = ["europe-west3-a","europe-west3-b","europe-west3-c"] as const;
+const FALLBACK_REGION = "europe-west3";
+
+function generateCredentials() {
+  const r = crypto.getRandomValues(new Uint32Array(2)).join("");
+  return { admin_username: `nvg_${r.slice(0,8)}`, admin_password: crypto.randomUUID().replace(/-/g,"").slice(0,16) };
+}
 
 async function createWebsiteWithFallback(
-  subdomain: string, 
-  businessName: string,
-  region?: string
+  subdomain: string, siteTitle: string, region?: string
 ): Promise<{ website_id: string; region: string; raw?: any }> {
-  const credentials = generateCredentials()
-  const basePayload = {
-    subdomain,
-    site_title: businessName,
-    ...credentials
-  }
+  const creds = generateCredentials();
+  const base = { subdomain, site_title: siteTitle, ...creds };
 
-  // Try specified region first, then fallback zones
-  const regionsToTry = region && ALLOWED_ZONES.includes(region as any) 
+  const zones = region && (ALLOWED_ZONES as readonly string[]).includes(region)
     ? [region, ...ALLOWED_ZONES.filter(z => z !== region)]
-    : [...ALLOWED_ZONES]
+    : [...ALLOWED_ZONES];
 
-  let lastError: any = null
-
-  for (const targetRegion of regionsToTry) {
+  let lastErr: any = null;
+  for (const z of zones) {
     try {
-      const result = await createWebsite({
-        ...basePayload,
-        region: targetRegion
-      })
-      return { 
-        website_id: result.website_id,
-        region: targetRegion,
-        raw: result
-      }
-    } catch (error: any) {
-      lastError = error
-      if (error?.status === 400 || error?.status === 422) {
-        continue // Try next zone
-      }
-      break // Non-retryable error
+      const r = await createWebsite({ ...base, region: z });
+      return { website_id: r.website_id, region: z, raw: r };
+    } catch (e: any) {
+      lastErr = e;
+      if (e?.status === 400 || e?.status === 422) continue; // try next zone
+      break; // non-retryable
     }
   }
+  // final fallback to region str
+  const r = await createWebsite({ ...base, region: FALLBACK_REGION }).catch(() => { throw lastErr; });
+  return { website_id: r.website_id, region: FALLBACK_REGION, raw: r };
+}
 
-  // Final fallback to region string
-  try {
-    const result = await createWebsite({
-      ...basePayload,
-      region: FALLBACK_REGION
-    })
-    return {
-      website_id: result.website_id,
-      region: FALLBACK_REGION,
-      raw: result
-    }
-  } catch (error: any) {
-    // If this fails too, throw the last meaningful error
-    throw lastError || error
-  }
+// ---- Database operations - single instance
+const SB_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SB_SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+async function saveDraft(input: {
+  subdomain: string; region: string; brief: Record<string, unknown>;
+  website_id?: string | null; status?: "created"|"queued"|"failed"; message?: string | null;
+}) {
+  const payload = {
+    subdomain: input.subdomain,
+    region: input.region,
+    brief: input.brief,
+    website_id: input.website_id ?? null,
+    status: input.status ?? "created",
+    message: input.message ?? null,
+    pages_meta: [],
+    colors: {},
+    fonts: {},
+  };
+  const res = await fetch(`${SB_URL}/rest/v1/site_drafts`, {
+    method: "POST",
+    headers: { apikey: SB_SVC, authorization: `Bearer ${SB_SVC}`, "Content-Type": "application/json", prefer: "return=representation" },
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) { const e: any = new Error("draft insert failed"); e.status = res.status; e.body = json; throw e; }
+  return json; // expecting returned row with id
 }
 
 // ---- Handler
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin") || req.headers.get("x-forwarded-origin");
-  
-  // CORS preflight
+
   if (req.method === "OPTIONS") return handlePreflight(req);
-  
-  // Origin validation
-  if (!isOriginAllowed(origin)) {
-    return new Response(JSON.stringify({ ok: false, message: "Origin not allowed" }), {
-      status: 403,
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  if (req.method !== "POST") return err("Method not allowed", origin, 405)
-
-  let body: any = {}
-  try { 
-    body = await req.json() 
-  } catch { 
-    return err("Invalid JSON", origin, 400) 
-  }
-
-  const action = String(body?.action ?? "")
-  if (action !== "create-website") {
-    return err("Invalid action. Expected 'create-website'", origin, 400)
-  }
-
-  // Extract and validate brief data
-  const brief = body?.brief ?? body
-  
-  const businessType = brief?.business_type?.toString().trim();
-  const businessName = brief?.business_name?.toString().trim();
-  const businessDescription = brief?.business_description?.toString().trim();
-  let subdomain = brief?.preferred_subdomain?.toString().trim();
-
-  if (!businessType || !businessName || !businessDescription) {
-    return err("Missing required fields: business_type, business_name, business_description", origin, 400);
-  }
-
-  // Validate business type against allowed slugs
-  if (!validateBusinessType(businessType)) {
-    return err(`Invalid business_type. Must be one of: service, retail, restaurant, healthcare, education, technology, finance, real-estate, nonprofit, consulting, manufacturing, creative, fitness, legal, automotive`, origin, 400);
-  }
-
-  // Generate subdomain if empty
-  if (!subdomain) subdomain = slugify(businessName);
-  // Sanitize subdomain
-  subdomain = slugify(subdomain);
-  if (!subdomain) subdomain = slugify(businessName);
-
-  const briefData = {
-    business_type: businessType,
-    business_name: businessName,
-    business_description: businessDescription,
-    preferred_subdomain: brief?.preferred_subdomain || null,
-  }
+  if (!isOriginAllowed(origin)) return json({ ok:false, message:"Origin not allowed" }, origin, 403);
+  if (req.method !== "POST")   return json({ ok:false, message:"Method not allowed" }, origin, 405);
 
   try {
-    // Attempt to create website with 10Web
-    const { website_id, region } = await createWebsiteWithFallback(
-      subdomain, 
-      businessName,
-      brief?.region
-    )
+    const { action, brief } = await req.json();
+    if (action !== "create-website") return json({ ok:false, message:"Invalid action" }, origin, 400);
 
-    // Save successful draft
-    const draftRow = await insertSiteDraft({
-      subdomain,
-      region,
-      brief: briefData,
-      website_id,
-      status: 'created',
-    })
+    // validate brief
+    const { business_type, business_name, business_description, preferred_subdomain, region } = brief ?? {};
+    const ALLOWED = new Set(["service","restaurant","retail","ecommerce","beauty"]);
+    if (!ALLOWED.has(business_type) || !business_name || !business_description)
+      return json({ ok:false, message:"Invalid brief" }, origin, 422);
 
-    console.log(`AI Router: Created draft ${draftRow.id} with website_id ${website_id}`)
+    const slug = String(preferred_subdomain || business_name)
+      .toLowerCase().replace(/[^a-z0-9-]/g,"-").replace(/-+/g,"-").replace(/^-|-$|/g,"").slice(0,30) || "site";
 
-    return ok({
-      ok: true,
-      draft_id: draftRow.id,
-      region,
-      subdomain,
-      website_id,
-    }, origin)
-
-  } catch (error: any) {
-    console.error("AI Router Error:", error.message)
-    
-    // Save failed draft with error details
+    // attempt 10Web site creation
+    let website_id: string | null = null; let zone = region as string | undefined; let status: "created"|"queued"|"failed" = "created"; let message: string | null = null;
     try {
-      const draftRow = await insertSiteDraft({
-        subdomain,
-        region: 'europe-west3',
-        brief: briefData,
-        website_id: null,
-        status: 'failed',
-        message: error?.body?.message || error?.message || "10Web API failed",
-      })
-
-      console.log(`AI Router: Created failed draft ${draftRow.id}`)
-
-      // Return error response but with draft_id for tracking
-      return ok({
-        ok: false,
-        code: "TENWEB_ERROR",
-        message: error?.body?.message || error?.message || "Website creation failed",
-        details: { http: error?.status || 500 },
-        draft_id: draftRow.id,
-        subdomain,
-      }, origin, 502)
-      
-    } catch (dbError: any) {
-      console.error("Failed to save error draft:", dbError.message)
-      return err("Creation failed and could not save draft", origin, 500)
+      const r = await createWebsiteWithFallback(slug, business_name, zone);
+      website_id = r.website_id; zone = r.region;
+    } catch (e: any) {
+      status = "queued"; message = e?.body?.message || e?.message || "TENWEB_ERROR";
     }
+
+    const row = await saveDraft({ subdomain: slug, region: zone || "europe-west3", brief, website_id, status, message });
+    return json({ ok:true, draft_id: row.id, region: row.region, subdomain: row.subdomain, website_id }, origin, 200);
+  } catch (e: any) {
+    return json({ ok:false, message:"Internal error" }, origin, 500);
   }
-})
+});
