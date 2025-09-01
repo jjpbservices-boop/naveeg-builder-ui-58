@@ -1,57 +1,39 @@
 import type { Config } from "tailwindcss";
 
-export default {
-  darkMode: ["class"],
+const config: Config = {
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "var(--bg)",
-        foreground: "var(--fg)",
-        primary: {
-          DEFAULT: "var(--primary)",
-          foreground: "var(--primary-contrast)",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        destructive: {
-          DEFAULT: "var(--danger)",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "var(--muted)",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "var(--accent)",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-        success: "var(--success)",
-        warning: "var(--warning)",
-        danger: "var(--danger)",
+        surface: "var(--surface)",
+        text: "var(--text)",
+        muted: "var(--muted)",
+        border: "var(--border)",
+        "plan-entry": "var(--plan-entry)",
+        "plan-grow": "var(--plan-grow)",
+        "plan-custom": "var(--plan-custom)",
+      },
+      backgroundImage: {
+        "wash-1": "var(--wash-1)",
+        "wash-2": "var(--wash-2)",
+        "accent-grad": "var(--accent-grad)",
+      },
+      boxShadow: {
+        custom: "var(--shadow)",
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        custom: "var(--radius)",
+      },
+      fontFamily: {
+        sans: ["Sansation", "sans-serif"],
       },
     },
   },
   plugins: [],
 };
+
+export default config;

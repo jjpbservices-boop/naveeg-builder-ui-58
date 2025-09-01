@@ -1,0 +1,192 @@
+{
+  "nav": {
+    "home": "TODO",
+    "features": "TODO",
+    "how": "TODO",
+    "pricing": "TODO",
+    "gallery": "TODO",
+    "resources": "TODO",
+    "blog": "TODO",
+    "faq": "TODO",
+    "company": "TODO",
+    "about": "TODO",
+    "contact": "TODO",
+    "security": "TODO",
+    "login": "TODO",
+    "cta": "TODO"
+  },
+  "hero": {
+    "title": "TODO",
+    "subtitle": "TODO",
+    "cta": "TODO"
+  },
+  "home": {
+    "pillars": [
+      {
+        "title": "TODO",
+        "desc": "TODO"
+      },
+      {
+        "title": "TODO",
+        "desc": "TODO"
+      },
+      {
+        "title": "TODO",
+        "desc": "TODO"
+      }
+    ],
+    "galleryTitle": "TODO",
+    "testimonialsTitle": "TODO",
+    "ctaStripTitle": "TODO",
+    "ctaStripSub": "TODO"
+  },
+  "features": {
+    "title": "TODO",
+    "items": [
+      {
+        "name": "TODO",
+        "desc": "TODO"
+      },
+      {
+        "name": "TODO",
+        "desc": "TODO"
+      },
+      {
+        "name": "TODO",
+        "desc": "TODO"
+      },
+      {
+        "name": "TODO",
+        "desc": "TODO"
+      },
+      {
+        "name": "TODO",
+        "desc": "TODO"
+      },
+      {
+        "name": "TODO",
+        "desc": "TODO"
+      }
+    ]
+  },
+  "how": {
+    "title": "TODO",
+    "steps": [
+      {
+        "n": "01",
+        "title": "TODO",
+        "desc": "TODO"
+      },
+      {
+        "n": "02",
+        "title": "TODO",
+        "desc": "TODO"
+      },
+      {
+        "n": "03",
+        "title": "TODO",
+        "desc": "TODO"
+      }
+    ],
+    "cta": "TODO"
+  },
+  "pricing": {
+    "title": "TODO",
+    "toggle": {
+      "monthly": "TODO",
+      "yearly": "TODO",
+      "vat": "TODO"
+    },
+    "plans": [
+      {
+        "slug": "entry",
+        "name": "TODO",
+        "price": "TODO",
+        "band": "entry",
+        "for": "TODO",
+        "features": ["TODO", "TODO", "TODO", "TODO", "TODO"],
+        "cta": "TODO"
+      },
+      {
+        "slug": "premium",
+        "name": "TODO",
+        "price": "TODO",
+        "band": "grow",
+        "for": "TODO",
+        "features": ["TODO", "TODO", "TODO", "TODO", "TODO"],
+        "cta": "TODO"
+      },
+      {
+        "slug": "custom",
+        "name": "TODO",
+        "price": "TODO",
+        "band": "custom",
+        "for": "TODO",
+        "features": ["TODO", "TODO", "TODO", "TODO"],
+        "cta": "TODO"
+      }
+    ],
+    "includesTitle": "TODO",
+    "includes": ["TODO", "TODO", "TODO", "TODO", "TODO"]
+  },
+  "gallery": {
+    "title": "TODO",
+    "filterAll": "TODO"
+  },
+  "faq": {
+    "title": "TODO",
+    "groups": [
+      {
+        "name": "TODO",
+        "items": [
+          {
+            "q": "TODO",
+            "a": "TODO"
+          },
+          {
+            "q": "TODO",
+            "a": "TODO"
+          }
+        ]
+      },
+      {
+        "name": "TODO",
+        "items": [
+          {
+            "q": "TODO",
+            "a": "TODO"
+          },
+          {
+            "q": "TODO",
+            "a": "TODO"
+          }
+        ]
+      },
+      {
+        "name": "TODO",
+        "items": [
+          {
+            "q": "TODO",
+            "a": "TODO"
+          },
+          {
+            "q": "TODO",
+            "a": "TODO"
+          }
+        ]
+      }
+    ]
+  },
+  "about": {
+    "title": "TODO",
+    "desc": "TODO"
+  },
+  "contact": {
+    "title": "TODO",
+    "success": "TODO"
+  },
+  "security": {
+    "title": "TODO",
+    "desc": "TODO"
+  }
+}

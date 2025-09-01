@@ -1,8 +1,13 @@
 const ALLOWED_ORIGINS = new Set([
   'https://naveeg.app',
   'https://www.naveeg.app',
+  'https://naveeg.com',
+  'https://www.naveeg.com',
+  'https://*.naveeg.com',
   'http://localhost:5173',
   'http://localhost:3000',
+  'http://localhost:4311', // Marketing app
+  'http://localhost:4312', // Dashboard app
 ]);
 
 export const corsHeaders = (req: Request) => {

@@ -1,0 +1,215 @@
+{
+  "nav": {
+    "home": "Home",
+    "features": "Features",
+    "how": "How it Works",
+    "pricing": "Pricing",
+    "gallery": "Gallery",
+    "resources": "Resources",
+    "blog": "Blog",
+    "faq": "FAQ",
+    "company": "Company",
+    "about": "About",
+    "contact": "Contact",
+    "security": "Security & GDPR",
+    "login": "Login",
+    "cta": "Start free"
+  },
+  "hero": {
+    "title": "Rome wasn't built in a day… but your website will be.",
+    "subtitle": "Launch a professional site in minutes. No tech skills needed.",
+    "cta": "Start free"
+  },
+  "home": {
+    "pillars": [
+      {
+        "title": "Easy start",
+        "desc": "Answer a few questions. We set up everything for you."
+      },
+      {
+        "title": "Built by AI",
+        "desc": "Your pages, images, and structure generated in minutes."
+      },
+      {
+        "title": "Ready to grow",
+        "desc": "Edit with a simple editor and add pages anytime."
+      }
+    ],
+    "galleryTitle": "Layouts made for real small businesses",
+    "testimonialsTitle": "What entrepreneurs say",
+    "ctaStripTitle": "Get your website live today",
+    "ctaStripSub": "Try it free. Cancel anytime."
+  },
+  "features": {
+    "title": "Everything you need to look professional online",
+    "items": [
+      {
+        "name": "AI website generation",
+        "desc": "Tell us about your business. We create the structure and starter copy."
+      },
+      {
+        "name": "Hosting, SSL, and backups",
+        "desc": "Fast EU hosting, free SSL, and daily automatic backups."
+      },
+      {
+        "name": "Drag-and-drop editor",
+        "desc": "Move blocks, change text, and publish with one click."
+      },
+      {
+        "name": "Domain connection",
+        "desc": "Use your own domain or get one included for a year on paid plans."
+      },
+      {
+        "name": "One-click WordPress login",
+        "desc": "Open your site's admin instantly. No passwords to remember."
+      },
+      {
+        "name": "Simple analytics",
+        "desc": "See visits, top pages, and a PageSpeed score summary."
+      }
+    ]
+  },
+  "how": {
+    "title": "Three simple steps",
+    "steps": [
+      {
+        "n": "01",
+        "title": "Describe your business",
+        "desc": "Name, activity, location, and a few lines about what you do."
+      },
+      {
+        "n": "02",
+        "title": "Preview your site",
+        "desc": "We generate pages and design. You review and tweak."
+      },
+      {
+        "n": "03",
+        "title": "Publish instantly",
+        "desc": "Connect a domain and go live. Edit anytime."
+      }
+    ],
+    "cta": "Start free"
+  },
+  "pricing": {
+    "title": "Simple pricing",
+    "toggle": {
+      "monthly": "Pay monthly",
+      "yearly": "Pay yearly (save)",
+      "vat": "Show prices with VAT"
+    },
+    "plans": [
+      {
+        "slug": "entry",
+        "name": "Entry",
+        "price": "49 € / month",
+        "band": "entry",
+        "for": "For solo entrepreneurs",
+        "features": [
+          "AI website generation",
+          "Hosting + SSL + daily backups",
+          "Drag-and-drop editor",
+          "Up to 5 pages",
+          "1 domain included for 1 year"
+        ],
+        "cta": "Try free"
+      },
+      {
+        "slug": "premium",
+        "name": "Premium",
+        "price": "99 € / month",
+        "band": "grow",
+        "for": "For growing businesses",
+        "features": [
+          "Everything in Entry",
+          "Unlimited pages + Blog",
+          "WooCommerce ready",
+          "One-click WordPress auto-login",
+          "Priority email support"
+        ],
+        "cta": "Try free"
+      },
+      {
+        "slug": "custom",
+        "name": "Custom",
+        "price": "Contact us",
+        "band": "custom",
+        "for": "Tailored to your needs",
+        "features": [
+          "Multi-site options",
+          "Advanced SEO setup",
+          "Custom integrations",
+          "Dedicated onboarding"
+        ],
+        "cta": "Get in touch"
+      }
+    ],
+    "includesTitle": "What every plan includes",
+    "includes": [
+      "Fast EU hosting with SSL",
+      "Automatic backups",
+      "Simple editor",
+      "Basic analytics",
+      "Email support"
+    ]
+  },
+  "gallery": {
+    "title": "Example websites",
+    "filterAll": "All"
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "groups": [
+      {
+        "name": "General",
+        "items": [
+          {
+            "q": "Do I need technical skills?",
+            "a": "No. We guide you through a short form, then generate your site. You edit with simple controls."
+          },
+          {
+            "q": "Can I use my own domain?",
+            "a": "Yes. Connect an existing domain or get one included for a year on paid plans."
+          }
+        ]
+      },
+      {
+        "name": "Billing",
+        "items": [
+          {
+            "q": "Is there a free trial?",
+            "a": "Yes. Try the product free. Cancel before the trial ends at no cost."
+          },
+          {
+            "q": "Can I change plans later?",
+            "a": "Yes. Upgrade or downgrade anytime."
+          }
+        ]
+      },
+      {
+        "name": "Data",
+        "items": [
+          {
+            "q": "Where is my data hosted?",
+            "a": "In the EU/EEA with regular backups."
+          },
+          {
+            "q": "Can I export my content?",
+            "a": "Yes. Export pages and media at any time."
+          }
+        ]
+      }
+    ]
+  },
+  "about": {
+    "title": "Our mission",
+    "desc": "We help small businesses get online without complexity."
+  },
+  "contact": {
+    "title": "Contact us",
+    "success": "Thanks—your message has been sent."
+  },
+  "security": {
+    "title": "Security & GDPR",
+    "desc": "EU hosting, SSL, backups, access controls, and data export on request."
+  }
+}

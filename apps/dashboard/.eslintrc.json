@@ -1,0 +1,19 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "rules": {
+    "no-restricted-imports": ["error", {
+      "paths": [{
+        "name": "lucide-react",
+        "message": "Import Lucide icons only inside ui/Icon.tsx, use <Icon name=\"…\" /> elsewhere."
+      }]
+    }]
+  },
+  "overrides": [
+    {
+      "files": ["src/components/ui/Icon.tsx"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ]
+}

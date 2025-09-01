@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Sansation:wght@300;400;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --surface: #ffffff;
+  --text: #0b0d10;
+  --muted: #5b6572;
+  --border: rgba(0,0,0,.08);
+  --shadow: 0 10px 30px rgba(0,0,0,.10);
+  --radius: 1.25rem;
+
+  /* Section washes (calm, professional) */
+  --wash-1: linear-gradient(135deg,#FDFCFB 0%,#F3F7FA 100%);
+  --wash-2: linear-gradient(135deg,#F9FAFB 0%,#F0F4F8 100%);
+
+  /* Pricing header bands (distinct like Shopify's green/blue, but different) */
+  --plan-entry: #A7F3D0;   /* Soft Sage Green */
+  --plan-grow: #38BDF8;    /* Modern Aqua */
+  --plan-custom: #8B5CF6;  /* Royal Violet */
+
+  /* Hero/strip accent used sparingly */
+  --accent-grad: linear-gradient(135deg,#6366F1 0%,#3B82F6 100%);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    font-family: 'Sansation', sans-serif;
+  }
+  
+  h1 {
+    @apply text-5xl md:text-6xl font-bold;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl font-bold;
+  }
+  
+  p {
+    @apply text-base md:text-lg text-[var(--muted)];
+  }
+}
+
+@layer components {
+  .btn-black {
+    @apply inline-flex items-center justify-center px-5 py-3 rounded-[calc(var(--radius)-4px)] font-medium bg-black text-white hover:bg-[#111] transition;
+  }
+  
+  .card {
+    @apply rounded-[var(--radius)] border border-[var(--border)] shadow-[var(--shadow)] bg-[var(--surface)];
+  }
+  
+  .section {
+    @apply py-20;
+  }
+  
+  .container-clean {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

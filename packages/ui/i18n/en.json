@@ -1,0 +1,72 @@
+{
+  "dashboard": {
+    "navigation": {
+      "overview": "Overview",
+      "analytics": "Analytics",
+      "billing": "Billing",
+      "settings": "Settings"
+    },
+    "overview": {
+      "title": "Your Website",
+      "status": {
+        "generating": "Generating",
+        "online": "Online",
+        "draft": "Draft"
+      },
+      "openWebsite": "Open Website",
+      "planCard": {
+        "title": "Current Plan",
+        "upgrade": "Upgrade",
+        "manage": "Manage Billing"
+      },
+      "quickActions": {
+        "title": "Quick Actions",
+        "editContent": "Edit Content",
+        "connectDomain": "Connect Domain"
+      },
+      "performance": {
+        "title": "Performance",
+        "score": "Score",
+        "lastUpdated": "Last updated"
+      }
+    },
+    "analytics": {
+      "title": "Performance Analytics",
+      "refresh": "Refresh Now",
+      "loading": "Loading analytics...",
+      "noData": "No performance data available",
+      "metrics": {
+        "lcp": "Largest Contentful Paint",
+        "cls": "Cumulative Layout Shift",
+        "inp": "Interaction to Next Paint",
+        "performance": "Performance Score"
+      }
+    },
+    "billing": {
+      "title": "Billing & Plans",
+      "currentPlan": "Current Plan",
+      "upgradeToPro": "Upgrade to Pro",
+      "manageBilling": "Manage Billing",
+      "nextBilling": "Next billing",
+      "planFeatures": "Plan Features",
+      "usage": "Usage"
+    },
+    "settings": {
+      "title": "Settings",
+      "profile": "Profile",
+      "domain": "Domain",
+      "language": "Language & Region",
+      "dangerZone": "Danger Zone",
+      "deleteAccount": "Delete Account",
+      "saveChanges": "Save Changes"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close"
+  }
+}

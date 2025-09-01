@@ -1,39 +1,26 @@
 {
-  "name": "naveeg-backend",
+  "name": "naveeg-builder-ui",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
+  "workspaces": ["apps/*", "packages/*"],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.56.0",
-    "@tanstack/react-query": "^5.83.0",
-    "@tanstack/react-router": "^1.131.27",
-    "next-themes": "^0.4.6",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "zod": "^3.25.76"
+    "dev": "pnpm --filter marketing dev",
+    "dev:marketing": "pnpm --filter marketing dev",
+    "dev:dashboard": "pnpm --filter dashboard dev",
+    "build": "pnpm --filter marketing build",
+    "build:marketing": "pnpm --filter marketing build",
+    "build:dashboard": "pnpm --filter dashboard build",
+    "start": "pnpm --filter marketing start",
+    "start:marketing": "pnpm --filter marketing start",
+    "start:dashboard": "pnpm --filter dashboard start",
+    "lint": "pnpm --filter marketing lint",
+    "lint:marketing": "pnpm --filter marketing lint",
+    "lint:dashboard": "pnpm --filter dashboard lint",
+    "clean": "pnpm --filter marketing clean",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
-    "@eslint/js": "^9.32.0",
-    "@types/node": "^22.18.0",
-    "@types/react": "^18.3.23",
-    "@types/react-dom": "^18.3.7",
-    "@vitejs/plugin-react-swc": "^3.11.0",
-    "autoprefixer": "^10.4.21",
-    "eslint": "^9.32.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
-    "globals": "^15.15.0",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.38.0",
-    "vite": "^5.4.19"
+    "prettier": "^3.0.0",
+    "turbo": "^1.12.0"
   }
 }

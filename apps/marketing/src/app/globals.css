@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --surface: #ffffff;
+  --ink: #0b0d10;
+  --muted: #5b6572;
+  --border: rgba(10, 12, 16, 0.08);
+  --shadow: 0 20px 60px rgba(10, 12, 16, 0.10);
+  --radius: 1.2rem;
+  
+  --wash-1: radial-gradient(1200px 600px at 10% -10%, rgba(99,102,241,.10), transparent 60%),
+            radial-gradient(900px 500px at 90% -20%, rgba(59,130,246,.08), transparent 60%),
+            linear-gradient(180deg,#FDFCFB 0%,#F3F7FA 100%);
+  --wash-2: linear-gradient(180deg,#FAFBFC 0%,#F1F5F9 100%);
+  
+  --band-entry: #CFFAE3;
+  --band-grow: #9DDCFF;
+  --band-custom: #BDA5FF;
+  
+  --cta-grad: linear-gradient(135deg,#6366F1 0%,#3B82F6 35%,#22D3EE 100%);
+}
+
+@layer components {
+  .container-max {
+    @apply max-w-[1200px] mx-auto px-4 md:px-6;
+  }
+  
+  .section-y {
+    @apply py-24 md:py-32;
+  }
+  
+  .card {
+    @apply rounded-[1.2rem] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow)];
+  }
+  
+  .btn-black {
+    @apply inline-flex items-center justify-center h-11 px-6 rounded-xl bg-black text-white hover:bg-neutral-900 transition font-medium;
+  }
+  
+  .kicker {
+    @apply text-xs tracking-[.18em] uppercase text-[var(--muted)];
+  }
+  
+  .h1 {
+    @apply text-5xl md:text-6xl font-extrabold tracking-tight text-[var(--ink)] max-w-[68ch];
+  }
+  
+  .h2 {
+    @apply text-3xl md:text-4xl font-bold tracking-tight text-[var(--ink)] max-w-[68ch];
+  }
+  
+  .body {
+    @apply text-base md:text-lg text-[var(--muted)] max-w-[68ch];
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-white text-[var(--ink)] antialiased;
+  }
+}
+
+/* Underline animation for links */
+a.underline-anim {
+  position: relative;
+}
+
+a.underline-anim::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s ease;
+}
+
+a.underline-anim:hover::after {
+  transform: scaleX(1);
+}
