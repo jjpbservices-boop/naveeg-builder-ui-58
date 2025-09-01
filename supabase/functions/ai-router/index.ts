@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
       return json({ ok:false, message:"Invalid brief" }, origin, 422);
 
     const slug = String(preferred_subdomain || business_name)
-      .toLowerCase().replace(/[^a-z0-9-]/g,"-").replace(/-+/g,"-").replace(/^-|-$|/g,"").slice(0,30) || "site";
+      .toLowerCase().replace(/[^a-z0-9-]/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"").slice(0,30) || "site";
 
     // attempt 10Web site creation
     let website_id: string | null = null; let zone = region as string | undefined; let status: "created"|"queued"|"failed" = "created"; let message: string | null = null;
