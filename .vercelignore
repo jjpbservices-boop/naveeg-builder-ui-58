@@ -1,6 +1,5 @@
 apps/dashboard
 apps/apps
-supabase
 .github
 scripts
 *.md

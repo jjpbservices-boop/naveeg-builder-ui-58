@@ -12,6 +12,8 @@
       "@naveeg/lib/*": ["packages/lib/*"],
       "@naveeg/ui/*": ["packages/ui/*"]
     },
-    "types": ["node"]
+    "types": ["node"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   }
 }

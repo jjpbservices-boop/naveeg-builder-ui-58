@@ -4,7 +4,7 @@ export const PLANS = {
   starter: {
     name: 'Starter',
     eur: 49,
-    stripePrice: process.env.STRIPE_PRICE_STARTER,
+    stripePriceId: process.env.STRIPE_PRICE_STARTER,
     features: [
       'AI-generated website creation',
       'Hosting + SSL included',
@@ -19,7 +19,7 @@ export const PLANS = {
   pro: {
     name: 'Pro',
     eur: 99,
-    stripePrice: process.env.STRIPE_PRICE_PRO,
+    stripePriceId: process.env.STRIPE_PRICE_PRO,
     mostPopular: true,
     features: [
       'Everything in Starter',
@@ -57,7 +57,7 @@ export function getPlanById(id: PlanId) {
 
 export function getPlanByStripePrice(stripePriceId: string): PlanId | null {
   for (const [id, plan] of Object.entries(PLANS)) {
-    if ('stripePrice' in plan && plan.stripePrice === stripePriceId) {
+    if ('stripePriceId' in plan && plan.stripePriceId === stripePriceId) {
       return id as PlanId
     }
   }

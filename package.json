@@ -2,7 +2,9 @@
   "name": "naveeg-monorepo",
   "private": true,
   "packageManager": "pnpm@10.14.0",
-  "engines": { "node": "20.x" },
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
@@ -11,5 +13,8 @@
     "build:marketing": "turbo run build --filter=marketing",
     "build:dashboard": "turbo run build --filter=dashboard"
   },
-  "devDependencies": { "turbo": "2.5.6", "typescript": "5.9.2" }
+  "devDependencies": {
+    "turbo": "2.5.6",
+    "typescript": "5.9.2"
+  }
 }
