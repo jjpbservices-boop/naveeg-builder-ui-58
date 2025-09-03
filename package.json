@@ -2,9 +2,8 @@
   "name": "naveeg-monorepo",
   "private": true,
   "version": "0.0.0",
-  "packageManager": "pnpm@9",
+  "packageManager": "pnpm@10.14.0",
   "engines": { "node": ">=18.18" },
-  "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
@@ -27,6 +26,6 @@
   },
   "devDependencies": {
     "prettier": "^3.0.0",
-    "turbo": "^2.0.0"
+    "turbo": "2.5.6"
   }
 }
