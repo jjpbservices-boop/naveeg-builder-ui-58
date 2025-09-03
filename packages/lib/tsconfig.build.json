@@ -4,8 +4,8 @@
     "outDir": "dist", 
     "declaration": true, 
     "emitDeclarationOnly": true,
-    "moduleResolution": "node",
-    "module": "commonjs"
+    "moduleResolution": "Bundler",
+    "module": "ESNext"
   },
   "include": ["**/*.ts","**/*.tsx"]
 }
