@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd apps/marketing && pnpm run build",
+  "buildCommand": "pnpm turbo run build --filter=marketing",
   "outputDirectory": "apps/marketing/.next",
   "installCommand": "pnpm install --frozen-lockfile=false",
   "framework": "nextjs"
