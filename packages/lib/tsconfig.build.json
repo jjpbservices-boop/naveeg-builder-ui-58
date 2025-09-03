@@ -1,5 +1,11 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "outDir": "dist", "declaration": true, "emitDeclarationOnly": true },
+  "compilerOptions": { 
+    "outDir": "dist", 
+    "declaration": true, 
+    "emitDeclarationOnly": true,
+    "moduleResolution": "node",
+    "module": "commonjs"
+  },
   "include": ["**/*.ts","**/*.tsx"]
 }
