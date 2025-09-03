@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "cd ../.. && pnpm turbo run build --filter=marketing",
+  "buildCommand": "pnpm turbo run build --filter=marketing",
   "outputDirectory": "apps/marketing/.next",
-  "installCommand": "cd ../.. && pnpm install --frozen-lockfile=false",
+  "installCommand": "pnpm install --frozen-lockfile=false",
   "framework": "nextjs",
   "functions": {
     "apps/marketing/src/app/api/**/*.ts": {
