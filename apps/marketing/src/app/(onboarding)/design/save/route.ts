@@ -9,7 +9,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Draft ID is required' }, { status: 400 });
     }
     
-    const result = await saveDesign(draft_id, payload);
+    const result = await saveDesign({ draft_id, ...payload });
     return NextResponse.json(result ?? { success: true });
   } catch (error) {
     console.error('Save design error:', error);
