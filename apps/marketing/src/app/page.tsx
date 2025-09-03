@@ -132,7 +132,7 @@ export default function Home() {
               Designed for real business results
             </h2>
             <p className="text-lg text-[var(--muted-light)] max-w-2xl mx-auto mb-12">
-              Your WordPress website isn't just a digital business card – it's a growth engine that works 24/7 to bring you customers.
+              Your WordPress website isn&apos;t just a digital business card – it&apos;s a growth engine that works 24/7 to bring you customers.
             </p>
           </div>
           

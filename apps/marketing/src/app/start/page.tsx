@@ -55,10 +55,10 @@ export default function StartPage() {
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Let's Build Your Website
+            Let&apos;s Build Your Website
           </h1>
           <p className="text-xl text-gray-600">
-            Tell us about your business and we'll create a custom website for you
+            Tell us about your business and we&apos;ll create a custom website for you
           </p>
         </div>
 

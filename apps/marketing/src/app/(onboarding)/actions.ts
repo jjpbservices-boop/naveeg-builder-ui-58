@@ -43,3 +43,15 @@ export async function saveDesign(input: {
   if (!res?.ok) throw new Error(res?.message ?? "save-draft failed");
   return res.data;
 }
+
+// Attach draft to user (placeholder)
+export async function attachToUser(draftId: string) {
+  // TODO: Implement user attachment logic
+  return { ok: true, draft_id: draftId };
+}
+
+// Preview site (placeholder)
+export async function previewSite(draftId: string) {
+  // TODO: Implement site preview logic
+  return { ok: true, draft_id: draftId, preview_url: `https://preview-${draftId}.naveeg.online` };
+}
