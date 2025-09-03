@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { PLANS } from '@naveeg/lib';
+import { PLANS, getPlanById } from '@naveeg/lib';
 
 // Type guard for plan properties
 function hasContact(plan: any): plan is { contact: true } {
@@ -8,21 +8,21 @@ function hasContact(plan: any): plan is { contact: true } {
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
+  apiVersion: '2025-08-27.basil',
 });
 
 export async function POST(request: NextRequest) {
   try {
     const { plan } = await request.json();
 
-    if (!plan || !PLANS[plan as keyof typeof PLANS]) {
+    const planData = getPlanById(plan);
+    
+    if (!planData) {
       return NextResponse.json(
         { error: 'Invalid plan specified' },
         { status: 400 }
       );
     }
-
-    const planData = PLANS[plan as keyof typeof PLANS];
     
     if (hasContact(planData)) {
       return NextResponse.json(
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!planData.stripePrice) {
+    if (!planData.stripePriceId) {
       return NextResponse.json(
         { error: 'Stripe price not configured for this plan' },
         { status: 500 }
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       customer_email: 'user@example.com', // TODO: Get from authenticated user
       line_items: [
         {
-          price: planData.stripePrice,
+          price: planData.stripePriceId,
           quantity: 1,
         },
       ],

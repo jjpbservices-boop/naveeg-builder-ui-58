@@ -65,3 +65,9 @@ export function getPlanById(id: string): BillingPlan | undefined {
 export function getPlanByStripePriceId(stripePriceId: string): BillingPlan | undefined {
   return BILLING_PLANS.find(plan => plan.stripePriceId === stripePriceId);
 }
+
+// Alias for backward compatibility
+export const PLANS = BILLING_PLANS;
+
+// Export PlanId type
+export type PlanId = BillingPlan['id'];

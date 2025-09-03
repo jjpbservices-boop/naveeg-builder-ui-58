@@ -9,7 +9,20 @@
     "typecheck": "tsc -p tsconfig.build.json --noEmit",
     "lint": "echo skip"
   },
-  "peerDependencies": { "react": "^18.3.1", "react-dom": "^18.3.1" },
-  "dependencies": { "framer-motion": "^12.23.12", "lucide-react": "^0.542.0", "clsx": "^2.0.0", "tailwind-merge": "^3.3.1" },
-  "devDependencies": { "@types/node": "^20.19.11", "@types/react": "^18.3.12", "@types/react-dom": "^18.3.1", "typescript": "5.9.2" }
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.11",
+    "typescript": "5.9.2"
+  },
+  "dependencies": {
+    "@types/react": "^18.3.24",
+    "@types/react-dom": "^18.3.7",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.23.12",
+    "lucide-react": "^0.542.0",
+    "tailwind-merge": "^3.3.1"
+  }
 }
