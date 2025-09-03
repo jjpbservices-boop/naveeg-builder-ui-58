@@ -1,8 +1,14 @@
 import Stripe from 'stripe';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil'
-});
+export const STRIPE_API_VERSION: Stripe.LatestApiVersion = '2025-08-27.basil';
 
-// Example type usage:
-// export type CheckoutSession = Stripe.Checkout.Session;
+let client: Stripe | undefined;
+
+export function getStripe(): Stripe {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error('STRIPE_SECRET_KEY missing');
+  if (!client) client = new Stripe(key, { apiVersion: STRIPE_API_VERSION });
+  return client;
+}
+
+export type { Stripe };

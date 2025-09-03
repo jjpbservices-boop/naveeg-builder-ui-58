@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
+import { getStripe } from '@naveeg/lib';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
     // TODO: Get customer ID from authenticated user's subscription
     const customerId = 'mock-customer-id';
+
+    const stripe = getStripe();
 
     // For now, create a new customer if none exists
     let customer;

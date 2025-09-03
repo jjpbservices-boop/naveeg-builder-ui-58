@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
-import { PLANS, getPlanById } from '@naveeg/lib';
+import { getStripe, getPlanById } from '@naveeg/lib';
+
+export const dynamic = 'force-dynamic'; // avoids static optimization
 
 // Type guard for plan properties
 function hasContact(plan: any): plan is { contact: true } {
   return 'contact' in plan && plan.contact === true;
 }
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,6 +38,7 @@ export async function POST(request: NextRequest) {
     // TODO: Get user ID from authenticated session
     const userId = 'mock-user-id';
 
+    const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer_email: 'user@example.com', // TODO: Get from authenticated user
