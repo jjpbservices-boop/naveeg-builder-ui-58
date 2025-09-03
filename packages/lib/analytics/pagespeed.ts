@@ -38,10 +38,7 @@ export class PageSpeedInsightsAPI {
     const params = new URLSearchParams({
       url: url,
       strategy: strategy,
-      category: 'PERFORMANCE',
-      category: 'ACCESSIBILITY',
-      category: 'BEST_PRACTICES',
-      category: 'SEO',
+      category: ['PERFORMANCE', 'ACCESSIBILITY', 'BEST_PRACTICES', 'SEO'].join(','),
       key: this.apiKey,
     });
 

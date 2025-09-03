@@ -1,31 +1,16 @@
 {
   "name": "naveeg-monorepo",
   "private": true,
-  "version": "0.0.0",
   "packageManager": "pnpm@10.14.0",
   "engines": { "node": ">=18.18" },
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck",
-    "dev:marketing": "pnpm --filter marketing dev",
-    "dev:dashboard": "pnpm --filter dashboard dev",
-    "build:marketing": "pnpm --filter marketing build",
-    "build:dashboard": "pnpm --filter dashboard build",
-    "start:marketing": "pnpm --filter marketing start",
-    "start:dashboard": "pnpm --filter dashboard start",
-    "lint:marketing": "pnpm --filter marketing lint",
-    "lint:dashboard": "pnpm --filter dashboard lint",
-    "clean": "pnpm --filter marketing clean",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "smoke": "./scripts/smoke.sh",
-    "deploy:supabase": "supabase db push && supabase functions deploy ai-router && supabase functions deploy psi-report",
-    "db:lint": "supabase db lint",
-    "db:push": "supabase db push"
+    "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
-    "prettier": "^3.0.0",
-    "turbo": "2.5.6"
+    "turbo": "2.5.6",
+    "typescript": "5.9.2"
   }
 }
