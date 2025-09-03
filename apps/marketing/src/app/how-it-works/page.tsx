@@ -1,23 +1,29 @@
 import { Section } from '../../components/Section'
 import { FadeIn, Stagger } from '../../components/ui/Motion'
+import { FinalCTA } from '../../components/sections/FinalCTA'
 import Icon from '../../components/ui/Icon'
 
 export default function HowItWorks() {
   const steps = [
     {
-      icon: <Icon name="bot" className="size-6 text-neutral-800" />,
+      icon: <Icon name="edit" className="w-6 h-6 text-neutral-800" />,
       title: "Describe your business",
-      description: "Tell us about your business, industry, and what you want to achieve online."
+      description: "Just a few words about what you do and who you serve."
     },
     {
-      icon: <Icon name="rocket" className="size-6 text-neutral-800" />,
-      title: "AI generates your site",
-      description: "Our AI creates a professional website with content, structure, and design tailored to your business."
+      icon: <Icon name="bot" className="w-6 h-6 text-neutral-800" />,
+      title: "AI builds your WordPress site",
+      description: "Pages, content, and design generated instantly with professional layouts."
     },
     {
-      icon: <Icon name="building2" className="size-6 text-neutral-800" />,
-      title: "Launch and grow",
-      description: "Your website goes live instantly. Edit content, add pages, and grow your online presence."
+      icon: <Icon name="panels-top-left" className="w-6 h-6 text-neutral-800" />,
+      title: "Customize easily",
+      description: "Edit text, photos, and layout with drag-and-drop simplicity."
+    },
+    {
+      icon: <Icon name="rocket" className="w-6 h-6 text-neutral-800" />,
+      title: "Publish instantly",
+      description: "Hosting, SSL, backups, and SEO included - your site goes live immediately."
     }
   ]
 
@@ -27,18 +33,18 @@ export default function HowItWorks() {
         <div className="text-center mb-16">
           <h1 className="h1 mb-6">How it works</h1>
           <p className="body max-w-2xl mx-auto">
-            From idea to live website in three simple steps
+            From idea to live website in four simple steps
           </p>
         </div>
         
-        <Stagger className="grid md:grid-cols-3 gap-8">
+        <Stagger className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, i) => (
             <FadeIn key={i} delay={i * 0.1} className="text-center">
               <div className="card p-8">
-                <div className="size-16 rounded-full bg-indigo-100 grid place-items-center mx-auto mb-6">
+                <div className="icon-container icon-container-light mx-auto mb-6">
                   {step.icon}
                 </div>
-                <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-8 h-8 bg-[var(--accent-purple)] rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-white text-sm font-bold">{i + 1}</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
@@ -48,12 +54,9 @@ export default function HowItWorks() {
           ))}
         </Stagger>
         
-        <div className="text-center mt-12">
-          <a href="/start" className="btn-black">
-            Start building now
-          </a>
-        </div>
       </Section>
+      
+      <FinalCTA />
     </div>
   )
 }

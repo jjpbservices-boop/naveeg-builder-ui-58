@@ -3,47 +3,46 @@ import { z } from 'https://esm.sh/zod@3.22.4';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
 import { createHandler } from '../_shared/handler.ts';
 import { fetchJson } from '../_shared/http.ts';
+import { fetchPsiReport, validateStrategy } from '../_shared/psi.ts';
 
 const PsiRequestSchema = z.object({
   url: z.string().url(),
+  strategy: z.enum(['mobile', 'desktop']).optional().default('mobile'),
 });
 
 const PsiResponseSchema = z.object({
-  desktop_score: z.number().min(0).max(100),
-  mobile_score: z.number().min(0).max(100),
-  desktop_tti: z.number(),
-  mobile_tti: z.number(),
+  performance_score: z.number().min(0).max(100),
+  strategy: z.enum(['mobile', 'desktop']),
   url: z.string(),
   created_at: z.string(),
 });
 
 async function handlePsiReport({ input, user, logger }: any) {
-  const { url } = input;
-  const apiKey = Deno.env.get('PSI_API_KEY');
+  const { url, strategy = 'mobile' } = input;
   
-  if (!apiKey) {
-    throw new Error('PSI_API_KEY environment variable is required');
+  // Health check endpoint
+  if (url === 'ping') {
+    return {
+      performance_score: 100,
+      strategy: 'mobile',
+      url: 'ping',
+      created_at: new Date().toISOString(),
+    };
+  }
+  
+  if (!validateStrategy(strategy)) {
+    throw new Error('Invalid strategy. Must be "mobile" or "desktop"');
   }
 
   const startTime = Date.now();
-  logger.step('Calling PageSpeed Insights API', { url });
+  logger.step('Calling PageSpeed Insights API', { url, strategy });
 
   try {
-    // Get both desktop and mobile scores
-    const [desktopData, mobileData] = await Promise.all([
-      fetchJson(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&category=performance&strategy=desktop`),
-      fetchJson(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&category=performance&strategy=mobile`)
-    ]);
+    // Get PSI report using shared client
+    const psiResult = await fetchPsiReport(url, strategy);
 
     const duration = Date.now() - startTime;
-    logger.step('PSI API responses received', { duration });
-
-    // Extract scores and TTI
-    const desktopScore = Math.round((desktopData.lighthouseResult?.categories?.performance?.score || 0) * 100);
-    const mobileScore = Math.round((mobileData.lighthouseResult?.categories?.performance?.score || 0) * 100);
-    
-    const desktopTTI = desktopData.lighthouseResult?.audits?.['interactive']?.numericValue || 0;
-    const mobileTTI = mobileData.lighthouseResult?.audits?.['interactive']?.numericValue || 0;
+    logger.step('PSI API response received', { duration, score: psiResult.performance_score });
 
     // Create Supabase service client for database operations
     const supabaseService = createClient(
@@ -62,19 +61,13 @@ async function handlePsiReport({ input, user, logger }: any) {
 
     // Store PSI report in database
     const { data: report, error: reportError } = await supabaseService
-      .from('psi_reports')
+      .from('site_perf')
       .insert({
-        user_id: user.id,
-        website_id: website?.id || null,
-        url,
-        desktop_score: desktopScore,
-        mobile_score: mobileScore,
-        desktop_tti: desktopTTI,
-        mobile_tti: mobileTTI,
-        raw: {
-          desktop: desktopData,
-          mobile: mobileData,
-        },
+        site_id: website?.id || null,
+        strategy,
+        performance_score: psiResult.performance_score,
+        crux: psiResult.crux,
+        lhr: psiResult.lhr,
       })
       .select()
       .single();
@@ -100,10 +93,8 @@ async function handlePsiReport({ input, user, logger }: any) {
     logger.step('PSI report stored successfully', { reportId: report.id });
 
     return {
-      desktop_score: desktopScore,
-      mobile_score: mobileScore,
-      desktop_tti: desktopTTI,
-      mobile_tti: mobileTTI,
+      performance_score: psiResult.performance_score,
+      strategy,
       url,
       created_at: report.created_at,
     };

@@ -2,6 +2,7 @@
 import React from "react";
 import {
   Bot, ServerCog, PanelsTopLeft, Globe2, KeyRound, BarChart3, Building2, ChevronDown, Rocket, TrendingUp, Star,
+  Search, Users, Zap, ShoppingCart, Clock, Edit,
   type LucideProps
 } from "lucide-react";
 
@@ -26,6 +27,12 @@ const MAP = {
   "rocket": Rocket,
   "trending-up": TrendingUp,
   "star": Star,
+  "search": Search,
+  "users": Users,
+  "zap": Zap,
+  "shopping-cart": ShoppingCart,
+  "clock": Clock,
+  "edit": Edit,
 } as const;
 
 export type IconName = keyof typeof MAP;

@@ -23,7 +23,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Sansation:wght@300;400;700;900&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-['Sansation',system-ui,sans-serif]">
+      <body className="font-['Lato',system-ui,sans-serif]">
         <Header />
         <main>
           {children}

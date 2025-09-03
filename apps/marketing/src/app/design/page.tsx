@@ -3,11 +3,11 @@ import { loadDesign } from '../(onboarding)/actions';
 import DesignEditor from './DesignEditor';
 
 interface DesignPageProps {
-  searchParams: { draft?: string };
+  searchParams: { draft_id?: string };
 }
 
 export default async function DesignPage({ searchParams }: DesignPageProps) {
-  const { draft: draft_id } = searchParams;
+  const { draft_id } = searchParams;
   
   if (!draft_id) {
     return (

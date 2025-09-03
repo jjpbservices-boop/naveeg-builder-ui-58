@@ -16,8 +16,8 @@ export function PricingCard({ planId }: PricingCardProps) {
   }[plan.band]
 
   return (
-    <HoverLift>
-      <div className="card relative overflow-hidden group hover:shadow-xl transition-all duration-300">
+    <HoverLift className="h-full">
+      <div className="card relative overflow-hidden group hover:shadow-xl transition-all duration-300 h-full flex flex-col">
         {/* Header band */}
         <div 
           style={{ background: bandColor }} 
@@ -26,21 +26,24 @@ export function PricingCard({ planId }: PricingCardProps) {
         
         {/* Popular badge */}
         {plan.popular && (
-          <div className="absolute top-4 right-4">
-            <span className="inline-flex items-center h-8 px-3 rounded-full bg-indigo-100 text-indigo-700 text-xs font-medium">
+          <div className="absolute top-3 right-3 z-10">
+            <span 
+              className="inline-flex items-center h-7 px-3 rounded-full text-white text-xs font-semibold shadow-lg"
+              style={{ background: "var(--primary-gradient)" }}
+            >
               Most Popular
             </span>
           </div>
         )}
         
-        <div className="p-8">
-          <h3 className="text-xl font-bold mb-2 text-[var(--ink)]">{plan.name}</h3>
+        <div className="p-8 flex flex-col h-full">
+          <h3 className="text-xl font-bold mb-2 text-[var(--ink)] min-h-[3rem] flex items-center">{plan.name}</h3>
           
           {/* Plan description */}
-          <p className="text-sm text-[var(--muted)] mb-4">{plan.description}</p>
+          <p className="text-sm text-[var(--muted)] mb-4 min-h-[2.5rem] flex items-start">{plan.description}</p>
           
           {/* Price or Contact Us */}
-          <div className="mb-6">
+          <div className="mb-6 min-h-[4rem] flex items-center">
             {plan.priceMonthly !== null ? (
               <>
                 <span className="text-4xl font-bold text-[var(--ink)]">{plan.priceMonthly}</span>
@@ -51,7 +54,7 @@ export function PricingCard({ planId }: PricingCardProps) {
             )}
           </div>
           
-          <ul className="space-y-3 mb-8">
+          <ul className="space-y-3 mb-8 flex-grow">
             {plan.features.map((feature, index) => (
               <li key={index} className="flex items-start">
                 <span className="text-green-500 mr-2 mt-1">✓</span>
@@ -60,7 +63,7 @@ export function PricingCard({ planId }: PricingCardProps) {
             ))}
           </ul>
           
-          <button className="btn-black w-full group-hover:bg-neutral-900 transition-colors">
+          <button className="btn-primary btn-primary-light w-full mt-auto">
             {plan.cta}
           </button>
         </div>

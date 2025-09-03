@@ -5,7 +5,8 @@
     "dev": "next dev -p 4312",
     "build": "next build",
     "start": "next start -p 4312",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@naveeg/lib": "workspace:*",

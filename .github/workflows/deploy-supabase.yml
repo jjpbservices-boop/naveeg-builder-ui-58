@@ -1,0 +1,57 @@
+name: Deploy Supabase Backend
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "supabase/**"
+      - ".github/workflows/deploy-supabase.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: supabase/setup-cli@v1
+        with: 
+          version: latest
+          
+      - name: Link project
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+        
+      - name: Push migrations
+        run: supabase db push
+        
+      - name: Deploy functions
+        run: |
+          supabase functions deploy ai-router
+          supabase functions deploy psi-report
+          
+      - name: Health checks
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          set -e
+          echo "Testing ai-router ping..."
+          curl -sS -X POST \
+            -H "Content-Type: application/json" \
+            -H "Origin: http://localhost:4311" \
+            -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            "$NEXT_PUBLIC_SUPABASE_URL/functions/v1/ai-router" \
+            -d '{"action":"ping"}' | head -n 20
+          
+          echo "Testing psi-report ping..."
+          curl -sS -X POST \
+            -H "Content-Type: application/json" \
+            -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            "$NEXT_PUBLIC_SUPABASE_URL/functions/v1/psi-report" \
+            -d '{"url":"ping","strategy":"mobile"}' | head -n 20

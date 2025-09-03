@@ -1,4 +1,5 @@
 import { Section } from '../../components/Section'
+import { FinalCTA } from '../../components/sections/FinalCTA'
 import { Icon } from '@naveeg/ui'
 
 export default function Gallery() {
@@ -50,6 +51,8 @@ export default function Gallery() {
           ))}
         </div>
       </Section>
+      
+      <FinalCTA />
     </div>
   )
 }

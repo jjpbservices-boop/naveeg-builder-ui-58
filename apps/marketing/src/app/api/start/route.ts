@@ -1,55 +1,65 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import type { NextRequest } from "next/server";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { business_type, business_name, business_description, preferred_subdomain } =
-      await req.json();
-
-    // quick, forgiving validation
-    if (!business_type || !business_name || !business_description) {
-      return NextResponse.json({ ok: false, message: "Missing required fields." }, { status: 400 });
+    const origin = req.headers.get("origin") || "";
+    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    
+    if (!anon || !supabaseUrl) {
+      return new Response(JSON.stringify({ 
+        ok: false, 
+        message: "Missing environment variables: NEXT_PUBLIC_SUPABASE_ANON_KEY or NEXT_PUBLIC_SUPABASE_URL" 
+      }), {
+        status: 500,
+        headers: { "content-type": "application/json" },
+      });
     }
+    
+    const fn = `${supabaseUrl}/functions/v1/ai-router`;
 
-    const origin = req.headers.get("origin") ?? "http://localhost:4311";
+    const flat = await req.json();
+    // Ensure we send the exact contract: { action: "create-draft", brief: <flat brief> }
+    const body = JSON.stringify({ action: "create-draft", brief: flat });
 
-    const sb = createClient(url, anon);
-    const { data, error } = await sb.functions.invoke("ai-router", {
-      body: {
-        action: "create-website",
-        brief: {
-          business_type,
-          business_name,
-          business_description,
-          preferred_subdomain: preferred_subdomain?.trim() || null,
-        },
+    const r = await fetch(fn, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+        "origin": origin,
       },
-      headers: { origin }, // <-- important: pass Origin through
+      body,
     });
 
-    if (error) {
-      // Bubble up function error with details for debugging
-      return NextResponse.json(
-        { ok: false, message: error.message ?? "Function error", details: error },
-        { status: 400 }
-      );
-    }
-
-    if (!data?.ok) {
-      return NextResponse.json(
-        { ok: false, message: data?.message ?? "Function returned an error", details: data },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json({ ok: true, ...data }, { status: 200 });
-  } catch (e: any) {
-    return NextResponse.json(
-      { ok: false, message: e?.message ?? "Unexpected error" },
-      { status: 500 }
-    );
+    const text = await r.text();
+    return new Response(text, {
+      status: r.status,
+      headers: { "content-type": r.headers.get("content-type") ?? "application/json" },
+    });
+  } catch (error) {
+    console.error("API Error:", error);
+    return new Response(JSON.stringify({ 
+      ok: false, 
+      message: "Internal error", 
+      error: error instanceof Error ? error.message : "Unknown error"
+    }), {
+      status: 500,
+      headers: { "content-type": "application/json" },
+    });
   }
+}
+
+export function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get("origin") || "";
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": origin || "*",
+      "Access-Control-Allow-Methods": "POST,OPTIONS",
+      "Access-Control-Allow-Headers": "authorization,content-type,x-client-info,apikey",
+      Vary: "Origin",
+    },
+  });
 }

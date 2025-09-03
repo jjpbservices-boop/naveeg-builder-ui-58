@@ -1,32 +1,45 @@
 // deno-lint-ignore-file no-explicit-any
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
+import { corsHeaders, handleCors } from "../_shared/cors.ts"
 
-const ORIGINS = (Deno.env.get("FRONTEND_ORIGINS") ?? "")
-  .split(",")
-  .map(s => s.trim())
-  .filter(Boolean)
-
-const ok = (data: any, origin: string | null, status = 200) =>
+const ok = (data: any, req: Request, status = 200) =>
   new Response(JSON.stringify(data), {
     status,
     headers: {
       "content-type": "application/json",
-      "access-control-allow-origin": allowOrigin(origin),
-      "access-control-allow-methods": "POST,OPTIONS",
-      "access-control-allow-headers": "authorization,content-type",
-      "vary": "origin",
+      ...corsHeaders(req),
     },
   })
 
-const err = (message: string, origin: string | null, status = 400) =>
-  ok({ ok: false, message }, origin, status)
+const err = (message: string, req: Request, status = 400) =>
+  ok({ ok: false, message }, req, status)
 
-const allowOrigin = (origin: string | null) =>
-  origin && ORIGINS.includes(origin) ? origin : "*"
+// ---- Database helpers
+async function getDraftRow(draft_id: string) {
+  const SB_URL = Deno.env.get("SUPABASE_URL") ?? "";
+  const SB_SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const r = await fetch(`${SB_URL}/rest/v1/site_drafts?id=eq.${draft_id}&select=*`, {
+    headers: { apikey: SB_SVC, authorization: `Bearer ${SB_SVC}` },
+  });
+  const rows = await r.json().catch(() => []);
+  return { ok: r.ok, rows };
+}
 
-const isAllowedOrigin = (origin: string | null) => {
-  if (!origin) return false
-  return ORIGINS.includes(origin) || ORIGINS.includes("*")
+async function updateDraft(draft_id: string, patch: Record<string, unknown>) {
+  const SB_URL = Deno.env.get("SUPABASE_URL") ?? "";
+  const SB_SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const r = await fetch(`${SB_URL}/rest/v1/site_drafts?id=eq.${draft_id}`, {
+    method: "PATCH",
+    headers: {
+      apikey: SB_SVC,
+      authorization: `Bearer ${SB_SVC}`,
+      "content-type": "application/json",
+      prefer: "return=representation",
+    },
+    body: JSON.stringify(patch),
+  });
+  const out = await r.json().catch(() => ({}));
+  return { ok: r.ok, out };
 }
 
 // ---- 10Web call helper
@@ -74,9 +87,10 @@ function buildHostingPayload(candidate: any, region: string) {
 function slugify(s: string) {
   return s
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "")
-    .slice(0, 30);
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 63);
 }
 
 // Try zones a→b→c then fall back to region
@@ -111,7 +125,7 @@ const SB_URL = Deno.env.get("SUPABASE_URL") ?? ""
 const SB_SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 
 async function saveDraft(minDraft: {
-  tenweb_website_id: string | number
+  website_id: string | number | null
   region: string
   slug: string
   brief: Record<string, unknown>
@@ -125,10 +139,13 @@ async function saveDraft(minDraft: {
       "prefer": "return=representation",
     },
     body: JSON.stringify([{
-      tenweb_website_id: String(minDraft.tenweb_website_id),
-      region: minDraft.region,
+      website_id: minDraft.website_id ? Number(minDraft.website_id) : Math.floor(Math.random() * 1000000),
+      unique_id: minDraft.website_id ? String(minDraft.website_id) : "draft-" + Date.now(),
       subdomain: minDraft.slug,
       brief: minDraft.brief,
+      pages_meta: [],
+      colors: {},
+      fonts: {},
     }]),
   })
   const json = await res.json().catch(() => ({}))
@@ -143,21 +160,47 @@ async function saveDraft(minDraft: {
 
 // ---- Handler
 Deno.serve(async (req) => {
-  const origin = req.headers.get("origin") ?? "";
-  if (!isAllowedOrigin(origin)) {
-    return err("Origin not allowed", origin, 400);
-  }
+  // Handle CORS preflight
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
 
-  if (req.method === "OPTIONS") return ok({ ok: true }, origin)
-
-  if (req.method !== "POST") return err("Method not allowed", origin, 405)
+  if (req.method !== "POST") return err("Method not allowed", req, 405)
 
   let body: any = {}
-  try { body = await req.json() } catch { return err("Invalid JSON", origin, 400) }
+  try { body = await req.json() } catch { return err("Invalid JSON", req, 400) }
 
   const action = String(body?.action ?? "")
-  if (action !== "create-website") {
-    return err("Invalid action", origin, 400)
+  
+  // Health check endpoint
+  if (action === "ping") {
+    return ok({ ok: true, message: "ai-router is healthy", timestamp: new Date().toISOString() }, req)
+  }
+
+  // GET DRAFT
+  if (action === "get-draft") {
+    const { draft_id } = body || {};
+    if (!draft_id) return err("Missing draft_id", req, 400);
+    const result = await getDraftRow(String(draft_id));
+    if (!result.ok)      return err("Fetch failed", req, 500);
+    if (!result.rows?.length) return err("Not found", req, 404);
+    return ok({ ok:true, data: result.rows[0] }, req, 200);
+  }
+
+  // SAVE DRAFT
+  if (action === "save-draft") {
+    const { draft_id, pages_meta = [], colors = {}, fonts = {} } = body || {};
+    if (!draft_id) return err("Missing draft_id", req, 400);
+
+    // Optional: normalization happens client-side already, but keep defaults
+    const patch = { pages_meta, colors, fonts, status: "draft" };
+    const result = await updateDraft(String(draft_id), patch);
+    if (!result.ok) return err("Update failed", req, 500);
+    const row = Array.isArray(result.out) ? result.out[0] : result.out;
+    return ok({ ok:true, data: row }, req, 200);
+  }
+  
+  if (action !== "create-website" && action !== "create-draft") {
+    return err("Invalid action. Supported actions: create-website, create-draft, get-draft, save-draft, ping", req, 400)
   }
 
   // PUBLIC onboarding: no auth required
@@ -171,7 +214,7 @@ Deno.serve(async (req) => {
   if (!bt || !bn || !bd) {
     return err(
       "Missing required fields",
-      origin,
+      req,
       400
     );
   }
@@ -184,21 +227,54 @@ Deno.serve(async (req) => {
 
   const candidate = { subdomain: sub }
 
+  // Fast path for draft creation - no 10Web API call needed
+  if (action === "create-draft") {
+    try {
+      const region = "europe-west3-a" // Default region for drafts
+      console.log("Creating draft with:", { website_id: null, region, slug: sub, brief: { business_type: bt, business_name: bn, business_description: bd } })
+      
+      const draftRow = await saveDraft({
+        website_id: null,
+        region,
+        slug: sub,
+        brief: {
+          business_type: bt,
+          business_name: bn,
+          business_description: bd,
+          preferred_subdomain: brief?.preferred_subdomain || null,
+        },
+      })
+      
+      console.log("Draft created:", draftRow)
+      
+      return ok({
+        ok: true,
+        draft_id: draftRow?.id,
+        region,
+        subdomain: sub,
+      }, req)
+    } catch (error) {
+      console.error("Draft creation error:", error)
+      return err("Draft creation failed: " + (error instanceof Error ? error.message : String(error)), req, 500)
+    }
+  }
+
+  // Full website creation path - requires 10Web API
   try {
     const { website, region } = await createInFrankfurt(candidate)
 
-    // minimal draft shape; adjust fields if your table differs
-    const draftRow = await saveDraft({
-      tenweb_website_id: website?.id ?? website?.website_id ?? "",
-      region,
-      slug: sub,
-      brief: {
-        business_type: bt,
-        business_name: bn,
-        business_description: bd,
-        preferred_subdomain: brief?.preferred_subdomain || null,
-      },
-    })
+            // minimal draft shape; adjust fields if your table differs
+        const draftRow = await saveDraft({
+          website_id: website?.id ?? website?.website_id ?? "",
+          region,
+          slug: sub,
+          brief: {
+            business_type: bt,
+            business_name: bn,
+            business_description: bd,
+            preferred_subdomain: brief?.preferred_subdomain || null,
+          },
+        })
 
     return ok({
       ok: true,
@@ -206,8 +282,16 @@ Deno.serve(async (req) => {
       region,
       subdomain: sub,
       website_id: website?.id ?? website?.website_id ?? null,
-    }, origin)
+    }, req)
   } catch (e: any) {
-    return err(e?.body?.message ?? e?.message ?? "Create failed", origin, e?.status ?? 500)
+    // Log full error for debugging but don't leak secrets to client
+    console.error("ai-router error:", e)
+    
+    // Return safe error message without sensitive details
+    const safeMessage = e?.status === 400 || e?.status === 422 
+      ? (e?.body?.message ?? "Invalid request")
+      : "Service temporarily unavailable"
+    
+    return err(safeMessage, req, e?.status ?? 500)
   }
 })

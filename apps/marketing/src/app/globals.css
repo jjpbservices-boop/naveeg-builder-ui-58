@@ -1,25 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Sansation:wght@300;400;700&family=Lato:ital,wght@0,300;0,400;0,700;1,400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   --surface: #ffffff;
+  --surface-dark: #0f1419;
   --ink: #0b0d10;
+  --ink-light: #ffffff;
   --muted: #5b6572;
+  --muted-light: #a1a9b8;
   --border: rgba(10, 12, 16, 0.08);
+  --border-light: rgba(255, 255, 255, 0.1);
   --shadow: 0 20px 60px rgba(10, 12, 16, 0.10);
+  --shadow-light: 0 20px 60px rgba(0, 0, 0, 0.3);
   --radius: 1.2rem;
   
+  /* Light gradients */
   --wash-1: radial-gradient(1200px 600px at 10% -10%, rgba(99,102,241,.10), transparent 60%),
             radial-gradient(900px 500px at 90% -20%, rgba(59,130,246,.08), transparent 60%),
             linear-gradient(180deg,#FDFCFB 0%,#F3F7FA 100%);
   --wash-2: linear-gradient(180deg,#FAFBFC 0%,#F1F5F9 100%);
+  --wash-3: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   
-  --band-entry: #CFFAE3;
-  --band-grow: #9DDCFF;
-  --band-custom: #BDA5FF;
+  /* Dark gradients */
+  --wash-dark-1: radial-gradient(1200px 600px at 10% -10%, rgba(99,102,241,.20), transparent 60%),
+                 radial-gradient(900px 500px at 90% -20%, rgba(59,130,246,.15), transparent 60%),
+                 linear-gradient(180deg, #0f1419 0%, #1a202c 100%);
+  --wash-dark-2: linear-gradient(180deg, #1a202c 0%, #2d3748 100%);
+  --wash-dark-3: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   
-  --cta-grad: linear-gradient(135deg,#6366F1 0%,#3B82F6 35%,#22D3EE 100%);
+  /* Professional color palette inspired by modern SaaS platforms */
+  --primary-gradient: linear-gradient(135deg, #7C3AED 0%, #3B82F6 50%, #06B6D4 100%);
+  --primary-gradient-dark: linear-gradient(135deg, #6D28D9 0%, #2563EB 50%, #0891B2 100%);
+  
+  /* Pricing card band colors */
+  --band-entry: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  --band-grow: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  --band-custom: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+  
+  /* Professional accent colors - subtle and sophisticated */
+  --accent-green: #10B981;   /* Success/positive actions */
+  --accent-blue: #3B82F6;    /* Primary actions */
+  --accent-purple: #7C3AED;  /* Premium features */
+  
+  /* Neutral palette for professional look */
+  --neutral-50: #F9FAFB;
+  --neutral-100: #F3F4F6;
+  --neutral-200: #E5E7EB;
+  --neutral-300: #D1D5DB;
+  --neutral-400: #9CA3AF;
+  --neutral-500: #6B7280;
+  --neutral-600: #4B5563;
+  --neutral-700: #374151;
+  --neutral-800: #1F2937;
+  --neutral-900: #111827;
+  
+  /* Professional icon colors */
+  --icon-primary: #374151;
+  --icon-secondary: #6B7280;
+  --icon-accent: #7C3AED;
 }
 
 @layer components {
@@ -35,8 +76,64 @@
     @apply rounded-[1.2rem] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow)];
   }
   
+  .card-dark {
+    @apply rounded-[1.2rem] border border-[var(--border-light)] bg-[var(--surface-dark)] shadow-[var(--shadow-light)];
+  }
+  
+  .section-dark {
+    background: var(--wash-dark-1), #0f1419;
+  }
+  
+  .section-light {
+    @apply bg-[var(--wash-1)];
+  }
+  
+    /* Professional button system */
+  .btn-primary {
+    @apply inline-flex items-center justify-center h-12 px-8 rounded-lg font-semibold transition-all duration-200 shadow-sm;
+  }
+
+  .btn-primary-light {
+    @apply bg-[var(--neutral-900)] text-white hover:bg-[var(--neutral-800)] hover:shadow-md;
+  }
+
+  .btn-primary-dark {
+    @apply bg-white text-[var(--neutral-900)] hover:bg-[var(--neutral-50)] hover:shadow-md;
+  }
+
+  /* Secondary CTA - Professional outlined style */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center h-12 px-8 rounded-lg font-semibold transition-all duration-200 border-2;
+  }
+
+  .btn-secondary-light {
+    @apply border-[var(--neutral-300)] text-[var(--neutral-700)] hover:bg-[var(--neutral-50)] hover:border-[var(--neutral-400)];
+  }
+
+  .btn-secondary-dark {
+    @apply border-white/20 text-white hover:bg-white/10 hover:border-white/30;
+  }
+
+  /* Professional icon containers */
+  .icon-container {
+    @apply w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200;
+  }
+
+  .icon-container-light {
+    @apply bg-[var(--neutral-100)] text-[var(--icon-primary)];
+  }
+
+  .icon-container-dark {
+    @apply bg-white/10 text-white;
+  }
+
+  .icon-container-accent {
+    @apply bg-purple-100 text-[var(--accent-purple)];
+  }
+  
+  /* Legacy button for backward compatibility */
   .btn-black {
-    @apply inline-flex items-center justify-center h-11 px-6 rounded-xl bg-black text-white hover:bg-neutral-900 transition font-medium;
+    @apply btn-primary btn-primary-light;
   }
   
   .kicker {
@@ -45,20 +142,28 @@
   
   .h1 {
     @apply text-5xl md:text-6xl font-extrabold tracking-tight text-[var(--ink)] max-w-[68ch];
+    font-family: 'Sansation', sans-serif;
   }
   
   .h2 {
     @apply text-3xl md:text-4xl font-bold tracking-tight text-[var(--ink)] max-w-[68ch];
+    font-family: 'Sansation', sans-serif;
   }
   
   .body {
     @apply text-base md:text-lg text-[var(--muted)] max-w-[68ch];
+    font-family: 'Lato', sans-serif;
   }
 }
 
 @layer base {
   body {
     @apply bg-white text-[var(--ink)] antialiased;
+    font-family: 'Lato', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Sansation', sans-serif;
   }
 }
 

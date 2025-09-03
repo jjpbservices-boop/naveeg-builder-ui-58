@@ -62,7 +62,7 @@ export function Header() {
             </a>
 
             {/* CTA Button */}
-            <Link href="/start" className="btn-black">
+            <Link href="/start" className="btn-primary btn-primary-light">
               Start free
             </Link>
 
