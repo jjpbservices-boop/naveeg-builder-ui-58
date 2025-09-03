@@ -46,42 +46,34 @@ async function updateDraft(draft_id: string, patch: Record<string, unknown>) {
 const TW_BASE = Deno.env.get("TENWEB_API_BASE") ?? "https://api.10web.io"
 const TW_KEY  = Deno.env.get("TENWEB_API_KEY")  ?? ""
 
-async function tw(path: string, init: RequestInit & { timeoutMs?: number } = {}) {
+async function createWebsite(payload: {
+  subdomain: string; region: string; site_title: string;
+  admin_username: string; admin_password: string;
+}, timeoutMs = 25_000): Promise<{ website_id: string; [k: string]: unknown }> {
   const ctrl = new AbortController()
-  const t = setTimeout(() => ctrl.abort(), init.timeoutMs ?? 25000)
+  const t = setTimeout(() => ctrl.abort(), timeoutMs)
   try {
-    const res = await fetch(`${TW_BASE}${path}`, {
-      ...init,
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": TW_KEY,
-        ...(init.headers || {}),
-      },
+    const res = await fetch(`${TW_BASE}/websites`, {
+      method: "POST",
+      headers: { "x-api-key": TW_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
       signal: ctrl.signal,
-    })
-    const json = await res.json().catch(() => ({}))
+    });
+    const json = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const e: any = new Error("10Web API error")
-      e.status = res.status
-      e.body = json
-      throw e
+      const e: any = new Error("TENWEB_ERROR"); e.status = res.status; e.body = json; throw e;
     }
-    return json
-  } finally {
-    clearTimeout(t)
-  }
+    return { website_id: json.website_id || json.id || "", ...json };
+  } finally { clearTimeout(t); }
 }
 
-// ---- Frankfurt zones (fixed order)
-const FR_ZONES = ["europe-west3-a", "europe-west3-b", "europe-west3-c"] as const
-const FR_REGION = "europe-west3"
+// ---- Region fallback logic - single instance
+const ALLOWED_ZONES = ["europe-west3-a","europe-west3-b","europe-west3-c"] as const;
+const FALLBACK_REGION = "europe-west3";
 
-function buildHostingPayload(candidate: any, region: string) {
-  return {
-    unique_id: crypto.randomUUID(),
-    subdomain: candidate.subdomain, // your sanitized slug
-    region,
-  }
+function generateCredentials() {
+  const r = crypto.getRandomValues(new Uint32Array(2)).join("");
+  return { admin_username: `nvg_${r.slice(0,8)}`, admin_password: crypto.randomUUID().replace(/-/g,"").slice(0,16) };
 }
 
 function slugify(s: string) {
@@ -93,38 +85,37 @@ function slugify(s: string) {
     .slice(0, 63);
 }
 
-// Try zones a→b→c then fall back to region
-async function createInFrankfurt(candidate: any) {
-  let lastError: any = null
+async function createWebsiteWithFallback(
+  subdomain: string, siteTitle: string, region?: string
+): Promise<{ website_id: string; region: string; raw?: any }> {
+  const creds = generateCredentials();
+  const base = { subdomain, site_title: siteTitle, ...creds };
 
-  for (const zone of FR_ZONES) {
+  const zones = region && (ALLOWED_ZONES as readonly string[]).includes(region)
+    ? [region, ...ALLOWED_ZONES.filter(z => z !== region)]
+    : [...ALLOWED_ZONES];
+
+  let lastErr: any = null;
+  for (const z of zones) {
     try {
-      const r = await tw("/v1/hosting/website", {
-        method: "POST",
-        body: JSON.stringify(buildHostingPayload(candidate, zone)),
-        timeoutMs: 25000,
-      })
-      return { website: r?.data ?? r, region: zone }
+      const r = await createWebsite({ ...base, region: z });
+      return { website_id: r.website_id, region: z, raw: r };
     } catch (e: any) {
-      if (e?.status === 400 || e?.status === 422) { lastError = e; continue }
-      throw e
+      lastErr = e;
+      if (e?.status === 400 || e?.status === 422) continue; // try next zone
+      break; // non-retryable
     }
   }
-
-  // final fallback to regional string (not zone)
-  const r2 = await tw("/v1/hosting/website", {
-    method: "POST",
-    body: JSON.stringify(buildHostingPayload(candidate, FR_REGION)),
-    timeoutMs: 25000,
-  })
-  return { website: r2?.data ?? r2, region: FR_REGION }
+  // final fallback to region str
+  const r = await createWebsite({ ...base, region: FALLBACK_REGION }).catch(() => { throw lastErr; });
+  return { website_id: r.website_id, region: FALLBACK_REGION, raw: r };
 }
 
-// ---- DRAFT write (service role inside function; safe even with public caller)
-const SB_URL = Deno.env.get("SUPABASE_URL") ?? ""
-const SB_SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+// ---- Database operations - single instance
+const SB_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SB_SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
-async function saveDraft(minDraft: {
+async function saveDraft(input: {
   website_id: string | number | null
   region: string
   slug: string
@@ -139,10 +130,10 @@ async function saveDraft(minDraft: {
       "prefer": "return=representation",
     },
     body: JSON.stringify([{
-      website_id: minDraft.website_id ? Number(minDraft.website_id) : Math.floor(Math.random() * 1000000),
-      unique_id: minDraft.website_id ? String(minDraft.website_id) : "draft-" + Date.now(),
-      subdomain: minDraft.slug,
-      brief: minDraft.brief,
+      website_id: input.website_id ? Number(input.website_id) : Math.floor(Math.random() * 1000000),
+      unique_id: input.website_id ? String(input.website_id) : "draft-" + Date.now(),
+      subdomain: input.slug,
+      brief: input.brief,
       pages_meta: [],
       colors: {},
       fonts: {},
@@ -225,8 +216,6 @@ Deno.serve(async (req) => {
   sub = slugify(sub);
   if (!sub) sub = slugify(bn);
 
-  const candidate = { subdomain: sub }
-
   // Fast path for draft creation - no 10Web API call needed
   if (action === "create-draft") {
     try {
@@ -261,25 +250,25 @@ Deno.serve(async (req) => {
 
   // Full website creation path - requires 10Web API
   try {
-    const { website, region } = await createInFrankfurt(candidate)
-
-            // minimal draft shape; adjust fields if your table differs
-        const draftRow = await saveDraft({
-          website_id: website?.id ?? website?.website_id ?? "",
-          region,
-          slug: sub,
-          brief: {
-            business_type: bt,
-            business_name: bn,
-            business_description: bd,
-            preferred_subdomain: brief?.preferred_subdomain || null,
-          },
-        })
+    const website = await createWebsiteWithFallback(sub, bn, brief?.region);
+    
+    // minimal draft shape; adjust fields if your table differs
+    const draftRow = await saveDraft({
+      website_id: website?.id ?? website?.website_id ?? "",
+      region: website.region,
+      slug: sub,
+      brief: {
+        business_type: bt,
+        business_name: bn,
+        business_description: bd,
+        preferred_subdomain: brief?.preferred_subdomain || null,
+      },
+    })
 
     return ok({
       ok: true,
       draft_id: draftRow?.id,
-      region,
+      region: website.region,
       subdomain: sub,
       website_id: website?.id ?? website?.website_id ?? null,
     }, req)
@@ -294,4 +283,4 @@ Deno.serve(async (req) => {
     
     return err(safeMessage, req, e?.status ?? 500)
   }
-})
+});

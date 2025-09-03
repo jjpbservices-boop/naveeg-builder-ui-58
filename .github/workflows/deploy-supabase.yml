@@ -6,6 +6,7 @@ on:
     paths:
       - "supabase/**"
       - ".github/workflows/deploy-supabase.yml"
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -32,6 +33,7 @@ jobs:
         run: |
           supabase functions deploy ai-router
           supabase functions deploy psi-report
+          supabase functions deploy psi-collect
           
       - name: Health checks
         env:

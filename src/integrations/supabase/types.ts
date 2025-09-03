@@ -131,8 +131,10 @@ export type Database = {
           created_at: string | null
           fonts: Json | null
           id: string
+          message: string | null
           pages_meta: Json
           region: string | null
+          status: string
           subdomain: string | null
           tenweb_website_id: number | null
           unique_id: string
@@ -149,8 +151,10 @@ export type Database = {
           created_at?: string | null
           fonts?: Json | null
           id?: string
+          message?: string | null
           pages_meta: Json
           region?: string | null
+          status?: string
           subdomain?: string | null
           tenweb_website_id?: number | null
           unique_id: string
@@ -167,8 +171,10 @@ export type Database = {
           created_at?: string | null
           fonts?: Json | null
           id?: string
+          message?: string | null
           pages_meta?: Json
           region?: string | null
+          status?: string
           subdomain?: string | null
           tenweb_website_id?: number | null
           unique_id?: string
@@ -178,6 +184,39 @@ export type Database = {
           website_id?: number
           website_keyphrase?: string | null
           website_title?: string | null
+        }
+        Relationships: []
+      }
+      site_perf: {
+        Row: {
+          analysis_ts: string
+          created_at: string
+          crux: Json | null
+          id: string
+          lhr: Json | null
+          performance_score: number | null
+          site_id: string
+          strategy: string
+        }
+        Insert: {
+          analysis_ts: string
+          created_at?: string
+          crux?: Json | null
+          id?: string
+          lhr?: Json | null
+          performance_score?: number | null
+          site_id: string
+          strategy: string
+        }
+        Update: {
+          analysis_ts?: string
+          created_at?: string
+          crux?: Json | null
+          id?: string
+          lhr?: Json | null
+          performance_score?: number | null
+          site_id?: string
+          strategy?: string
         }
         Relationships: []
       }

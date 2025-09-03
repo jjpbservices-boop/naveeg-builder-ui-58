@@ -1,4 +1,6 @@
 {
-  "/api/start/route": "app/api/start/route.js",
-  "/start/page": "app/start/page.js"
+  "/page": "app/page.js",
+  "/how-it-works/page": "app/how-it-works/page.js",
+  "/start/page": "app/start/page.js",
+  "/api/start/route": "app/api/start/route.js"
 }

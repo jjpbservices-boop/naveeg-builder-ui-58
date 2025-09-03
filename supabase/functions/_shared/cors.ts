@@ -30,7 +30,7 @@ export const corsHeaders = (req: Request) => {
     'Access-Control-Max-Age': '86400',
     'Vary': 'Origin',
   };
-};
+}
 
 export const handleCors = (req: Request) => {
   if (req.method === 'OPTIONS') {
