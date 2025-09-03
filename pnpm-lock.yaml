@@ -106,10 +106,10 @@ importers:
         specifier: 14.2.15
         version: 14.2.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
-        specifier: ^18
+        specifier: 18.3.1
         version: 18.3.1
       react-dom:
-        specifier: ^18
+        specifier: 18.3.1
         version: 18.3.1(react@18.3.1)
       tailwind-merge:
         specifier: ^3.3.1
@@ -152,10 +152,10 @@ importers:
         specifier: ^2.56.1
         version: 2.57.0
       stripe:
-        specifier: ^18.5.0
-        version: 18.5.0(@types/node@20.19.12)
+        specifier: ^14.12.0
+        version: 14.25.0
       zod:
-        specifier: ^3.25.76
+        specifier: ^3.22.4
         version: 3.25.76
     devDependencies:
       '@types/node':
@@ -167,14 +167,8 @@ importers:
 
   packages/ui:
     dependencies:
-      '@types/react':
-        specifier: ^18.3.24
-        version: 18.3.24
-      '@types/react-dom':
-        specifier: ^18.3.7
-        version: 18.3.7(@types/react@18.3.24)
       clsx:
-        specifier: ^2.1.1
+        specifier: ^2.0.0
         version: 2.1.1
       framer-motion:
         specifier: ^12.23.12
@@ -195,6 +189,12 @@ importers:
       '@types/node':
         specifier: ^20.19.11
         version: 20.19.12
+      '@types/react':
+        specifier: ^18.3.12
+        version: 18.3.24
+      '@types/react-dom':
+        specifier: ^18.3.1
+        version: 18.3.7(@types/react@18.3.24)
       typescript:
         specifier: 5.9.2
         version: 5.9.2
@@ -2265,14 +2265,9 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
-  stripe@18.5.0:
-    resolution: {integrity: sha512-Hp+wFiEQtCB0LlNgcFh5uVyKznpDjzyUZ+CNVEf+I3fhlYvh7rZruIg+jOwzJRCpy0ZTPMjlzm7J2/M2N6d+DA==}
+  stripe@14.25.0:
+    resolution: {integrity: sha512-wQS3GNMofCXwH8TSje8E1SE8zr6ODiGtHQgPtO95p9Mb4FhKC9jvXR2NUTpZ9ZINlckJcFidCmaTFV4P6vsb9g==}
     engines: {node: '>=12.*'}
-    peerDependencies:
-      '@types/node': '>=12.x.x'
-    peerDependenciesMeta:
-      '@types/node':
-        optional: true
 
   styled-jsx@5.1.1:
     resolution: {integrity: sha512-pW7uC1l4mBZ8ugbiZrcIsiIvVx1UmTfw7UkC3Um2tmfUq9Bhk8IiyEIPl6F8agHgjzku6j0xQEZbfA5uSgSaCw==}
@@ -4790,11 +4785,10 @@ snapshots:
 
   strip-json-comments@3.1.1: {}
 
-  stripe@18.5.0(@types/node@20.19.12):
+  stripe@14.25.0:
     dependencies:
-      qs: 6.14.0
-    optionalDependencies:
       '@types/node': 20.19.12
+      qs: 6.14.0
 
   styled-jsx@5.1.1(react@18.3.1):
     dependencies:

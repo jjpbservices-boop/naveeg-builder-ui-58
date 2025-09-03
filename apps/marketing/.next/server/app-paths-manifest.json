@@ -1,16 +1,16 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/(onboarding)/design/attach/route": "app/(onboarding)/design/attach/route.js",
-  "/features/page": "app/features/page.js",
-  "/(onboarding)/design/save/route": "app/(onboarding)/design/save/route.js",
-  "/api/start/route": "app/api/start/route.js",
-  "/page": "app/page.js",
-  "/gallery/page": "app/gallery/page.js",
-  "/how-it-works/page": "app/how-it-works/page.js",
-  "/login/page": "app/login/page.js",
-  "/pricing/page": "app/pricing/page.js",
-  "/success/page": "app/success/page.js",
-  "/start/page": "app/start/page.js",
   "/(onboarding)/design/preview/route": "app/(onboarding)/design/preview/route.js",
-  "/design/page": "app/design/page.js"
+  "/api/start/route": "app/api/start/route.js",
+  "/(onboarding)/design/save/route": "app/(onboarding)/design/save/route.js",
+  "/features/page": "app/features/page.js",
+  "/how-it-works/page": "app/how-it-works/page.js",
+  "/(onboarding)/design/attach/route": "app/(onboarding)/design/attach/route.js",
+  "/gallery/page": "app/gallery/page.js",
+  "/success/page": "app/success/page.js",
+  "/login/page": "app/login/page.js",
+  "/start/page": "app/start/page.js",
+  "/pricing/page": "app/pricing/page.js",
+  "/design/page": "app/design/page.js",
+  "/page": "app/page.js"
 }
