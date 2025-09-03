@@ -1,2 +1,8 @@
 apps/dashboard
 apps/apps
+packages
+supabase
+.github
+scripts
+*.md
+.env*
