@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "buildCommand": "pnpm run build",
-  "outputDirectory": ".next",
-  "installCommand": "pnpm install --frozen-lockfile=false",
+  "buildCommand": "cd ../.. && pnpm turbo run build --filter=marketing",
+  "outputDirectory": "apps/marketing/.next",
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile=false",
   "framework": "nextjs",
   "functions": {
-    "src/app/api/**/*.ts": {
+    "apps/marketing/src/app/api/**/*.ts": {
       "runtime": "nodejs20.x"
     }
   }
