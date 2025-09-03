@@ -1,15 +1,15 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/api/portal/route": "app/api/portal/route.js",
   "/api/psi/route": "app/api/psi/route.js",
   "/api/checkout/route": "app/api/checkout/route.js",
   "/new/page": "app/new/page.js",
+  "/settings/page": "app/settings/page.js",
   "/sites/[id]/page": "app/sites/[id]/page.js",
   "/page": "app/page.js",
-  "/settings/page": "app/settings/page.js",
-  "/app/billing/page": "app/app/billing/page.js",
+  "/api/portal/route": "app/api/portal/route.js",
+  "/app/settings/page": "app/app/settings/page.js",
+  "/app/page": "app/app/page.js",
   "/app/analytics/page": "app/app/analytics/page.js",
   "/app/overview/page": "app/app/overview/page.js",
-  "/app/page": "app/app/page.js",
-  "/app/settings/page": "app/app/settings/page.js"
+  "/app/billing/page": "app/app/billing/page.js"
 }

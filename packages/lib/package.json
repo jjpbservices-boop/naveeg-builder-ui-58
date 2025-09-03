@@ -10,15 +10,9 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "lint": "echo \"skip\"",
-    "typecheck": "tsc -p tsconfig.build.json --noEmit"
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "lint": "echo skip"
   },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.39.0",
-    "stripe": "^14.12.0",
-    "zod": "^3.22.4"
-  },
-  "devDependencies": {
-    "@types/node": "^20"
-  }
+  "dependencies": { "@supabase/supabase-js": "^2.56.1", "stripe": "^14.12.0", "zod": "^3.22.4" },
+  "devDependencies": { "@types/node": "^20.19.11", "typescript": "5.9.2" }
 }

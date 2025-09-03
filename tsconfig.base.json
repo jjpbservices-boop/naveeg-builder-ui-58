@@ -6,14 +6,12 @@
     "strict": true,
     "jsx": "react-jsx",
     "resolveJsonModule": true,
-    "allowJs": false,
-    "incremental": true,
     "skipLibCheck": true,
     "baseUrl": ".",
-    "types": ["node"],
     "paths": {
       "@naveeg/lib/*": ["packages/lib/*"],
       "@naveeg/ui/*": ["packages/ui/*"]
-    }
+    },
+    "types": ["node"]
   }
 }
