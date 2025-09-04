@@ -18,6 +18,7 @@
     "typescript": "5.9.2"
   },
   "dependencies": {
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "zustand": "^5.0.8"
   }
 }
