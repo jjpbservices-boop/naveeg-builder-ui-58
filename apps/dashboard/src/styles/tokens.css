@@ -1,0 +1,20 @@
+:root {
+  --ink:#0b0d10; --ink-light:#ffffff;
+  --surface:#ffffff; --surface-dark:#0f1419;
+
+  --accent-green:#10B981;
+  --accent-blue:#3B82F6;
+  --accent-purple:#7C3AED;
+
+  --n50:#F9FAFB; --n100:#F3F4F6; --n200:#E5E7EB; --n300:#D1D5DB;
+  --n400:#9CA3AF; --n500:#6B7280; --n600:#4B5563; --n700:#374151;
+  --n800:#1F2937; --n900:#111827;
+
+  --muted:#5b6572; --muted-light:#a1a9b8;
+
+  --grad-main: linear-gradient(135deg,#7C3AED 0%,#3B82F6 50%,#06B6D4 100%);
+  --grad-main-dark: linear-gradient(135deg,#6D28D9 0%,#2563EB 50%,#0891B2 100%);
+  --grad-entry: linear-gradient(135deg,#10B981 0%,#059669 100%);
+  --grad-grow: linear-gradient(135deg,#3B82F6 0%,#2563EB 100%);
+  --grad-custom: linear-gradient(135deg,#7C3AED 0%,#6D28D9 100%);
+}
