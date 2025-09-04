@@ -89,7 +89,7 @@ export default function SiteManagement({ params }: { params: { id: string } }) {
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                       siteData.status === 'Online' 
                         ? 'bg-green-100 text-green-700' 
-                        : 'bg-yellow-100 text-yellow-700'
+                        : 'bg-blue-100 text-blue-700'
                     }`}>
                       {siteData.status}
                     </span>

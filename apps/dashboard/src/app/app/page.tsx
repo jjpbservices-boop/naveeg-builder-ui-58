@@ -46,7 +46,7 @@ export default function OverviewPage() {
       case 'online':
         return 'bg-green-100 text-green-700'
       case 'generating':
-        return 'bg-yellow-100 text-yellow-700'
+        return 'bg-blue-100 text-blue-700'
       case 'draft':
         return 'bg-gray-100 text-gray-700'
       default:
@@ -99,9 +99,9 @@ export default function OverviewPage() {
       </div>
 
       {/* Website Progress */}
-      <Card>
+      <Card gradient="blue" hover>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Website Progress</h2>
+          <h2 className="text-lg font-semibold text-gray-900 font-sans">Website Progress</h2>
           <Badge variant={completionPercentage >= 80 ? 'success' : completionPercentage >= 60 ? 'warning' : 'error'}>
             {Math.round(completionPercentage)}% Complete
           </Badge>
@@ -184,10 +184,10 @@ export default function OverviewPage() {
       {/* Quick Actions & Analytics Summary */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Quick Actions */}
-        <Card>
+        <Card hover>
           <div className="flex items-center space-x-2 mb-4">
             <Icon name="zap" className="w-5 h-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
+            <h3 className="text-lg font-semibold text-gray-900 font-sans">Quick Actions</h3>
           </div>
           <div className="space-y-3">
             <button className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors group">
@@ -212,10 +212,10 @@ export default function OverviewPage() {
         </Card>
 
         {/* Analytics Summary */}
-        <Card gradient="green">
+        <Card gradient="green" hover>
           <div className="flex items-center space-x-2 mb-4">
             <Icon name="trending-up" className="w-5 h-5 text-green-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Performance</h3>
+            <h3 className="text-lg font-semibold text-gray-900 font-sans">Performance</h3>
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -239,10 +239,10 @@ export default function OverviewPage() {
         </Card>
 
         {/* Plan Card */}
-        <Card gradient="purple">
+        <Card gradient="purple" hover>
           <div className="flex items-center space-x-2 mb-4">
             <Icon name="crown" className="w-5 h-5 text-purple-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Current Plan</h3>
+            <h3 className="text-lg font-semibold text-gray-900 font-sans">Current Plan</h3>
           </div>
           <div className="space-y-4">
             <div>

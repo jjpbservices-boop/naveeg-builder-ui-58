@@ -126,8 +126,8 @@ export default function PagesPage() {
 
         <Card>
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <Icon name="edit" className="w-5 h-5 text-yellow-600" />
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Icon name="edit" className="w-5 h-5 text-blue-600" />
             </div>
             <div>
               <p className="text-sm text-gray-600">Drafts</p>

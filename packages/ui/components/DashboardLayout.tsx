@@ -22,9 +22,9 @@ export function DashboardLayout({
   className,
 }: DashboardLayoutProps) {
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Main content area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
         <Header
           siteName={siteName}
@@ -34,8 +34,10 @@ export function DashboardLayout({
         />
         
         {/* Page content */}
-        <main className={cn('flex-1 overflow-auto p-6', className)}>
-          {children}
+        <main className={cn('flex-1 overflow-auto p-6 max-w-full', className)}>
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
         </main>
       </div>
     </div>

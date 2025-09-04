@@ -48,12 +48,15 @@ export function Card({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      whileHover={hover ? { y: -2, scale: 1.02 } : {}}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       className={cn(
-        'rounded-2xl border transition-all duration-200',
+        'rounded-2xl border transition-all duration-300 backdrop-blur-sm',
         gradientClasses[gradient],
         shadowClasses[shadow],
         paddingClasses[padding],
-        hover && 'hover:shadow-lg hover:-translate-y-1',
+        hover && 'hover:shadow-xl hover:shadow-blue-500/10',
+        'relative overflow-hidden',
         className
       )}
     >

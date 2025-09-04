@@ -21,7 +21,7 @@ export function Header({ siteName, plan, domain, status, className }: HeaderProp
       case 'online':
         return 'bg-green-100 text-green-800';
       case 'draft':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-blue-100 text-blue-800';
       case 'generating':
         return 'bg-blue-100 text-blue-800';
       default:
@@ -41,12 +41,12 @@ export function Header({ siteName, plan, domain, status, className }: HeaderProp
   };
 
   return (
-    <header className={cn('sticky top-0 z-40 bg-white border-b border-gray-200', className)}>
+    <header className={cn('sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm', className)}>
       <div className="flex items-center justify-between px-6 py-4">
         {/* Left side - Site info */}
         <div className="flex items-center space-x-4">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">
+            <h1 className="text-xl font-semibold text-gray-900 font-sans">
               {siteName || 'My Website'}
             </h1>
             {domain && (
@@ -93,7 +93,9 @@ export function Header({ siteName, plan, domain, status, className }: HeaderProp
             aria-expanded={isUserMenuOpen}
             aria-haspopup="true"
           >
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex-shrink-0" />
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex-shrink-0 flex items-center justify-center">
+              <span className="text-white text-sm font-medium">U</span>
+            </div>
             <div className="hidden sm:block text-left">
               <p className="text-sm font-medium text-gray-900">User Name</p>
               <p className="text-xs text-gray-500">user@example.com</p>

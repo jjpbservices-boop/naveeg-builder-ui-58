@@ -92,7 +92,7 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <motion.div
       className={cn(
-        'relative flex flex-col bg-white border-r border-gray-200 transition-all duration-300',
+        'relative flex flex-col bg-white border-r border-gray-200 transition-all duration-300 shadow-sm',
         isCollapsed ? 'w-16' : 'w-64',
         className
       )}
@@ -100,14 +100,15 @@ export function Sidebar({ className }: SidebarProps) {
       onMouseLeave={() => setIsHovered(false)}
       initial={false}
       animate={{ width: isCollapsed ? 64 : 256 }}
+      style={{ minHeight: '100vh' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
         <AnimatePresence mode="wait">
           {!isCollapsed && (
             <motion.h1
               key="title"
-              className="text-xl font-bold text-gray-900"
+              className="text-xl font-bold text-gray-900 font-sans"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -119,7 +120,7 @@ export function Sidebar({ className }: SidebarProps) {
         
         <button
           onClick={toggleCollapsed}
-          className="p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="p-2 rounded-lg hover:bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           <Icon
@@ -142,9 +143,11 @@ export function Sidebar({ className }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gray-200 rounded-full flex-shrink-0" />
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex-shrink-0 flex items-center justify-center">
+            <span className="text-white text-sm font-medium">U</span>
+          </div>
           <AnimatePresence mode="wait">
             {!isCollapsed && (
               <motion.div
@@ -185,9 +188,9 @@ function SidebarItem({ item, isCollapsed, showExpanded }: SidebarItemProps) {
       <a
         href={item.href}
         className={cn(
-          'flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 group',
+          'flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 group relative',
           'hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-          isActive && 'bg-blue-100 text-blue-700 shadow-sm'
+          isActive && 'bg-blue-100 text-blue-700 shadow-sm border-l-4 border-blue-500'
         )}
         aria-current={isActive ? 'page' : undefined}
         onMouseEnter={() => setIsHovered(true)}

@@ -30,18 +30,18 @@ declare namespace __next_route_internal_types__ {
 
   type StaticRoutes = 
     | `/api/psi`
-    | `/settings`
-    | `/new`
-    | `/`
-    | `/api/checkout`
-    | `/app/overview`
-    | `/app/analytics`
-    | `/app/domains`
-    | `/app`
-    | `/app/pages`
-    | `/app/settings`
-    | `/app/billing`
     | `/api/portal`
+    | `/new`
+    | `/api/checkout`
+    | `/`
+    | `/settings`
+    | `/app/overview`
+    | `/app/billing`
+    | `/app/pages`
+    | `/app`
+    | `/app/analytics`
+    | `/app/settings`
+    | `/app/domains`
   type DynamicRoutes<T extends string = string> = 
     | `/sites/${SafeSlug<T>}`
 
