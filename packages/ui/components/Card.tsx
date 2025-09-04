@@ -46,7 +46,7 @@ export function Card({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       whileHover={hover ? { y: -2, scale: 1.02 } : {}}
       transition={{ duration: 0.2, ease: "easeOut" }}
