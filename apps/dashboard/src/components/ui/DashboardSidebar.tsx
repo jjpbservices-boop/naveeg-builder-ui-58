@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { Icon, type IconName } from '@naveeg/ui';
@@ -71,13 +71,13 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
   }, []);
 
   // Save collapsed state to localStorage
-  const toggleCollapsed = () => {
+  const toggleCollapsed = useCallback(() => {
     const newState = !isCollapsed;
     setIsCollapsed(newState);
     if (isMounted) {
       localStorage.setItem('sidebar-collapsed', JSON.stringify(newState));
     }
-  };
+  }, [isCollapsed, isMounted]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -90,7 +90,7 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isCollapsed]);
+  }, [toggleCollapsed]);
 
   const showExpanded = isCollapsed && isHovered;
 

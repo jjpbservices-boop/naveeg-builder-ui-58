@@ -8,7 +8,7 @@ import {
   Loader2, Bot, Building2, Building, Rocket, TrendingUp, TrendingDown, ServerCog,
   AlertCircle, ArrowLeft, ArrowRight, Download, LogOut, Trash2, X,
   PanelsTopLeft, Globe2, KeyRound, Star, Info, FileText, Shield, Plus, Edit,
-  MoreHorizontal, AlertTriangle, ShieldCheck, Layout, XCircle
+  MoreHorizontal, AlertTriangle, ShieldCheck, Layout, XCircle, Users, Clock
 } from 'lucide-react';
 
 const ICONS = {
@@ -59,6 +59,8 @@ const ICONS = {
   'shield-check': ShieldCheck,
   layout: Layout,
   'x-circle': XCircle,
+  users: Users,
+  clock: Clock,
 } as const;
 
 export type IconName = keyof typeof ICONS;
