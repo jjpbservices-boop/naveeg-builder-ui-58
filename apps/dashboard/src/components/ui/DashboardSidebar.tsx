@@ -59,9 +59,11 @@ const navItems: NavItem[] = [
 export function DashboardSidebar({ className }: DashboardSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
-  // Load collapsed state from localStorage
+  // Load collapsed state from localStorage after mount
   useEffect(() => {
+    setIsMounted(true);
     const saved = localStorage.getItem('sidebar-collapsed');
     if (saved !== null) {
       setIsCollapsed(JSON.parse(saved));
@@ -72,7 +74,9 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
   const toggleCollapsed = () => {
     const newState = !isCollapsed;
     setIsCollapsed(newState);
-    localStorage.setItem('sidebar-collapsed', JSON.stringify(newState));
+    if (isMounted) {
+      localStorage.setItem('sidebar-collapsed', JSON.stringify(newState));
+    }
   };
 
   // Handle keyboard shortcuts
@@ -104,19 +108,11 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <AnimatePresence mode="wait">
-          {!isCollapsed && (
-            <motion.h1
-              key="title"
-              className="text-xl font-bold text-gray-900"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              Naveeg
-            </motion.h1>
-          )}
-        </AnimatePresence>
+        {!isCollapsed && (
+          <h1 className="text-xl font-bold text-gray-900 font-sans">
+            Naveeg
+          </h1>
+        )}
         
         <button
           onClick={toggleCollapsed}
@@ -146,24 +142,16 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
       <div className="p-4 border-t border-gray-200">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-gray-200 rounded-full flex-shrink-0" />
-          <AnimatePresence mode="wait">
-            {!isCollapsed && (
-              <motion.div
-                key="user-info"
-                className="min-w-0 flex-1"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  User Name
-                </p>
-                <p className="text-xs text-gray-500 truncate">
-                  user@example.com
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {!isCollapsed && (
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                User Name
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                user@example.com
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </motion.div>
@@ -202,19 +190,11 @@ function SidebarItem({ item, isCollapsed, showExpanded }: SidebarItemProps) {
           )}
         />
         
-        <AnimatePresence mode="wait">
-          {!isCollapsed && (
-            <motion.span
-              key="label"
-              className="text-sm font-medium transition-colors"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              {item.label}
-            </motion.span>
-          )}
-        </AnimatePresence>
+        {!isCollapsed && (
+          <span className="text-sm font-medium transition-colors">
+            {item.label}
+          </span>
+        )}
       </a>
 
       {/* Tooltip for collapsed state */}
