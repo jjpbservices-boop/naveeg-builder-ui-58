@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { makeSupabaseBrowser } from '@naveeg/lib/supabase/client'
 import { env } from '../../lib/env'
-import { t } from '@naveeg/ui'
-import Icon from '../../components/ui/Icon'
+import { t, Card, Badge, Tooltip, ProgressBar } from '@naveeg/ui'
+import { Icon } from '@naveeg/ui'
 
 // Mock data - replace with actual data from Supabase
 const mockSite = {
@@ -75,169 +75,197 @@ export default function OverviewPage() {
     })
   }
 
+  // Calculate website completion progress
+  const completionSteps = [
+    { id: 'content', label: 'Content Added', completed: true },
+    { id: 'design', label: 'Design Applied', completed: true },
+    { id: 'domain', label: 'Domain Connected', completed: site.status === 'online' },
+    { id: 'seo', label: 'SEO Optimized', completed: analytics.performance > 80 },
+  ];
+  
+  const completedSteps = completionSteps.filter(step => step.completed).length;
+  const completionPercentage = (completedSteps / completionSteps.length) * 100;
+
   return (
     <div className="p-6 space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-[var(--ink)] mb-2">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2 font-sans">
           {t('en', 'dashboard.overview.title')}
         </h1>
-        <p className="text-[var(--muted)]">
+        <p className="text-gray-600">
           Manage your website and track its performance
         </p>
       </div>
 
+      {/* Website Progress */}
+      <Card>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Website Progress</h2>
+          <Badge variant={completionPercentage >= 80 ? 'success' : completionPercentage >= 60 ? 'warning' : 'error'}>
+            {Math.round(completionPercentage)}% Complete
+          </Badge>
+        </div>
+        <ProgressBar 
+          value={completionPercentage} 
+          label="Website Setup Progress"
+          variant={completionPercentage >= 80 ? 'success' : completionPercentage >= 60 ? 'warning' : 'error'}
+        />
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+          {completionSteps.map((step) => (
+            <div key={step.id} className="flex items-center space-x-2">
+              <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                step.completed ? 'bg-green-500' : 'bg-gray-200'
+              }`}>
+                {step.completed && (
+                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </div>
+              <span className="text-sm text-gray-600">{step.label}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
       {/* Site Status Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="card p-6"
-      >
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <h2 className="text-xl font-semibold text-[var(--ink)] mb-2">
-              {site.domain}
-            </h2>
+      <Card gradient="blue" hover>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
             <div className="flex items-center space-x-3 mb-4">
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(site.status)}`}>
-                {t('en', `dashboard.overview.status.${site.status}`)}
-              </span>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPlanColor(site.plan)}`}>
+              <h2 className="text-xl font-semibold text-gray-900">
+                {site.domain}
+              </h2>
+              <Badge variant={site.status === 'online' ? 'live' : 'draft'}>
+                {site.status === 'online' ? 'Live' : 'Draft'}
+              </Badge>
+              <Badge variant={site.plan as any}>
                 {site.plan.charAt(0).toUpperCase() + site.plan.slice(1)}
-              </span>
+              </Badge>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-6">
               <div>
-                <span className="text-[var(--muted)]">Brand:</span>
-                <span className="ml-2 text-[var(--ink)]">{site.brandVibe}</span>
+                <span className="text-gray-500">Brand:</span>
+                <span className="ml-2 text-gray-900 font-medium">{site.brandVibe}</span>
               </div>
               <div>
-                <span className="text-[var(--muted)]">Industry:</span>
-                <span className="ml-2 text-[var(--ink)]">{site.industry}</span>
+                <span className="text-gray-500">Industry:</span>
+                <span className="ml-2 text-gray-900 font-medium">{site.industry}</span>
               </div>
               <div>
-                <span className="text-[var(--muted)]">Goal:</span>
-                <span className="ml-2 text-[var(--ink)]">{site.goal}</span>
+                <span className="text-gray-500">Goal:</span>
+                <span className="ml-2 text-gray-900 font-medium">{site.goal}</span>
               </div>
             </div>
-          </div>
-          
-          <div className="flex items-center space-x-3">
-            <button className="px-4 py-2 text-sm border border-[var(--border)] rounded-lg hover:bg-gray-50 transition-colors">
-              {t('en', 'dashboard.overview.openWebsite')}
-            </button>
-            <button className="px-4 py-2 text-sm bg-[var(--ink)] text-white rounded-lg hover:bg-neutral-800 transition-colors">
-              Edit Content
-            </button>
+
+            <div className="flex items-center space-x-3">
+              <Tooltip content="Preview your website before going live">
+                <button className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                  Preview Site
+                </button>
+              </Tooltip>
+              <button className="px-4 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors">
+                Edit Content
+              </button>
+              {site.status !== 'online' && (
+                <Tooltip content="Connect your custom domain to make your site live">
+                  <button className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    Connect Domain
+                  </button>
+                </Tooltip>
+              )}
+            </div>
           </div>
         </div>
-      </motion.div>
+      </Card>
 
-      {/* Quick Actions & Plan */}
-      <div className="grid md:grid-cols-2 gap-6">
+      {/* Quick Actions & Analytics Summary */}
+      <div className="grid lg:grid-cols-3 gap-6">
         {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="card p-6"
-        >
-          <h3 className="text-lg font-semibold text-[var(--ink)] mb-4">
-            {t('en', 'dashboard.overview.quickActions.title')}
-          </h3>
+        <Card>
+          <div className="flex items-center space-x-2 mb-4">
+            <Icon name="zap" className="w-5 h-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
+          </div>
           <div className="space-y-3">
-            <button className="w-full text-left p-3 border border-[var(--border)] rounded-lg hover:bg-gray-50 transition-colors">
+            <button className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors group">
               <div className="flex items-center space-x-3">
-                <Icon name="panels-top-left" className="w-5 h-5 text-blue-600" />
-                <span>{t('en', 'dashboard.overview.quickActions.editContent')}</span>
+                <Icon name="panels-top-left" className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
+                <span className="text-gray-700">Edit Content</span>
               </div>
             </button>
-            <button className="w-full text-left p-3 border border-[var(--border)] rounded-lg hover:bg-gray-50 transition-colors">
+            <button className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors group">
               <div className="flex items-center space-x-3">
-                <Icon name="globe2" className="w-5 h-5 text-green-600" />
-                <span>{t('en', 'dashboard.overview.quickActions.connectDomain')}</span>
+                <Icon name="globe2" className="w-5 h-5 text-green-600 group-hover:text-green-700" />
+                <span className="text-gray-700">Connect Domain</span>
+              </div>
+            </button>
+            <button className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors group">
+              <div className="flex items-center space-x-3">
+                <Icon name="bar-chart-3" className="w-5 h-5 text-purple-600 group-hover:text-purple-700" />
+                <span className="text-gray-700">View Analytics</span>
               </div>
             </button>
           </div>
-        </motion.div>
+        </Card>
+
+        {/* Analytics Summary */}
+        <Card gradient="green">
+          <div className="flex items-center space-x-2 mb-4">
+            <Icon name="trending-up" className="w-5 h-5 text-green-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Performance</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Overall Score</span>
+              <span className="text-2xl font-bold text-gray-900">{analytics.performance}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-gray-500">LCP:</span>
+                <span className="ml-1 font-medium text-gray-900">{analytics.lcp}s</span>
+              </div>
+              <div>
+                <span className="text-gray-500">CLS:</span>
+                <span className="ml-1 font-medium text-gray-900">{analytics.cls}</span>
+              </div>
+            </div>
+            <button className="w-full px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+              View Full Report
+            </button>
+          </div>
+        </Card>
 
         {/* Plan Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="card p-6"
-        >
-          <h3 className="text-lg font-semibold text-[var(--ink)] mb-4">
-            {t('en', 'dashboard.overview.planCard.title')}
-          </h3>
-          <div className="mb-4">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPlanColor(site.plan)}`}>
-              {site.plan.charAt(0).toUpperCase() + site.plan.slice(1)}
-            </span>
+        <Card gradient="purple">
+          <div className="flex items-center space-x-2 mb-4">
+            <Icon name="crown" className="w-5 h-5 text-purple-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Current Plan</h3>
           </div>
-          <div className="space-y-3">
-            <button className="w-full px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              {t('en', 'dashboard.overview.planCard.upgrade')}
-            </button>
-            <button className="w-full px-4 py-2 text-sm border border-[var(--border)] rounded-lg hover:bg-gray-50 transition-colors">
-              {t('en', 'dashboard.overview.planCard.manage')}
-            </button>
+          <div className="space-y-4">
+            <div>
+              <Badge variant={site.plan as any} size="lg">
+                {site.plan.charAt(0).toUpperCase() + site.plan.slice(1)}
+              </Badge>
+            </div>
+            <div className="text-sm text-gray-600">
+              {site.plan === 'starter' && 'Perfect for getting started with your website'}
+              {site.plan === 'pro' && 'Advanced features for growing businesses'}
+              {site.plan === 'custom' && 'Tailored solution for your specific needs'}
+            </div>
+            <div className="space-y-2">
+              <button className="w-full px-3 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                {site.plan === 'starter' ? 'Upgrade Plan' : 'Manage Plan'}
+              </button>
+              <button className="w-full px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                View Billing
+              </button>
+            </div>
           </div>
-        </motion.div>
+        </Card>
       </div>
-
-      {/* Performance Overview */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="card p-6"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-[var(--ink)]">
-            {t('en', 'dashboard.overview.performance.title')}
-          </h3>
-          <span className="text-sm text-[var(--muted)]">
-            {t('en', 'dashboard.overview.performance.lastUpdated')}: {formatDate(analytics.lastUpdated)}
-          </span>
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-[var(--ink)] mb-1">
-              {analytics.performance}
-            </div>
-            <div className="text-sm text-[var(--muted)]">
-              {t('en', 'dashboard.analytics.metrics.performance')}
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-[var(--ink)] mb-1">
-              {analytics.lcp}s
-            </div>
-            <div className="text-sm text-[var(--muted)]">
-              {t('en', 'dashboard.analytics.metrics.lcp')}
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-[var(--ink)] mb-1">
-              {analytics.cls}
-            </div>
-            <div className="text-sm text-[var(--muted)]">
-              {t('en', 'dashboard.analytics.metrics.cls')}
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-[var(--ink)] mb-1">
-              {analytics.inp}ms
-            </div>
-            <div className="text-sm text-[var(--muted)]">
-              {t('en', 'dashboard.analytics.metrics.inp')}
-            </div>
-          </div>
-        </div>
-      </motion.div>
     </div>
   )
 }

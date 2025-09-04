@@ -7,7 +7,8 @@ import {
   Edit3, Play, Check, CheckCircle, ExternalLink, Globe, Eye, Search, Zap,
   Loader2, Bot, Building2, Building, Rocket, TrendingUp, TrendingDown, ServerCog,
   AlertCircle, ArrowLeft, ArrowRight, Download, LogOut, Trash2, X,
-  PanelsTopLeft, Globe2, KeyRound, Star, Info
+  PanelsTopLeft, Globe2, KeyRound, Star, Info, FileText, Shield, Plus, Edit,
+  MoreHorizontal, AlertTriangle, ShieldCheck, Layout, XCircle
 } from 'lucide-react';
 
 const ICONS = {
@@ -49,6 +50,15 @@ const ICONS = {
   'key-round': KeyRound,
   star: Star,
   info: Info,
+  'file-text': FileText,
+  shield: Shield,
+  plus: Plus,
+  edit: Edit,
+  'more-horizontal': MoreHorizontal,
+  'alert-triangle': AlertTriangle,
+  'shield-check': ShieldCheck,
+  layout: Layout,
+  'x-circle': XCircle,
 } as const;
 
 export type IconName = keyof typeof ICONS;

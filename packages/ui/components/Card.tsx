@@ -1,0 +1,70 @@
+'use client';
+
+import { ReactNode } from 'react';
+import { motion } from 'framer-motion';
+import { cn } from '../utils';
+
+interface CardProps {
+  children: ReactNode;
+  className?: string;
+  header?: ReactNode;
+  actions?: ReactNode;
+  gradient?: 'green' | 'blue' | 'purple' | 'yellow' | 'none';
+  shadow?: 'sm' | 'md' | 'lg';
+  padding?: 'sm' | 'md' | 'lg';
+  hover?: boolean;
+}
+
+export function Card({
+  children,
+  className,
+  header,
+  actions,
+  gradient = 'none',
+  shadow = 'sm',
+  padding = 'md',
+  hover = false,
+}: CardProps) {
+  const gradientClasses = {
+    green: 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200',
+    blue: 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200',
+    purple: 'bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200',
+    yellow: 'bg-gradient-to-br from-yellow-50 to-amber-50 border-yellow-200',
+    none: 'bg-white border-gray-200',
+  };
+
+  const shadowClasses = {
+    sm: 'shadow-sm',
+    md: 'shadow-md',
+    lg: 'shadow-lg',
+  };
+
+  const paddingClasses = {
+    sm: 'p-4',
+    md: 'p-6',
+    lg: 'p-8',
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={cn(
+        'rounded-2xl border transition-all duration-200',
+        gradientClasses[gradient],
+        shadowClasses[shadow],
+        paddingClasses[padding],
+        hover && 'hover:shadow-lg hover:-translate-y-1',
+        className
+      )}
+    >
+      {header && (
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex-1">{header}</div>
+          {actions && <div className="flex-shrink-0">{actions}</div>}
+        </div>
+      )}
+      {children}
+    </motion.div>
+  );
+}

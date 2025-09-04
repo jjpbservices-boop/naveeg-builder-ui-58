@@ -30,6 +30,18 @@ const navItems: NavItem[] = [
     description: 'Performance metrics and insights',
   },
   {
+    href: '/app/pages',
+    label: 'Pages & Content',
+    icon: 'file-text',
+    description: 'Manage your website pages',
+  },
+  {
+    href: '/app/domains',
+    label: 'Domains & Security',
+    icon: 'shield',
+    description: 'Domain and security settings',
+  },
+  {
     href: '/app/billing',
     label: 'Billing',
     icon: 'credit-card',
@@ -164,7 +176,8 @@ interface SidebarItemProps {
 }
 
 function SidebarItem({ item, isCollapsed, showExpanded }: SidebarItemProps) {
-  const isActive = false; // TODO: Use router to determine active state
+  // Note: Active state should be determined by the parent component
+  const isActive = false; // TODO: Pass active state as prop
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -172,9 +185,9 @@ function SidebarItem({ item, isCollapsed, showExpanded }: SidebarItemProps) {
       <a
         href={item.href}
         className={cn(
-          'flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors duration-200',
-          'hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-          isActive && 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+          'flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 group',
+          'hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+          isActive && 'bg-blue-100 text-blue-700 shadow-sm'
         )}
         aria-current={isActive ? 'page' : undefined}
         onMouseEnter={() => setIsHovered(true)}
@@ -183,8 +196,8 @@ function SidebarItem({ item, isCollapsed, showExpanded }: SidebarItemProps) {
         <Icon
           name={item.icon}
           className={cn(
-            'w-5 h-5 flex-shrink-0',
-            isActive ? 'text-blue-600' : 'text-gray-600'
+            'w-5 h-5 flex-shrink-0 transition-colors',
+            isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-blue-600'
           )}
         />
         
@@ -192,7 +205,7 @@ function SidebarItem({ item, isCollapsed, showExpanded }: SidebarItemProps) {
           {!isCollapsed && (
             <motion.span
               key="label"
-              className="text-sm font-medium"
+              className="text-sm font-medium transition-colors"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}

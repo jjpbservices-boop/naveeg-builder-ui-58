@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Icon } from '@naveeg/ui';
+import { Icon, Card, Badge, PlanCard } from '@naveeg/ui';
 import { PLANS, getPlanById, type PlanId } from '@naveeg/lib';
 
 interface CurrentPlan {
@@ -89,24 +89,23 @@ export default function BillingPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="p-6 space-y-8">
       {/* Page header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Billing</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2 font-sans">Billing</h1>
         <p className="text-gray-600">
           Manage your subscription and billing information.
         </p>
       </div>
 
       {/* Current plan */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-xl border border-gray-200 p-6"
-      >
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Current Plan</h2>
+      <Card gradient="blue" hover>
+        <div className="flex items-center space-x-2 mb-6">
+          <Icon name="crown" className="w-5 h-5 text-blue-600" />
+          <h2 className="text-xl font-semibold text-gray-900">Current Plan</h2>
+        </div>
         
-        <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <Icon name="crown" className="w-6 h-6 text-blue-600" />
@@ -127,17 +126,13 @@ export default function BillingPage() {
           </div>
           
           <div className="flex items-center space-x-3">
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-              currentPlan.status === 'active' 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
+            <Badge variant={currentPlan.status === 'active' ? 'success' : 'error'}>
               <Icon 
                 name={currentPlan.status === 'active' ? 'check-circle' : 'alert-circle'} 
                 className="w-4 h-4 mr-1" 
               />
               {currentPlan.status === 'active' ? 'Active' : 'Past Due'}
-            </span>
+            </Badge>
             
             {currentPlan.stripeCustomerId && (
               <button
@@ -149,93 +144,57 @@ export default function BillingPage() {
             )}
           </div>
         </div>
-      </motion.div>
+      </Card>
 
       {/* Available plans */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="bg-white rounded-xl border border-gray-200 p-6"
-      >
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Available Plans</h2>
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Available Plans</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {Object.entries(PLANS).map(([planId, plan]) => {
             const isCurrentPlan = currentPlan.id === planId;
             const isUpgrade = planId === 'pro' && currentPlan.id === 'starter';
             
+            const gradientMap = {
+              starter: 'green' as const,
+              pro: 'blue' as const,
+              custom: 'purple' as const,
+            };
+            
             return (
-              <div
+              <PlanCard
                 key={planId}
-                className={`relative p-6 border-2 rounded-xl transition-all duration-200 ${
-                  isCurrentPlan
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
-                }`}
-              >
-                {hasMostPopular(plan) && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-purple-600 text-white text-xs font-medium px-3 py-1 rounded-full">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-
-                <div className="text-center mb-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {plan.name}
-                  </h3>
-                  <div className="text-3xl font-bold text-gray-900 mb-1">
-                    {hasContact(plan) ? 'Custom' : hasEur(plan) ? `€${plan.eur}` : 'Contact Sales'}
-                  </div>
-                  {!hasContact(plan) && hasEur(plan) && (
-                    <div className="text-sm text-gray-500">
-                      per month
-                    </div>
-                  )}
-                </div>
-
-                <ul className="space-y-3 mb-6">
-                  {plan.features.slice(0, 6).map((feature: string, index: number) => (
-                    <li key={index} className="flex items-center text-sm text-gray-600">
-                      <Icon name="check" className="w-4 h-4 text-green-500 mr-3 flex-shrink-0" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  onClick={() => handleUpgrade(planId as PlanId)}
-                  disabled={isLoading || isCurrentPlan}
-                  className={`w-full py-3 px-4 rounded-lg font-medium transition-colors duration-200 ${
-                    isCurrentPlan
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : isUpgrade
-                      ? 'bg-purple-600 text-white hover:bg-purple-700'
-                      : hasContact(plan)
-                      ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
-                  }`}
-                >
-                  {isCurrentPlan ? 'Current Plan' : 
-                   hasContact(plan) ? 'Contact Sales' :
-                   isUpgrade ? 'Upgrade Now' : 'Choose Plan'}
-                </button>
-              </div>
+                name={plan.name}
+                price={hasContact(plan) ? 'Custom' : hasEur(plan) ? `€${plan.eur}` : 'Contact Sales'}
+                period={hasContact(plan) ? '' : hasEur(plan) ? '/month' : ''}
+                description={
+                  planId === 'starter' ? 'Perfect for getting started' :
+                  planId === 'pro' ? 'Advanced features for growing businesses' :
+                  'Tailored solution for your needs'
+                }
+                features={plan.features.slice(0, 6)}
+                current={isCurrentPlan}
+                popular={hasMostPopular(plan)}
+                gradient={gradientMap[planId as keyof typeof gradientMap]}
+                buttonText={
+                  isCurrentPlan ? 'Current Plan' : 
+                  hasContact(plan) ? 'Contact Sales' :
+                  isUpgrade ? 'Upgrade Now' : 'Choose Plan'
+                }
+                buttonVariant={isCurrentPlan ? 'secondary' : 'primary'}
+                onButtonClick={() => handleUpgrade(planId as PlanId)}
+              />
             );
           })}
         </div>
-      </motion.div>
+      </div>
 
       {/* Billing information */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="bg-white rounded-xl border border-gray-200 p-6"
-      >
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Billing Information</h2>
+      <Card>
+        <div className="flex items-center space-x-2 mb-6">
+          <Icon name="credit-card" className="w-5 h-5 text-gray-600" />
+          <h2 className="text-xl font-semibold text-gray-900">Billing Information</h2>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -260,16 +219,14 @@ export default function BillingPage() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </Card>
 
       {/* Billing history */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="bg-white rounded-xl border border-gray-200 p-6"
-      >
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Billing History</h2>
+      <Card>
+        <div className="flex items-center space-x-2 mb-6">
+          <Icon name="file-text" className="w-5 h-5 text-gray-600" />
+          <h2 className="text-xl font-semibold text-gray-900">Billing History</h2>
+        </div>
         
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -295,15 +252,13 @@ export default function BillingPage() {
                   €49.00
                 </td>
                 <td className="py-3 px-4">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Paid
-                  </span>
+                  <Badge variant="success" size="sm">Paid</Badge>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-      </motion.div>
+      </Card>
     </div>
   );
 }
