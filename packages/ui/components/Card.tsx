@@ -9,7 +9,7 @@ interface CardProps {
   className?: string;
   header?: ReactNode;
   actions?: ReactNode;
-  gradient?: 'green' | 'blue' | 'purple' | 'yellow' | 'none';
+  gradient?: 'green' | 'blue' | 'purple' | 'none';
   shadow?: 'sm' | 'md' | 'lg';
   padding?: 'sm' | 'md' | 'lg';
   hover?: boolean;
@@ -29,7 +29,6 @@ export function Card({
     green: 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200',
     blue: 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200',
     purple: 'bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200',
-    yellow: 'bg-gradient-to-br from-yellow-50 to-amber-50 border-yellow-200',
     none: 'bg-white border-gray-200',
   };
 

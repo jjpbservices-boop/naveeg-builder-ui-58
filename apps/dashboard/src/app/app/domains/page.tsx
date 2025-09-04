@@ -158,7 +158,7 @@ export default function DomainsPage() {
                     config.status === 'active' || config.status === 'clean' 
                       ? 'bg-green-500' 
                       : config.status === 'disabled' 
-                        ? 'bg-yellow-500' 
+                        ? 'bg-blue-500' 
                         : 'bg-red-500'
                   }`} />
                   <div>
@@ -188,29 +188,29 @@ export default function DomainsPage() {
         </Card>
 
         {/* Security Issues */}
-        <Card gradient="yellow">
+        <Card gradient="blue">
           <div className="flex items-center space-x-2 mb-6">
-            <Icon name="alert-circle" className="w-5 h-5 text-yellow-600" />
+            <Icon name="alert-circle" className="w-5 h-5 text-blue-600" />
             <h3 className="text-lg font-semibold text-gray-900">Security Issues</h3>
           </div>
           
           {issues.length > 0 ? (
             <div className="space-y-4">
               {issues.map((issue) => (
-                <div key={issue.id} className="p-4 border border-yellow-200 rounded-lg bg-yellow-50">
+                <div key={issue.id} className="p-4 border border-blue-200 rounded-lg bg-blue-50">
                   <div className="flex items-start space-x-3">
                     <Icon 
                       name={issue.type === 'error' ? 'x-circle' : issue.type === 'warning' ? 'alert-triangle' : 'info'} 
                       className={`w-5 h-5 mt-0.5 ${
                         issue.type === 'error' ? 'text-red-500' : 
-                        issue.type === 'warning' ? 'text-yellow-500' : 
+                        issue.type === 'warning' ? 'text-blue-500' : 
                         'text-blue-500'
                       }`} 
                     />
                     <div className="flex-1">
                       <h4 className="font-medium text-gray-900 mb-1">{issue.title}</h4>
                       <p className="text-sm text-gray-600 mb-3">{issue.description}</p>
-                      <button className="text-sm bg-yellow-600 text-white px-3 py-1 rounded-lg hover:bg-yellow-700 transition-colors">
+                      <button className="text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition-colors">
                         {issue.action}
                       </button>
                     </div>
